@@ -23,7 +23,7 @@ def main(argv):
             metric = arg
 
     os.system(
-        "gimp -b '(python-fu-image-corrector {0} \"{1}\" {2} \"{3}\")' -b '(gimp-quit 1)'"
+        "gimp -b '(python-fu-correct-image {0} \"{1}\" {2} \"{3}\")' -b '(gimp-quit 1)'"
         .format(RUN_PARAMETER, infile, iterations, metric)
     )
 

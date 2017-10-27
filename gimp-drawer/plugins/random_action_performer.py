@@ -18,8 +18,10 @@ class Selection(object):
     def __init__(self, top_left_point, width=None, height=None):
         super(Selection, self).__init__()
         self.top_left_point = top_left_point
-        self.width = random.randint(1, self.__validate(WIDTH - self.top_left_point.x)) if width is None else width
-        self.height = random.randint(1, self.__validate(HEIGHT - self.top_left_point.y)) if height is None else height
+        self.width = \
+            random.randint(1, self.__validate(WIDTH - self.top_left_point.x)) if width is None else width
+        self.height = \
+            random.randint(1, self.__validate(HEIGHT - self.top_left_point.y)) if height is None else height
 
     @staticmethod
     def __validate(points_left):
