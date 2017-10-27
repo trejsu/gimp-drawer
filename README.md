@@ -6,10 +6,13 @@ TODO
 
 ### Setup
 
-* Set environment variable ```GIMP_PLUGIN``` to the path of your gimp plugins directory
-    * Local - usually `````$HOME/.gimp-{version}/plug-ins`````
-    * Global - usually `````/usr/lib/gimp/{version}/plug-ins`````
-* Add execute permission to ```build.sh``` file
+* Set environment variables 
+    * ```GIMP_PLUGIN``` to the path of your gimp plugins directory
+        * Local - usually `````$HOME/.gimp-{version}/plug-ins`````
+        * Global - usually `````/usr/lib/gimp/{version}/plug-ins`````
+    * ```GIMP_PROJECT``` to the path of cloned project
+ 
+* ```./setup.sh```
 
 ### Build
 
