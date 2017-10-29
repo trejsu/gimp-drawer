@@ -22,6 +22,7 @@ def plugin_main(infile, iterations, metric):
 
 def execute_loop(infile, iterations, metric):
     src_img = load_file(infile)
+    display_image(src_img)
     src_array = read(src_img)
     actual_img = new_image(get_width(src_img), get_height(src_img))
     save_iteration(actual_img, 0)
@@ -37,8 +38,8 @@ def execute_loop(infile, iterations, metric):
             new_array = read(new_img)
             new_diff = compare_images(src_array, new_array, resolve_metric(metric))
             if new_diff < actual_diff:
+                pdb.gimp_displays_reconnect(actual_img, new_img)
                 save_iteration(new_img, i)
-                close(actual_img)
                 actual_img = new_img
                 break
             close(new_img)
@@ -56,10 +57,14 @@ def new_image(width, height):
     image_id = gimp.Image(width, height, RGB_IMAGE)
     layer = gimp.Layer(image_id, "name", width, height, RGB_IMAGE, 100, NORMAL_MODE)
     image_id.add_layer(layer, 0)
-    gimp.Display(image_id)
-    gimp.displays_flush()
+    display_image(image_id)
     pdb.gimp_edit_fill(layer, BACKGROUND_FILL)
     return image_id
+
+
+def display_image(image_id):
+    gimp.Display(image_id)
+    gimp.displays_flush()
 
 
 def get_width(image):
