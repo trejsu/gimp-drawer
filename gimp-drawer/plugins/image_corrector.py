@@ -6,7 +6,6 @@ import datetime
 import numpy
 
 from gimpfu import *
-from scipy.misc import imread
 from scipy import sum
 
 OUT_PATH = None
@@ -23,25 +22,26 @@ def plugin_main(infile, iterations, metric):
 
 def execute_loop(infile, iterations, metric):
     src_img = load_file(infile)
+    src_array = read(src_img)
     actual_img = new_image(get_width(src_img), get_height(src_img))
     save_iteration(actual_img, 0)
-    src_array = imread(infile).astype(float)
 
     for i in range(1, iterations + 1):
         print "iteration", i
-        prev_img = open_iteration(i - 1)
-        prev_array = imread(get_path_of_iteration(i - 1)).astype(float)
+        actual_array = read(actual_img)
         # todo: refactor resolve metric
-        prev_diff = compare_images(src_array, prev_array, resolve_metric(metric))
+        actual_diff = compare_images(src_array, actual_array, resolve_metric(metric))
         while True:
-            pdb.python_fu_perform_random_action(prev_img)
-            save_iteration(prev_img, i)
-            close(prev_img)
-            actual_array = imread(get_path_of_iteration(i)).astype(float)
-            actual_diff = compare_images(src_array, actual_array, resolve_metric(metric))
-            if actual_diff < prev_diff:
+            new_img = pdb.gimp_image_duplicate(actual_img)
+            pdb.python_fu_perform_random_action(new_img)
+            new_array = read(new_img)
+            new_diff = compare_images(src_array, new_array, resolve_metric(metric))
+            if new_diff < actual_diff:
+                save_iteration(new_img, i)
+                close(actual_img)
+                actual_img = new_img
                 break
-            prev_img = open_iteration(i - 1)
+            close(new_img)
 
 
 def load_file(filename):
@@ -90,10 +90,10 @@ def read(image):
     width = drawable.width
     height = drawable.height
     bpp = drawable.bpp
-    pr = drawable.get_pixel_rgn(0, 0, width, height, False)
-    a = numpy.fromstring(pr[:, :], "B")
-    assert a.size == width * height * bpp
-    image = numpy.array(a.reshape(height, width, bpp), "d")[:, :, 0:min(bpp, 3)]
+    pixel_region = drawable.get_pixel_rgn(0, 0, width, height, False)
+    array = numpy.fromstring(pixel_region[:, :], "B")
+    assert array.size == width * height * bpp
+    image = numpy.array(array.reshape(height, width, bpp), "d")[:, :, 0:min(bpp, 3)]
     return image / 256.0
 
 
