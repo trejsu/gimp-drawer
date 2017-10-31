@@ -133,6 +133,7 @@ def draw_filled_rectangle(image, rectangle, color=None):
     change_foreground_color(color)
     select_rectangle(image, rectangle)
     fill_selection(image)
+    clear_selection(image)
 
 
 def fill_selection(image):
@@ -147,6 +148,11 @@ def draw_filled_ellipse(image, ellipse, color=None):
     change_foreground_color(color)
     select_ellipse(image, ellipse)
     fill_selection(image)
+    clear_selection(image)
+
+
+def clear_selection(image):
+    pdb.gimp_image_select_rectangle(image, CHANNEL_OP_REPLACE, 0, 0, WIDTH, HEIGHT)
 
 
 register("perform_random_action", "", "", "", "", "", "", "",
