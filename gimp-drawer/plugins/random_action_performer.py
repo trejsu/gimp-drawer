@@ -28,33 +28,114 @@ class Selection(object):
         return points_left if points_left > 0 else 1
 
 
-def plugin_main(image):
+class Image(object):
+    def __init__(self, image_id):
+        super(Image, self).__init__()
+        self.image_id = image_id
+
+    def get_width(self):
+        return self.__get_drawable().width
+
+    def get_height(self):
+        return self.__get_drawable().height
+
+    def __get_drawable(self):
+        return pdb.gimp_image_active_drawable(self.image_id)
+
+    def draw_random_brush_line(self):
+        self.__draw_brush_line(Point(), Point())
+
+    def __draw_brush_line(self, start, end, color=None):
+        change_foreground_color(color)
+        control_points = [start.x, start.y, end.x, end.y]
+        pdb.gimp_paintbrush_default(self.__get_drawable(), len(control_points), control_points)
+
+    def draw_random_pencil_line(self):
+        self.__draw_pencil_line(Point(), Point())
+
+    def __draw_pencil_line(self, start, end, color=None):
+        change_foreground_color(color)
+        control_points = [start.x, start.y, end.x, end.y]
+        pdb.gimp_pencil(self.__get_drawable(), len(control_points), control_points)
+
+    def draw_random_rectangle(self):
+        self.__draw_rectangle(Selection(Point()))
+
+    def __draw_rectangle(self, rectangle, color=None):
+        change_foreground_color(color)
+        self.__select_rectangle(rectangle)
+        self.__stroke_selection()
+
+    def __select_rectangle(self, rectangle):
+        pdb.gimp_image_select_rectangle(
+            self.image_id,
+            CHANNEL_OP_REPLACE,
+            rectangle.top_left_point.x,
+            rectangle.top_left_point.y,
+            rectangle.width,
+            rectangle.height
+        )
+
+    def __stroke_selection(self):
+        pdb.gimp_edit_stroke(self.__get_drawable())
+
+    def draw_random_ellipse(self):
+        self.__draw_ellipse(Selection(Point()))
+
+    def __draw_ellipse(self, ellipse, color=None):
+        change_foreground_color(color)
+        self.__select_ellipse(ellipse)
+        self.__stroke_selection()
+
+    def __select_ellipse(self, ellipse):
+        pdb.gimp_image_select_ellipse(
+            self.image_id,
+            CHANNEL_OP_REPLACE,
+            ellipse.top_left_point.x,
+            ellipse.top_left_point.y,
+            ellipse.width,
+            ellipse.height
+        )
+
+    def draw_random_filled_rectangle(self):
+        self.__draw_filled_rectangle(Selection(Point()))
+
+    def __draw_filled_rectangle(self, rectangle, color=None):
+        change_foreground_color(color)
+        self.__select_rectangle(rectangle)
+        self.__fill_selection()
+        self.__clear_selection()
+
+    def __fill_selection(self):
+        pdb.gimp_edit_fill(self.__get_drawable(), FOREGROUND_FILL)
+
+    def draw_random_filled_ellipse(self):
+        self.__draw_filled_ellipse(Selection(Point()))
+
+    def __draw_filled_ellipse(self, ellipse, color=None):
+        change_foreground_color(color)
+        self.__select_ellipse(ellipse)
+        self.__fill_selection()
+        self.__clear_selection()
+
+    def __clear_selection(self):
+        pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0, 0, WIDTH, HEIGHT)
+
+
+def plugin_main(image_id):
     global WIDTH, HEIGHT
-    WIDTH = get_drawable(image).width
-    HEIGHT = get_drawable(image).height
+    image = Image(image_id)
+    WIDTH = image.get_width()
+    HEIGHT = image.get_height()
     actions = [
-        lambda img: draw_random_brush_line(img),
-        # lambda img: draw_random_ellipse(img),
-        lambda img: draw_random_filled_ellipse(img),
-        lambda img: draw_random_filled_rectangle(img),
-        lambda img: draw_random_pencil_line(img)
-        # lambda img: draw_random_rectangle(img)
+        lambda: image.draw_random_brush_line(),
+        # lambda: image.draw_random_ellipse(),
+        lambda: image.draw_random_filled_ellipse(),
+        lambda: image.draw_random_filled_rectangle(),
+        lambda: image.draw_random_pencil_line()
+        # lambda: image.draw_random_rectangle()
     ]
     actions[random.randint(0, len(actions) - 1)](image)
-
-
-def get_drawable(image):
-    return pdb.gimp_image_active_drawable(image)
-
-
-def draw_random_brush_line(image):
-    draw_brush_line(image, Point(), Point())
-
-
-def draw_brush_line(image, start, end, color=None):
-    change_foreground_color(color)
-    control_points = [start.x, start.y, end.x, end.y]
-    pdb.gimp_paintbrush_default(get_drawable(image), len(control_points), control_points)
 
 
 def change_foreground_color(color):
@@ -67,92 +148,6 @@ def randomize_if_none(color):
 
 def random_color():
     return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
-
-
-def draw_random_pencil_line(image):
-    draw_pencil_line(image, Point(), Point())
-
-
-def draw_pencil_line(image, start, end, color=None):
-    change_foreground_color(color)
-    control_points = [start.x, start.y, end.x, end.y]
-    pdb.gimp_pencil(get_drawable(image), len(control_points), control_points)
-
-
-def draw_random_rectangle(image):
-    draw_rectangle(image, Selection(Point()))
-
-
-def draw_rectangle(image, rectangle, color=None):
-    change_foreground_color(color)
-    select_rectangle(image, rectangle)
-    stroke_selection(image)
-
-
-def select_rectangle(image, rectangle):
-    pdb.gimp_image_select_rectangle(
-        image,
-        CHANNEL_OP_REPLACE,
-        rectangle.top_left_point.x,
-        rectangle.top_left_point.y,
-        rectangle.width,
-        rectangle.height
-    )
-
-
-def stroke_selection(image):
-        pdb.gimp_edit_stroke(get_drawable(image))
-
-
-def draw_random_ellipse(image):
-    draw_ellipse(image, Selection(Point()))
-
-
-def draw_ellipse(image, ellipse, color=None):
-    change_foreground_color(color)
-    select_ellipse(image, ellipse)
-    stroke_selection(image)
-
-
-def select_ellipse(image, ellipse):
-    pdb.gimp_image_select_ellipse(
-        image,
-        CHANNEL_OP_REPLACE,
-        ellipse.top_left_point.x,
-        ellipse.top_left_point.y,
-        ellipse.width,
-        ellipse.height
-    )
-
-
-def draw_random_filled_rectangle(image):
-    draw_filled_rectangle(image, Selection(Point()))
-
-
-def draw_filled_rectangle(image, rectangle, color=None):
-    change_foreground_color(color)
-    select_rectangle(image, rectangle)
-    fill_selection(image)
-    clear_selection(image)
-
-
-def fill_selection(image):
-    pdb.gimp_edit_fill(get_drawable(image), FOREGROUND_FILL)
-
-
-def draw_random_filled_ellipse(image):
-    draw_filled_ellipse(image, Selection(Point()))
-
-
-def draw_filled_ellipse(image, ellipse, color=None):
-    change_foreground_color(color)
-    select_ellipse(image, ellipse)
-    fill_selection(image)
-    clear_selection(image)
-
-
-def clear_selection(image):
-    pdb.gimp_image_select_rectangle(image, CHANNEL_OP_REPLACE, 0, 0, WIDTH, HEIGHT)
 
 
 register("perform_random_action", "", "", "", "", "", "", "",
