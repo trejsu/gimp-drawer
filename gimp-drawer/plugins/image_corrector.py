@@ -9,10 +9,12 @@ from gimpfu import *
 from scipy import sum
 
 OUT_PATH = None
+RUN_PARAMETERS = None
 
 
 def plugin_main(infile, iterations, metric):
     start = time.time()
+    setup_run_parameters(infile, iterations, metric)
     execute_loop(infile, iterations, metric)
     end = time.time()
     total = end - start
@@ -82,8 +84,7 @@ def get_height(image):
 def save_iteration(image, i):
     global OUT_PATH
     if OUT_PATH is None:
-        date = datetime.datetime.now()
-        OUT_PATH = os.path.expandvars("$GIMP_PROJECT/out/%s" % date.isoformat())
+        OUT_PATH = os.path.expandvars("$GIMP_PROJECT/out/%s" % RUN_PARAMETERS)
         os.mkdir(OUT_PATH)
     filename = get_path_of_iteration(i)
     pdb.file_jpeg_save(image, get_drawable(image), filename, filename,
@@ -119,6 +120,13 @@ def resolve_metric(metric):
 
 def close(image):
     gimp.delete(image)
+
+
+def setup_run_parameters(infile, iterations, metric):
+    global RUN_PARAMETERS
+    infile = os.path.basename(infile).split(".")[0]
+    date = datetime.datetime.now()
+    RUN_PARAMETERS = "%s_%s_%s_%s" % (infile, iterations, metric, str(date))
 
 
 register("correct_image", "", "", "", "", "", "", "",

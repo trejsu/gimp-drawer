@@ -135,7 +135,7 @@ def plugin_main(image_id):
         lambda: image.draw_random_pencil_line()
         # lambda: image.draw_random_rectangle()
     ]
-    actions[random.randint(0, len(actions) - 1)](image)
+    actions[random.randint(0, len(actions) - 1)]()
 
 
 def change_foreground_color(color):

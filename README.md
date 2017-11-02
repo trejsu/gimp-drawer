@@ -30,4 +30,3 @@ python run.py -f <file_name> -i <number_of_iterations> -m <metric>
 * ```metric``` - metric used to comparing similarity between images. Necessary parameter. Possible values are:
     * ```L1```
     * ```L2```
-
