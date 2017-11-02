@@ -58,14 +58,6 @@ class Image(object):
         control_points = [start.x, start.y, end.x, end.y]
         pdb.gimp_pencil(self.__get_drawable(), len(control_points), control_points)
 
-    def draw_random_rectangle(self):
-        self.__draw_rectangle(Selection(Point()))
-
-    def __draw_rectangle(self, rectangle, color=None):
-        change_foreground_color(color)
-        self.__select_rectangle(rectangle)
-        self.__stroke_selection()
-
     def __select_rectangle(self, rectangle):
         pdb.gimp_image_select_rectangle(
             self.image_id,
@@ -75,17 +67,6 @@ class Image(object):
             rectangle.width,
             rectangle.height
         )
-
-    def __stroke_selection(self):
-        pdb.gimp_edit_stroke(self.__get_drawable())
-
-    def draw_random_ellipse(self):
-        self.__draw_ellipse(Selection(Point()))
-
-    def __draw_ellipse(self, ellipse, color=None):
-        change_foreground_color(color)
-        self.__select_ellipse(ellipse)
-        self.__stroke_selection()
 
     def __select_ellipse(self, ellipse):
         pdb.gimp_image_select_ellipse(
@@ -97,10 +78,10 @@ class Image(object):
             ellipse.height
         )
 
-    def draw_random_filled_rectangle(self):
-        self.__draw_filled_rectangle(Selection(Point()))
+    def draw_random_rectangle(self):
+        self.__draw_rectangle(Selection(Point()))
 
-    def __draw_filled_rectangle(self, rectangle, color=None):
+    def __draw_rectangle(self, rectangle, color=None):
         change_foreground_color(color)
         self.__select_rectangle(rectangle)
         self.__fill_selection()
@@ -109,10 +90,10 @@ class Image(object):
     def __fill_selection(self):
         pdb.gimp_edit_fill(self.__get_drawable(), FOREGROUND_FILL)
 
-    def draw_random_filled_ellipse(self):
-        self.__draw_filled_ellipse(Selection(Point()))
+    def draw_random_ellipse(self):
+        self.__draw_ellipse(Selection(Point()))
 
-    def __draw_filled_ellipse(self, ellipse, color=None):
+    def __draw_ellipse(self, ellipse, color=None):
         change_foreground_color(color)
         self.__select_ellipse(ellipse)
         self.__fill_selection()
@@ -129,11 +110,9 @@ def plugin_main(image_id):
     HEIGHT = image.get_height()
     actions = [
         lambda: image.draw_random_brush_line(),
-        # lambda: image.draw_random_ellipse(),
-        lambda: image.draw_random_filled_ellipse(),
-        lambda: image.draw_random_filled_rectangle(),
+        lambda: image.draw_random_ellipse(),
+        lambda: image.draw_random_rectangle(),
         lambda: image.draw_random_pencil_line()
-        # lambda: image.draw_random_rectangle()
     ]
     actions[random.randint(0, len(actions) - 1)]()
 
