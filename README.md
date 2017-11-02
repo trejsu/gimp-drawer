@@ -33,9 +33,9 @@ python run.py -f <file_name> -i <number_of_iterations> -m <metric>
     
 ## Known bugs
 
-* Passing ```jpg``` file as argument to ```-f``` option of ```run.py``` displays following message in console at runtime:
-```
-While parsing XMP metadata:
-Error on line 13 char 1: End of element <xmpMM:DerivedFrom> not expected in this context
-```
-No impact to script functionality detected. Error comes from ```gimp_file_load()``` function from ```GIMP Library```
+*   Passing ```jpg``` file as argument to ```-f``` option of ```run.py``` displays following message in console at runtime:
+    ```
+    While parsing XMP metadata:
+    Error on line 13 char 1: End of element <xmpMM:DerivedFrom> not expected in this context
+    ```
+    No impact to script functionality detected. Error comes from ```gimp_file_load()``` function from ```GIMP Library```
