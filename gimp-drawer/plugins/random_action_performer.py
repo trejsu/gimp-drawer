@@ -45,16 +45,18 @@ class Image(object):
     def draw_random_brush_line(self):
         self.__draw_brush_line(Point(), Point())
 
-    def __draw_brush_line(self, start, end, color=None):
+    def __draw_brush_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
+        change_size(size)
         control_points = [start.x, start.y, end.x, end.y]
         pdb.gimp_paintbrush_default(self.__get_drawable(), len(control_points), control_points)
 
     def draw_random_pencil_line(self):
         self.__draw_pencil_line(Point(), Point())
 
-    def __draw_pencil_line(self, start, end, color=None):
+    def __draw_pencil_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
+        change_size(size)
         control_points = [start.x, start.y, end.x, end.y]
         pdb.gimp_pencil(self.__get_drawable(), len(control_points), control_points)
 
@@ -118,15 +120,27 @@ def plugin_main(image_id):
 
 
 def change_foreground_color(color):
-    gimp.set_foreground(randomize_if_none(color))
+    gimp.set_foreground(randomize_color_if_none(color))
 
 
-def randomize_if_none(color):
+def randomize_color_if_none(color):
     return random_color() if color is None else color
 
 
 def random_color():
     return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+
+
+def change_size(size):
+    pdb.gimp_context_set_brush_size(randomize_size_if_none(size))
+
+
+def randomize_size_if_none(size):
+    return random_size() if size is None else size
+
+
+def random_size():
+    return random.randint(1, min(WIDTH, HEIGHT))
 
 
 register("perform_random_action", "", "", "", "", "", "", "",
