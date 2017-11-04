@@ -27,6 +27,7 @@ def execute_loop(infile, iterations, metric):
     display_image(src_img)
     src_array = read(src_img)
     actual_img = new_image(get_width(src_img), get_height(src_img))
+    display_image(actual_img)
     save_iteration(actual_img, 0)
 
     for i in range(1, iterations + 1):
@@ -59,14 +60,13 @@ def new_image(width, height):
     image_id = gimp.Image(width, height, RGB_IMAGE)
     layer = gimp.Layer(image_id, "name", width, height, RGB_IMAGE, 100, NORMAL_MODE)
     image_id.add_layer(layer, 0)
-    display_image(image_id)
     pdb.gimp_edit_fill(layer, BACKGROUND_FILL)
     return image_id
 
 
 def display_image(image_id):
-    gimp.Display(image_id)
-    gimp.displays_flush()
+    pdb.gimp_display_new(image_id)
+    pdb.gimp_displays_flush()
 
 
 def get_width(image):
