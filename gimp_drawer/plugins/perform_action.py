@@ -3,8 +3,8 @@
 from gimpfu import *
 import random
 
-WIDTH = None
-HEIGHT = None
+WIDTH = 0
+HEIGHT = 0
 
 
 class Point(object):
@@ -32,6 +32,7 @@ class Image(object):
     def __init__(self, image_id):
         super(Image, self).__init__()
         self.image_id = image_id
+        pdb.gimp_context_set_brush("2. Hardness 075")
 
     def get_width(self):
         return self.__get_drawable().width
@@ -47,7 +48,7 @@ class Image(object):
 
     def __draw_brush_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
-        change_size(size)
+        # change_size(size)
         control_points = [start.x, start.y, end.x, end.y]
         pdb.gimp_paintbrush_default(self.__get_drawable(), len(control_points), control_points)
 
@@ -56,7 +57,7 @@ class Image(object):
 
     def __draw_pencil_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
-        change_size(size)
+        # change_size(size)
         control_points = [start.x, start.y, end.x, end.y]
         pdb.gimp_pencil(self.__get_drawable(), len(control_points), control_points)
 
@@ -105,7 +106,7 @@ class Image(object):
         pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0, 0, WIDTH, HEIGHT)
 
 
-def plugin_main(image_id):
+def plugin_main(image_id, action):
     global WIDTH, HEIGHT
     image = Image(image_id)
     WIDTH = image.get_width()
@@ -116,7 +117,7 @@ def plugin_main(image_id):
         lambda: image.draw_random_rectangle(),
         lambda: image.draw_random_pencil_line()
     ]
-    actions[random.randint(0, len(actions) - 1)]()
+    actions[action]()
 
 
 def change_foreground_color(color):
@@ -140,10 +141,10 @@ def randomize_size_if_none(size):
 
 
 def random_size():
-    return random.randint(1, min(WIDTH, HEIGHT))
+    return random.randint(1, min(WIDTH / 5, HEIGHT / 5))
 
 
-register("perform_random_action", "", "", "", "", "", "", "",
-         [(PF_IMAGE, "image", "Image", "")], [], plugin_main)
+register("perform_action", "", "", "", "", "", "", "",
+         [(PF_IMAGE, "image", "Image", ""), (PF_INT, "action", "Action", 0)], [], plugin_main)
 
 main()

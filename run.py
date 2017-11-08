@@ -4,7 +4,7 @@ import sys
 import getopt
 import os
 
-RUN_PARAMETER = "RUN-INTERACTIVE"
+RUN_PARAMETER = "RUN-NONINTERACTIVE"
 
 
 def main(argv):
@@ -22,10 +22,7 @@ def main(argv):
         if opt == '-m':
             metric = arg
 
-    os.system(
-        "gimp -b '(python-fu-correct-image {0} \"{1}\" {2} \"{3}\")' -b '(gimp-quit 1)'"
-        .format(RUN_PARAMETER, infile, iterations, metric)
-    )
+    os.system("gimp -i -b '(python-fu-agent {} \"{}\")' -b '(gimp-quit 1)'".format(RUN_PARAMETER, infile))
 
 
 if __name__ == '__main__':
