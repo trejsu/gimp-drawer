@@ -1,7 +1,5 @@
 # Gimp Drawer
 
-TODO
-
 ## Getting Started
 
 ### Setup
@@ -23,13 +21,14 @@ TODO
 ### Run
 
 ```
-python run.py -f <file_name> -i <number_of_iterations> -m <metric>
+python run.py -f <file_name> -i <number_of_iterations> -d <acceptable_distance>
 ```
 * ```file_name``` - path to the input file. Necessary parameter.
-* ```number_of_iterations``` - number of improvement actions which will be performed by the script. Necessary parameter. 
-* ```metric``` - metric used to comparing similarity between images. Necessary parameter. Possible values are:
-    * ```L1```
-    * ```L2```
+* ```number_of_iterations``` - number of actions which will be performed by the script. 
+    Optional if ```acceptable_distance``` present. 
+* ```acceptable_distance``` - number representing "good enough" similarity between images where ```0``` means that every 
+    pixel is exactly the same. Thus, the bigger distance, the less similarity between images. 
+    Ignored if ```number_of_iterations``` present.
     
 ## Known bugs
 
