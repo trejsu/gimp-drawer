@@ -1,9 +1,10 @@
-from gimpfu import *
-from gimp_env import GimpEnv
-import tqdm
 import time
+import tqdm
 
-START = 0
+from gimpfu import *
+from gimp_drawer.plugins.gimp_env import GimpEnv
+
+START = time.time()
 
 
 def plugin_main(src_path, iterations, acceptable_distance):
@@ -17,36 +18,32 @@ def plugin_main(src_path, iterations, acceptable_distance):
 
 
 def run_until_done(env):
-    global START
-    START = time.time()
-    successful_iteration = 0
+    improvements = 0
     done = False
     while not done:
-        done, successful_iteration = execute_iteration(env, successful_iteration)
+        done, improvements = execute_iteration(env, improvements)
     end = time.time()
     env.save(end - START)
 
 
 def run_finite_times(env, iterations):
-    successful_iteration = 0
+    improvements = 0
     for _ in tqdm.tqdm(range(iterations)):
-        done, successful_iteration = execute_iteration(env, successful_iteration, successful_iteration)
+        done, improvements = execute_iteration(env, improvements, improvements)
         if done:
             break
-    env.save(successful_iteration)
+    env.save(improvements)
 
 
-def execute_iteration(env, successful_iteration, save_parameter=None):
+def execute_iteration(env, improvements, save_parameter=None):
     state, reward, done, info = env.step(env.action_space.sample())
     if reward < 0:
         env.restore_state()
     else:
-        successful_iteration += 1
-        if successful_iteration % 50 == 0:
-            env.render_img()
+        improvements += 1
         end = time.time()
-        env.save(end - START)
-    return done, successful_iteration
+        env.save(end - START, save_parameter)
+    return done, improvements
 
 
 register("agent", "", "", "", "", "", "", "",

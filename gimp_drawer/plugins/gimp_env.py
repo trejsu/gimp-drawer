@@ -1,11 +1,10 @@
-from gimpfu import pdb, gimp
-import numpy
-from PIL import Image
 import random
-from scipy import sum
 import sys
 from os.path import basename, expandvars, exists
 from os import mkdir
+from gimpfu import pdb, gimp
+import numpy
+from scipy import sum
 
 OUT_PATH = None
 
@@ -50,11 +49,12 @@ class GimpEnv(object):
         drawable = pdb.gimp_image_active_drawable(image)
         width = drawable.width
         height = drawable.height
-        bpp = drawable.bpp
+        bytes_per_pixel = drawable.bpp
         pixel_region = drawable.get_pixel_rgn(0, 0, width, height, False)
         array = numpy.fromstring(pixel_region[:, :], "B")
-        assert array.size == width * height * bpp
-        return numpy.array(array.reshape(height, width, bpp), dtype=numpy.uint8)[:, :, 0:min(bpp, 3)]
+        assert array.size == width * height * bytes_per_pixel
+        reshape = array.reshape(height, width, bytes_per_pixel)
+        return numpy.array(reshape, "d")[:, :, 0:min(bytes_per_pixel, 3)]
 
     def __update_state(self):
         self.array = GimpEnv.__read(self.img)
@@ -63,18 +63,17 @@ class GimpEnv(object):
     def render(self):
         print "current distance:", self.distance
 
-    def render_img(self):
-        if self.displayed_src is None:
-            self.displayed_src = Image.fromarray(self.src_array, 'RGB')
-            self.displayed_src.show()
-        self.displayed_img = Image.fromarray(self.array, 'RGB')
-        self.displayed_img.show()
+    def save(self, seconds, iterations=None):
+        distance = "_d_" + str(self.distance)
+        iterations = "_i_" + str(iterations)
+        time = "_" + self.__format_time(seconds)
+        parameter = (distance if iterations is None else iterations) + time
+        filename = basename(self.src_path).split(".")[0] + parameter + ".jpg"
+        self.__save_img(OUT_PATH + filename)
 
-    def save(self, time, parameter=None):
-        parameter = ("_d_" + str(self.distance) if parameter is None else "_i_" + str(parameter)) + "_" + self.__format_time(time)
-        filename = str(basename(self.src_path).split(".")[0]) + parameter + ".jpg"
-        pdb.file_jpeg_save(self.img, self.__get_drawable(), OUT_PATH + filename, OUT_PATH + filename,
-                           0.9, 0, 0, 0, "", 0, 0, 0, 0)
+    def __save_img(self, filename):
+        pdb.file_jpeg_save(self.img, self.__get_drawable(), filename,
+                           filename, 0.9, 0, 0, 0, "", 0, 0, 0, 0)
 
     @staticmethod
     def __format_time(seconds):
@@ -84,8 +83,7 @@ class GimpEnv(object):
             return "%.1f" % seconds + "s"
         elif hours < 1:
             return "%.1f" % minutes + "m"
-        else:
-            return "%.1f" % hours + "h"
+        return "%.1f" % hours + "h"
 
     def __get_drawable(self):
         return pdb.gimp_image_active_drawable(self.img)
