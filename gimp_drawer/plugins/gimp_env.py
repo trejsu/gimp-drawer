@@ -4,14 +4,19 @@ from PIL import Image
 import random
 from scipy import sum
 import sys
+from os.path import basename, expandvars, exists
+from os import mkdir
+
+OUT_PATH = None
 
 
 class GimpEnv(object):
-    def __init__(self, src_path, acceptable_dist):
-        self.src_img, self.img = GimpEnv.__init_images(src_path)
+    def __init__(self, src_path, acceptable_distance):
+        self.src_path = src_path
+        self.src_img, self.img = pdb.python_fu_initialize(src_path)
         self.prev_img = None
         self.src_array = self.__read(self.src_img)
-        self.acceptable_dist = acceptable_dist
+        self.acceptable_dist = acceptable_distance
         self.array = None
         self.state = None
         self.reward = 0
@@ -27,14 +32,18 @@ class GimpEnv(object):
         self.displayed_src = None
         self.displayed_img = None
 
-    @staticmethod
-    def __init_images(src_path):
-        return pdb.python_fu_initialize(src_path)
-
     def reset(self):
+        self.__setup_output()
         pdb.python_fu_reset(self.img)
         self.__update_state()
         return self.state
+
+    def __setup_output(self):
+        global OUT_PATH
+        filename = str(basename(self.src_path).split(".")[0])
+        OUT_PATH = expandvars("$GIMP_PROJECT/out/%s/" % filename)
+        if not exists(OUT_PATH):
+            mkdir(OUT_PATH)
 
     @staticmethod
     def __read(image):
@@ -61,13 +70,34 @@ class GimpEnv(object):
         self.displayed_img = Image.fromarray(self.array, 'RGB')
         self.displayed_img.show()
 
+    def save(self, time, parameter=None):
+        parameter = ("_d_" + str(self.distance) if parameter is None else "_i_" + str(parameter)) + "_" + self.__format_time(time)
+        filename = str(basename(self.src_path).split(".")[0]) + parameter + ".jpg"
+        pdb.file_jpeg_save(self.img, self.__get_drawable(), OUT_PATH + filename, OUT_PATH + filename,
+                           0.9, 0, 0, 0, "", 0, 0, 0, 0)
+
+    @staticmethod
+    def __format_time(seconds):
+        minutes = seconds / 60
+        hours = seconds / 3600
+        if minutes < 1:
+            return "%.1f" % seconds + "s"
+        elif hours < 1:
+            return "%.1f" % minutes + "m"
+        else:
+            return "%.1f" % hours + "h"
+
+    def __get_drawable(self):
+        return pdb.gimp_image_active_drawable(self.img)
+
     def step(self, action):
         self.prev_img = pdb.gimp_image_duplicate(self.img)
         self.actions[action]()
         self.__update_state()
         self.__calculate_reward()
         self.__check_if_done()
-        return self.state, self.reward, self.done, {}
+        return self.state, self.reward, self.done, {
+            "current_distance": self.distance}
 
     def __draw_random_brush_line(self):
         pdb.python_fu_perform_action(self.img, 0)
@@ -101,10 +131,3 @@ class GimpEnv(object):
 
         def sample(self):
             return random.randint(0, self.n - 1)
-
-
-
-
-
-
-

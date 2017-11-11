@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from gimpfu import *
-import random
+from random import randint
 
 WIDTH = 0
 HEIGHT = 0
@@ -10,21 +10,21 @@ HEIGHT = 0
 class Point(object):
     def __init__(self, x=None, y=None):
         super(Point, self).__init__()
-        self.x = random.randint(0, WIDTH) if x is None else x
-        self.y = random.randint(0, HEIGHT) if y is None else y
+        self.x = randint(0, WIDTH) if x is None else x
+        self.y = randint(0, HEIGHT) if y is None else y
 
 
 class Selection(object):
-    def __init__(self, top_left_point, width=None, height=None):
+    def __init__(self, top_left, width=None, height=None):
         super(Selection, self).__init__()
-        self.top_left_point = top_left_point
-        self.width = \
-            random.randint(1, self.__validate(WIDTH - self.top_left_point.x)) if width is None else width
-        self.height = \
-            random.randint(1, self.__validate(HEIGHT - self.top_left_point.y)) if height is None else height
+        self.top_left = top_left
+        self.width = randint(1, self.validate(WIDTH - self.top_left.x)) \
+            if width is None else width
+        self.height = randint(1, self.validate(HEIGHT - self.top_left.y)) \
+            if height is None else height
 
     @staticmethod
-    def __validate(points_left):
+    def validate(points_left):
         return points_left if points_left > 0 else 1
 
 
@@ -49,8 +49,8 @@ class Image(object):
     def __draw_brush_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
         # change_size(size)
-        control_points = [start.x, start.y, end.x, end.y]
-        pdb.gimp_paintbrush_default(self.__get_drawable(), len(control_points), control_points)
+        points = [start.x, start.y, end.x, end.y]
+        pdb.gimp_paintbrush_default(self.__get_drawable(), len(points), points)
 
     def draw_random_pencil_line(self):
         self.__draw_pencil_line(Point(), Point())
@@ -58,15 +58,15 @@ class Image(object):
     def __draw_pencil_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
         # change_size(size)
-        control_points = [start.x, start.y, end.x, end.y]
-        pdb.gimp_pencil(self.__get_drawable(), len(control_points), control_points)
+        points = [start.x, start.y, end.x, end.y]
+        pdb.gimp_pencil(self.__get_drawable(), len(points), points)
 
     def __select_rectangle(self, rectangle):
         pdb.gimp_image_select_rectangle(
             self.image_id,
             CHANNEL_OP_REPLACE,
-            rectangle.top_left_point.x,
-            rectangle.top_left_point.y,
+            rectangle.top_left.x,
+            rectangle.top_left.y,
             rectangle.width,
             rectangle.height
         )
@@ -75,8 +75,8 @@ class Image(object):
         pdb.gimp_image_select_ellipse(
             self.image_id,
             CHANNEL_OP_REPLACE,
-            ellipse.top_left_point.x,
-            ellipse.top_left_point.y,
+            ellipse.top_left.x,
+            ellipse.top_left.y,
             ellipse.width,
             ellipse.height
         )
@@ -103,7 +103,8 @@ class Image(object):
         self.__clear_selection()
 
     def __clear_selection(self):
-        pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0, 0, WIDTH, HEIGHT)
+        pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0,
+                                        0, WIDTH, HEIGHT)
 
 
 def plugin_main(image_id, action):
@@ -129,7 +130,7 @@ def randomize_color_if_none(color):
 
 
 def random_color():
-    return random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+    return randint(0, 255), randint(0, 255), randint(0, 255)
 
 
 def change_size(size):
@@ -141,10 +142,11 @@ def randomize_size_if_none(size):
 
 
 def random_size():
-    return random.randint(1, min(WIDTH / 5, HEIGHT / 5))
+    return randint(1, min(WIDTH / 5, HEIGHT / 5))
 
 
 register("perform_action", "", "", "", "", "", "", "",
-         [(PF_IMAGE, "image", "Image", ""), (PF_INT, "action", "Action", 0)], [], plugin_main)
+         [(PF_IMAGE, "image", "Image", ""), (PF_INT, "action", "Action", 0)],
+         [], plugin_main)
 
 main()
