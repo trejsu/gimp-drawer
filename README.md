@@ -9,6 +9,7 @@
         * Local - usually `````$HOME/.gimp-{version}/plug-ins`````
         * Global - usually `````/usr/lib/gimp/{version}/plug-ins`````
     * ```GIMP_PROJECT``` to the path of cloned project
+    *  Add ```$GIMP_PROJECT/``` to ```PYTHONPATH```
  
 * ```./setup.sh```
 

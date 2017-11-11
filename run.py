@@ -22,7 +22,7 @@ def main(argv):
         if opt == '-d':
             acceptable_distance = arg
 
-    os.system("gimp -i -b '(python-fu-agent {} \"{}\" {} {})' -b '(gimp-quit 1)'"
+    os.system("gimp --verbose --debug-handlers --stack-trace-mode always -i -b '(python-fu-agent {} \"{}\" {} {})' -b '(gimp-quit 1)'"
               .format(RUN_PARAMETER, infile, iterations, acceptable_distance))
 
 
