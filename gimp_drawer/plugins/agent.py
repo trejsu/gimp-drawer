@@ -43,6 +43,7 @@ def execute_iteration(env, improvements, save_parameter=None):
         improvements += 1
         end = time.time()
         env.save(end - START, save_parameter)
+        env.render()
     return done, improvements
 
 

@@ -3,8 +3,10 @@ import sys
 from os.path import basename, expandvars, exists
 from os import mkdir
 from gimpfu import pdb, gimp
-from gimp_drawer.convert_to_array import convert_to_array
+from gimp_drawer.img_to_array import *
 from scipy import sum
+from gimp_drawer import rendering
+from numpy import concatenate
 
 OUT_PATH = None
 
@@ -30,6 +32,7 @@ class GimpEnv(object):
         }
         self.displayed_src = None
         self.displayed_img = None
+        self.viewer = None
 
     def reset(self):
         self.__setup_output()
@@ -49,7 +52,13 @@ class GimpEnv(object):
         self.state = (self.src_array, self.array)
 
     def render(self):
-        print "current distance:", self.distance
+        if self.viewer is None:
+            self.viewer = rendering.SimpleImageViewer()
+        drawable = self.__get_drawable(self.img)
+        array = convert_to_displayable_array(drawable)
+        src_drawable = self.__get_drawable(self.src_img)
+        src_array = convert_to_displayable_array(src_drawable)
+        self.viewer.img_show(concatenate((src_array, array), axis=1))
 
     def save(self, seconds, i=None):
         distance = "_d_" + str(self.distance)
