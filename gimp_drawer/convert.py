@@ -3,7 +3,7 @@
 import numpy
 
 
-def convert_to_array(drawable):
+def read_drawable(drawable):
     width = drawable.width
     height = drawable.height
     bpp = drawable.bpp
