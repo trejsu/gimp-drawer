@@ -16,9 +16,11 @@ class GimpEnv(object):
         self.src_path = src_path
         self.src_img, self.img = pdb.python_fu_initialize(src_path)
         self.prev_img = None
-        self.src_array = convert_to_array(self.__get_drawable(self.src_img))
+        self.src_array, self.src_displayable_array = \
+            convert_to_array(self.__get_drawable(self.src_img))
         self.acceptable_dist = acceptable_distance
         self.array = None
+        self.displayable_array = None
         self.state = None
         self.reward = 0
         self.distance = sys.maxint
@@ -48,17 +50,16 @@ class GimpEnv(object):
             mkdir(OUT_PATH)
 
     def __update_state(self):
-        self.array = convert_to_array(self.__get_drawable(self.img))
+        self.array, self.displayable_array = \
+            convert_to_array(self.__get_drawable(self.img))
         self.state = (self.src_array, self.array)
 
     def render(self):
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()
-        drawable = self.__get_drawable(self.img)
-        array = convert_to_displayable_array(drawable)
-        src_drawable = self.__get_drawable(self.src_img)
-        src_array = convert_to_displayable_array(src_drawable)
-        self.viewer.img_show(concatenate((src_array, array), axis=1))
+        images_to_display = (self.src_displayable_array, self.displayable_array)
+        image = concatenate(images_to_display, axis=1)
+        self.viewer.img_show(image)
 
     def save(self, seconds, i=None):
         distance = "_d_" + str(self.distance)
