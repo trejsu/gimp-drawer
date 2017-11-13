@@ -1,31 +1,28 @@
 #!/usr/bin/python
 
+import random
 from gimpfu import *
-from random import randint
 
-WIDTH = 0
-HEIGHT = 0
+MIN_SELECTION_SIZE = 0.0001
+MAX_BRUSH_SIZE = 1/5.
 
 
 class Point(object):
     def __init__(self, x=None, y=None):
         super(Point, self).__init__()
-        self.x = randint(0, WIDTH) if x is None else x
-        self.y = randint(0, HEIGHT) if y is None else y
+        self.x = random.random() if x is None else x
+        self.y = random.random() if y is None else y
+
+    def __str__(self):
+        return str("(" + str(self.x) + "," + str(self.y) + ")")
 
 
 class Selection(object):
     def __init__(self, top_left, width=None, height=None):
         super(Selection, self).__init__()
         self.top_left = top_left
-        self.width = randint(1, self.validate(WIDTH - self.top_left.x)) \
-            if width is None else width
-        self.height = randint(1, self.validate(HEIGHT - self.top_left.y)) \
-            if height is None else height
-
-    @staticmethod
-    def validate(points_left):
-        return points_left if points_left > 0 else 1
+        self.width = random.random() if width is None else width
+        self.height = random.random() if height is None else height
 
 
 class Image(object):
@@ -49,8 +46,17 @@ class Image(object):
     def __draw_brush_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
         # change_size(size)
-        points = [start.x, start.y, end.x, end.y]
+        points = self.__convert_points(end, start)
         pdb.gimp_paintbrush_default(self.__get_drawable(), len(points), points)
+
+    def __convert_points(self, end, start):
+        start = self.__from_normalized_point(start)
+        end = self.__from_normalized_point(end)
+        points = [start.x, start.y, end.x, end.y]
+        return points
+
+    def __from_normalized_point(self, point):
+        return Point(point.x * self.get_width(), point.y * self.get_height())
 
     def draw_random_pencil_line(self):
         self.__draw_pencil_line(Point(), Point())
@@ -58,27 +64,33 @@ class Image(object):
     def __draw_pencil_line(self, start, end, color=None, size=None):
         change_foreground_color(color)
         # change_size(size)
-        points = [start.x, start.y, end.x, end.y]
+        points = self.__convert_points(end, start)
         pdb.gimp_pencil(self.__get_drawable(), len(points), points)
 
     def __select_rectangle(self, rectangle):
+        height, top_left, width = self.__convert_selection(rectangle)
         pdb.gimp_image_select_rectangle(
-            self.image_id,
-            CHANNEL_OP_REPLACE,
-            rectangle.top_left.x,
-            rectangle.top_left.y,
-            rectangle.width,
-            rectangle.height
+            self.image_id, CHANNEL_OP_REPLACE, top_left.x,
+            top_left.y, width, height
         )
 
+    def __convert_selection(self, rectangle):
+        top_left = self.__from_normalized_point(rectangle.top_left)
+        width = self.__from_normalized_width(rectangle.width, top_left.x)
+        height = self.__from_normalized_height(rectangle.height, top_left.y)
+        return height, top_left, width
+
+    def __from_normalized_width(self, width, boundary):
+        return width * (self.get_width() - boundary)
+
+    def __from_normalized_height(self, height, boundary):
+        return height * (self.get_height() - boundary)
+
     def __select_ellipse(self, ellipse):
+        height, top_left, width = self.__convert_selection(ellipse)
         pdb.gimp_image_select_ellipse(
-            self.image_id,
-            CHANNEL_OP_REPLACE,
-            ellipse.top_left.x,
-            ellipse.top_left.y,
-            ellipse.width,
-            ellipse.height
+            self.image_id, CHANNEL_OP_REPLACE, top_left.x,
+            top_left.y, width, height
         )
 
     def draw_random_rectangle(self):
@@ -104,14 +116,11 @@ class Image(object):
 
     def __clear_selection(self):
         pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0,
-                                        0, WIDTH, HEIGHT)
+                                        0, self.get_width(), self.get_height())
 
 
 def plugin_main(image_id, action):
-    global WIDTH, HEIGHT
     image = Image(image_id)
-    WIDTH = image.get_width()
-    HEIGHT = image.get_height()
     actions = [
         lambda: image.draw_random_brush_line(),
         lambda: image.draw_random_ellipse(),
@@ -130,7 +139,11 @@ def randomize_color_if_none(color):
 
 
 def random_color():
-    return randint(0, 255), randint(0, 255), randint(0, 255)
+    return random_byte(), random_byte(), random_byte()
+
+
+def random_byte():
+    return random.randint(0, 255)
 
 
 def change_size(size):
@@ -142,7 +155,7 @@ def randomize_size_if_none(size):
 
 
 def random_size():
-    return randint(1, min(WIDTH / 5, HEIGHT / 5))
+    return random.randint(1, MAX_BRUSH_SIZE)
 
 
 register("perform_action", "", "", "", "", "", "", "",
