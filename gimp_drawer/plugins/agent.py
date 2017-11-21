@@ -7,8 +7,8 @@ from gimp_drawer.plugins.gimp_env import GimpEnv
 START = time.time()
 
 
-def plugin_main(src_path, iterations, acceptable_distance):
-    env = GimpEnv(src_path, acceptable_distance)
+def plugin_main(src_path, iterations, acceptable_distance, mode):
+    env = GimpEnv(src_path, acceptable_distance, mode)
     env.reset()
 
     if iterations is 0:
@@ -51,7 +51,8 @@ register("agent", "", "", "", "", "", "", "",
          [
              (PF_STRING, "src_path", "Input", ""),
              (PF_INT, "iterations", "Iterations", 0),
-             (PF_INT, "acceptable_distance", "Acceptable distance", 0)
+             (PF_INT, "acceptable_distance", "Acceptable distance", 0),
+             (PF_INT, "mode", "Mode", 0)
          ], [], plugin_main)
 
 main()

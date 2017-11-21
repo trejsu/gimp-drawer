@@ -16,17 +16,17 @@ class Image(object):
     def draw_random_brush_line(self):
         self.__perform_action(0)
 
-    def draw_random_ellipse(self):
-        self.__perform_action(1)
+    def draw_random_ellipse(self, rotate):
+        self.__perform_action(1, rotate)
 
-    def draw_random_rectangle(self):
-        self.__perform_action(2)
+    def draw_random_rectangle(self, rotate):
+        self.__perform_action(2, rotate)
 
     def draw_random_pencil_line(self):
         self.__perform_action(3)
 
-    def __perform_action(self, action):
-        pdb.python_fu_perform_action(self.img, action)
+    def __perform_action(self, action, rotate=False):
+        pdb.python_fu_perform_action(self.img, action, rotate)
         self.__update_arrays()
 
     def delete(self):

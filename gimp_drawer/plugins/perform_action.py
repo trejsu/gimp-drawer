@@ -110,23 +110,36 @@ class Image(object):
             top_left.y, width, height
         )
 
-    def draw_random_rectangle(self):
-        self.__draw_rectangle(Selection(Point()))
+    def draw_random_rectangle(self, rotate):
+        self.__draw_rectangle(Selection(Point()), rotate)
 
-    def __draw_rectangle(self, rectangle, color=None):
+    def __draw_rectangle(self, rectangle, rotate, color=None):
         change_foreground_color(color)
         self.__add_opacity_layer()
         self.__select_rectangle(rectangle)
         self.__fill_selection()
-        self.__rotate_and_merge()
-        # self.__clear_selection()
+        self.__rotate_and_merge(rotate)
 
-    def __rotate_and_merge(self):
-        sel = pdb.gimp_item_transform_rotate(self.__get_drawable(), self.__random_angle(), True, 0, 0)
+    def __draw_ellipse(self, ellipse, rotate, color=None):
+        change_foreground_color(color)
+        self.__add_opacity_layer()
+        self.__select_ellipse(ellipse)
+        self.__fill_selection()
+        self.__rotate_and_merge(rotate)
+
+    def __rotate_and_merge(self, rotate):
+        if rotate:
+            self.__rotate()
+        else:
+            self.__clear_selection()
+        self.__merge_layers()
+
+    def __rotate(self):
+        sel = pdb.gimp_item_transform_rotate(self.__get_drawable(), self.__random_angle(), True, 0,
+                                             0)
         # todo: why sometimes sel is not floating selection?
         if pdb.gimp_layer_is_floating_sel(sel):
             pdb.gimp_floating_sel_anchor(sel)
-        self.__merge_layers()
 
     def __random_angle(self):
         return random.randint(-180, 180)
@@ -137,27 +150,20 @@ class Image(object):
     def __random_opacity(self):
         return random.randint(25, 75)
 
-    def draw_random_ellipse(self):
-        self.__draw_ellipse(Selection(Point()))
-
-    def __draw_ellipse(self, ellipse, color=None):
-        change_foreground_color(color)
-        self.__add_opacity_layer()
-        self.__select_ellipse(ellipse)
-        self.__fill_selection()
-        self.__rotate_and_merge()
+    def draw_random_ellipse(self, rotate):
+        self.__draw_ellipse(Selection(Point()), rotate)
 
     def __clear_selection(self):
         pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0,
                                         0, self.get_width(), self.get_height())
 
 
-def plugin_main(image_id, action):
+def plugin_main(image_id, action, rotate):
     image = Image(image_id)
     actions = [
         lambda: image.draw_random_brush_line(),
-        lambda: image.draw_random_ellipse(),
-        lambda: image.draw_random_rectangle(),
+        lambda: image.draw_random_ellipse(rotate),
+        lambda: image.draw_random_rectangle(rotate),
         lambda: image.draw_random_pencil_line()
     ]
     actions[action]()
@@ -192,7 +198,11 @@ def random_size():
 
 
 register("perform_action", "", "", "", "", "", "", "",
-         [(PF_IMAGE, "image", "Image", ""), (PF_INT, "action", "Action", 0)],
+         [
+             (PF_IMAGE, "image", "Image", ""),
+             (PF_INT, "action", "Action", 0),
+             (PF_BOOL, "rotate", "Rotate", False)
+         ],
          [], plugin_main)
 
 main()

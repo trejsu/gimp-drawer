@@ -7,13 +7,13 @@ from scipy import sum
 from gimp_drawer import rendering
 from numpy import concatenate
 from gimp_drawer.image import Image
+from gimp_drawer.mode_resolver import resolve_mode
 
 OUT_PATH = None
-VERSION_INFO = "rotated_shapes_25_75"
 
 
 class GimpEnv(object):
-    def __init__(self, src_path, acceptable_distance):
+    def __init__(self, src_path, acceptable_distance, mode):
         self.src_path = src_path
         src_img, img = pdb.python_fu_initialize(src_path)
         self.src_img = Image(src_img)
@@ -24,14 +24,10 @@ class GimpEnv(object):
         self.reward = 0
         self.distance = sys.maxint
         self.done = False
-        self.action_space = self.Space(2)
-        self.actions = {
-            0: lambda: self.img.draw_random_ellipse(),
-            1: lambda: self.img.draw_random_rectangle(),
-            # 2: lambda: self.img.draw_random_brush_line(),
-            # 3: lambda: self.img.draw_random_pencil_line()
-        }
+        space_dimension, self.actions = resolve_mode(mode)
+        self.action_space = self.Space(space_dimension)
         self.viewer = None
+        self.version_info = "mode_" + str(mode) + "_opacity_25_75"
 
     def reset(self):
         self.__setup_output()
@@ -57,7 +53,7 @@ class GimpEnv(object):
         iterations = "_i_" + str(i)
         time = "_" + self.__format_time(seconds)
         parameter = (distance if i is None else iterations) + time
-        filename = basename(self.src_path).split(".")[0] + parameter + "_" + VERSION_INFO + "_" + ".jpg"
+        filename = basename(self.src_path).split(".")[0] + parameter + "_" + self.version_info + "_" + ".jpg"
         self.img.save(OUT_PATH + filename)
 
     @staticmethod
@@ -72,7 +68,7 @@ class GimpEnv(object):
 
     def step(self, action):
         self.prev_img = self.img.duplicate()
-        self.actions[action]()
+        self.actions[action](self)
         self.__calculate_reward()
         self.__check_if_done()
         return self.state, self.reward, self.done, {
