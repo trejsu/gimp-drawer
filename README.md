@@ -22,15 +22,14 @@
 ### Run
 
 ```
-python run.py -f <file_name> -i <number_of_iterations> -d <acceptable_distance> -v
+python run.py -i <file_name> -d <acceptable_distance>
 ```
-* ```file_name``` - path to the input file. Necessary parameter.
-* ```number_of_iterations``` - number of actions which will be performed by the script. 
-    Optional if ```acceptable_distance``` present. 
-* ```acceptable_distance``` - number representing "good enough" similarity between images where ```0``` means that every 
-    pixel is exactly the same. Thus, the bigger distance, the less similarity between images. 
-    Ignored if ```number_of_iterations``` present.
-* ```-v``` - verbose script execution.
+
+| Flag | Default | Description                                                                                                                                                                          |
+|------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| i    | n/a     | path to the input file                                                                                                                                                               |
+| d    | 0       | number representing "good enough" similarity between images where ```0``` means that every pixel is exactly the same. Thus, the bigger distance, the less similarity between images. |
+| v    | off     | verbose output                                                                                                                                                                       |
     
 ## Known bugs
 
