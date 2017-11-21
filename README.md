@@ -22,7 +22,7 @@
 ### Run
 
 ```
-python run.py -f <file_name> -i <number_of_iterations> -d <acceptable_distance>
+python run.py -f <file_name> -i <number_of_iterations> -d <acceptable_distance> -v
 ```
 * ```file_name``` - path to the input file. Necessary parameter.
 * ```number_of_iterations``` - number of actions which will be performed by the script. 
@@ -30,6 +30,7 @@ python run.py -f <file_name> -i <number_of_iterations> -d <acceptable_distance>
 * ```acceptable_distance``` - number representing "good enough" similarity between images where ```0``` means that every 
     pixel is exactly the same. Thus, the bigger distance, the less similarity between images. 
     Ignored if ```number_of_iterations``` present.
+* ```-v``` - verbose script execution.
     
 ## Known bugs
 
