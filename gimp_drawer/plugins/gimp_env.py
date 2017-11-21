@@ -9,6 +9,7 @@ from numpy import concatenate
 from gimp_drawer.image import Image
 
 OUT_PATH = None
+VERSION_INFO = "rotated_shapes_25_75"
 
 
 class GimpEnv(object):
@@ -23,12 +24,12 @@ class GimpEnv(object):
         self.reward = 0
         self.distance = sys.maxint
         self.done = False
-        self.action_space = self.Space(4)
+        self.action_space = self.Space(2)
         self.actions = {
-            0: lambda: self.img.draw_random_brush_line(),
-            1: lambda: self.img.draw_random_ellipse(),
-            2: lambda: self.img.draw_random_rectangle(),
-            3: lambda: self.img.draw_random_pencil_line()
+            0: lambda: self.img.draw_random_ellipse(),
+            1: lambda: self.img.draw_random_rectangle(),
+            # 2: lambda: self.img.draw_random_brush_line(),
+            # 3: lambda: self.img.draw_random_pencil_line()
         }
         self.viewer = None
 
@@ -56,7 +57,7 @@ class GimpEnv(object):
         iterations = "_i_" + str(i)
         time = "_" + self.__format_time(seconds)
         parameter = (distance if i is None else iterations) + time
-        filename = basename(self.src_path).split(".")[0] + parameter + ".jpg"
+        filename = basename(self.src_path).split(".")[0] + parameter + "_" + VERSION_INFO + "_" + ".jpg"
         self.img.save(OUT_PATH + filename)
 
     @staticmethod

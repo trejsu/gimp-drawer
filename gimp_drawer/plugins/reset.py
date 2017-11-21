@@ -4,7 +4,7 @@ from gimpfu import *
 
 
 def plugin_main(img):
-    pdb.gimp_edit_fill(get_drawable(img), BACKGROUND_FILL)
+    pdb.gimp_edit_fill(get_drawable(img), WHITE_FILL)
 
 
 def get_drawable(image):

@@ -2,6 +2,7 @@
 
 import random
 from gimpfu import *
+import time
 
 MIN_SELECTION_SIZE = 0.0001
 MAX_BRUSH_SIZE = 1/5.
@@ -23,6 +24,9 @@ class Selection(object):
         self.top_left = top_left
         self.width = random.random() if width is None else width
         self.height = random.random() if height is None else height
+
+    def __str__(self):
+        return str(str(self.top_left) + " " + str(self.width) + "x" + str(self.height))
 
 
 class Image(object):
@@ -47,7 +51,18 @@ class Image(object):
         change_foreground_color(color)
         # change_size(size)
         points = self.__convert_points(end, start)
+        self.__add_opacity_layer()
         pdb.gimp_paintbrush_default(self.__get_drawable(), len(points), points)
+        self.__merge_layers()
+
+    def __merge_layers(self):
+        pdb.gimp_image_merge_visible_layers(self.image_id, CLIP_TO_IMAGE)
+
+    def __add_opacity_layer(self):
+        layer = gimp.Layer(self.image_id, "layer", self.get_width(),
+                           self.get_height(), RGBA_IMAGE,
+                           self.__random_opacity(), NORMAL_MODE)
+        self.image_id.add_layer(layer, 0)
 
     def __convert_points(self, end, start):
         start = self.__from_normalized_point(start)
@@ -65,7 +80,9 @@ class Image(object):
         change_foreground_color(color)
         # change_size(size)
         points = self.__convert_points(end, start)
+        self.__add_opacity_layer()
         pdb.gimp_pencil(self.__get_drawable(), len(points), points)
+        self.__merge_layers()
 
     def __select_rectangle(self, rectangle):
         height, top_left, width = self.__convert_selection(rectangle)
@@ -98,21 +115,37 @@ class Image(object):
 
     def __draw_rectangle(self, rectangle, color=None):
         change_foreground_color(color)
+        self.__add_opacity_layer()
         self.__select_rectangle(rectangle)
         self.__fill_selection()
-        self.__clear_selection()
+        self.__rotate_and_merge()
+        # self.__clear_selection()
+
+    def __rotate_and_merge(self):
+        sel = pdb.gimp_item_transform_rotate(self.__get_drawable(), self.__random_angle(), True, 0, 0)
+        # todo: why sometimes sel is not floating selection?
+        if pdb.gimp_layer_is_floating_sel(sel):
+            pdb.gimp_floating_sel_anchor(sel)
+        self.__merge_layers()
+
+    def __random_angle(self):
+        return random.randint(-180, 180)
 
     def __fill_selection(self):
         pdb.gimp_edit_fill(self.__get_drawable(), FOREGROUND_FILL)
+
+    def __random_opacity(self):
+        return random.randint(25, 75)
 
     def draw_random_ellipse(self):
         self.__draw_ellipse(Selection(Point()))
 
     def __draw_ellipse(self, ellipse, color=None):
         change_foreground_color(color)
+        self.__add_opacity_layer()
         self.__select_ellipse(ellipse)
         self.__fill_selection()
-        self.__clear_selection()
+        self.__rotate_and_merge()
 
     def __clear_selection(self):
         pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0,
