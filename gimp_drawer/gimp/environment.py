@@ -1,7 +1,6 @@
 import sys
 from os.path import basename, expandvars, exists
 from os import mkdir
-from gimpfu import pdb
 from scipy import sum
 from gimp_drawer import rendering
 from numpy import concatenate
@@ -9,16 +8,17 @@ from gimp_drawer.image import Image
 from gimp_drawer.space import ToolSpace
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.decorators import timed
+import gimp_drawer.gimp.initializer as initializer
 
 
 OUT_PATH = None
 
 
-class GimpEnv(object):
+class Environment(object):
     @timed
     def __init__(self, src_path, acceptable_distance, mode):
         self.src_path = src_path
-        src_img, img = pdb.python_fu_initialize(src_path)
+        src_img, img = initializer.initialize(src_path)
         self.src_img = Image(src_img)
         self.img = Image(img)
         self.prev_img = None

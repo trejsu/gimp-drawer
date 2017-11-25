@@ -5,14 +5,14 @@ from gimp_drawer.decorators import timed
 
 
 @timed
-def plugin_main(src_path):
+def initialize(src_path):
     src_img = pdb.gimp_file_load(src_path, src_path)
-    actual_img = new_image(get_width(src_img), get_height(src_img))
+    actual_img = __new_image(__get_width(src_img), __get_height(src_img))
     return src_img, actual_img
 
 
 @timed
-def new_image(width, height):
+def __new_image(width, height):
     image_id = gimp.Image(width, height, RGB_IMAGE)
     layer = gimp.Layer(image_id, "layer", width,
                        height, RGB_IMAGE, 100,
@@ -22,26 +22,15 @@ def new_image(width, height):
 
 
 @timed
-def get_width(image):
-    return get_drawable(image).width
+def __get_width(image):
+    return __get_drawable(image).width
 
 
 @timed
-def get_drawable(image):
+def __get_drawable(image):
     return pdb.gimp_image_active_drawable(image)
 
 
 @timed
-def get_height(image):
+def __get_height(image):
     return pdb.gimp_image_active_drawable(image).height
-
-
-register("initialize", "", "", "", "", "", "", "",
-         [(PF_STRING, "src_path", "Input", "")],
-         [
-             (PF_IMAGE, "src_img", "Source image", ""),
-             (PF_IMAGE, "result_img", "Result image", "")
-         ],
-         plugin_main)
-
-main()

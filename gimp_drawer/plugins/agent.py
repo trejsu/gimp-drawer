@@ -1,18 +1,19 @@
+import random
 import time
 
-from gimpfu import *
-from gimp_drawer.plugins.gimp_env import GimpEnv
-import random
 import numpy as np
+from gimpfu import *
+
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.decorators import timed
+from gimp_drawer.gimp.environment import Environment
 
 START = time.time()
 
 
 @timed
 def plugin_main(src_path, acceptable_distance, mode):
-    env = GimpEnv(src_path, acceptable_distance, mode)
+    env = Environment(src_path, acceptable_distance, mode)
     env.reset()
     run_until_done(env)
 
