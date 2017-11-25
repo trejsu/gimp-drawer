@@ -38,7 +38,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "improved_undo"
+            "no_anchor_test"
         )
 
     @timed

@@ -11,7 +11,6 @@ from gimp_drawer.gimp.environment import Environment
 START = time.time()
 
 
-@timed
 def plugin_main(src_path, acceptable_distance, mode):
     env = Environment(src_path, acceptable_distance, mode)
     env.reset()
@@ -19,7 +18,6 @@ def plugin_main(src_path, acceptable_distance, mode):
     print_result()
 
 
-@timed
 def run_until_done(env):
     done = False
     while not done:
