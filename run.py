@@ -25,9 +25,9 @@ def main(argv):
         if opt == '-m':
             mode = arg
 
-    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} {})' -b '(gimp-quit 1)'"\
+    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {})' -b '(gimp-quit 1)'"\
         .format("--verbose --debug-handlers --stack-trace-mode always" if verbose else "",
-                RUN_PARAMETER, infile, 0, acceptable_distance, mode)
+                RUN_PARAMETER, infile, acceptable_distance, mode)
     os.system(command)
 
 
