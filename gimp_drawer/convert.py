@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 import numpy
-from gimp_drawer.decorators import timed
+
+from gimp_drawer.decorators.timed import timed
 
 
 @timed

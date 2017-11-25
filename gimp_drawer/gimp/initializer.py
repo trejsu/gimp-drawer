@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 from gimpfu import *
-from gimp_drawer.decorators import timed
+
+from gimp_drawer.decorators.timed import timed
 
 
 @timed

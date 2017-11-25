@@ -5,7 +5,7 @@ import numpy as np
 from gimpfu import *
 
 from gimp_drawer.config import improvements as imprvs
-from gimp_drawer.decorators import timed
+from gimp_drawer.decorators.timed import timed, print_result
 from gimp_drawer.gimp.environment import Environment
 
 START = time.time()
@@ -16,6 +16,7 @@ def plugin_main(src_path, acceptable_distance, mode):
     env = Environment(src_path, acceptable_distance, mode)
     env.reset()
     run_until_done(env)
+    print_result()
 
 
 @timed
@@ -63,7 +64,6 @@ def improve_args(args, reward, env, action):
         find_similar_shapes(args, env, action, modified_args_with_rewards)
         args = modified_args_with_rewards[max(modified_args_with_rewards)]
         reward, done = env.step(action, tuple(map(lambda a: a.value, args)))
-        env.render()
         env.undo()
         modified_args_with_rewards = {reward: args}
     env.step(action, tuple(map(lambda a: a.value, args)))
@@ -77,7 +77,6 @@ def find_similar_shapes(args, env, action, modified_args_with_rewards):
     for _ in range(imprvs["improvements_by_one_attempt"]):
         new_args = calculate_new_args(args)
         new_reward, _ = env.step(action, tuple(map(lambda a: a.value, new_args)))
-        env.render()
         env.undo()
         modified_args_with_rewards[new_reward] = new_args
 

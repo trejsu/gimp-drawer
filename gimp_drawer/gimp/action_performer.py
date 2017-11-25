@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 import random
+
 from gimpfu import *
-from gimp_drawer.decorators import timed
+
+from gimp_drawer.decorators.timed import timed
 
 MIN_SELECTION_SIZE = 0.0001
 MAX_BRUSH_SIZE = 1/5.
