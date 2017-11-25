@@ -13,7 +13,7 @@ class SelectionSpace(Space):
         self.n = 8
 
     def __call__(self):
-        return self.BOX, [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (-1., 1.), (0., 1.), (0., 1.),
+        return self.BOX, [(.1, .9), (.1, .9), (.1, 1.), (.1, 1.), (-1., 1.), (0., 1.), (0., 1.),
                           (0., 1.)]
 
     def subspace(self, i):
