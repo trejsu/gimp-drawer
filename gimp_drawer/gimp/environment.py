@@ -1,6 +1,5 @@
 import sys
-from os import mkdir
-from os.path import basename, expandvars, exists
+import os
 
 from numpy import concatenate
 from scipy import sum
@@ -11,8 +10,6 @@ from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.decorators.timed import timed
 from gimp_drawer.gimp.items.image import Image
 from gimp_drawer.space import ToolSpace
-
-OUT_PATH = None
 
 
 class Environment(object):
@@ -30,13 +27,15 @@ class Environment(object):
         self.action_space = ToolSpace()
         self.viewer = None
         self.version_info = self.__construct_version_info()
+        self.out_path = None
 
     @timed
     def __construct_version_info(self):
-        return "_{}_{}_{}".format(
+        return "_{}_{}_{}_space_{}".format(
             imprvs["eps"],
             imprvs["improvements_by_one_attempt"],
-            imprvs["attempts"]
+            imprvs["attempts"],
+            self.action_space.n
         )
 
     @timed
@@ -47,11 +46,10 @@ class Environment(object):
 
     @timed
     def __setup_output(self):
-        global OUT_PATH
-        filename = str(basename(self.src_path).split(".")[0])
-        OUT_PATH = expandvars("$GIMP_PROJECT/out/%s/" % filename)
-        if not exists(OUT_PATH):
-            mkdir(OUT_PATH)
+        filename = str(os.path.basename(self.src_path).split(".")[0])
+        self.out_path = os.path.expandvars("$GIMP_PROJECT/out/%s/" % filename)
+        if not os.path.exists(self.out_path):
+            os.mkdir(self.out_path)
 
     @timed
     def render(self):
@@ -66,8 +64,8 @@ class Environment(object):
         distance = "_d_" + str(self.distance)
         time = "_" + self.__format_time(seconds)
         parameter = distance + time + self.version_info
-        filename = basename(self.src_path).split(".")[0] + parameter + "_" + ".jpg"
-        self.img.save(OUT_PATH + filename)
+        filename = os.path.basename(self.src_path).split(".")[0] + parameter + "_" + ".jpg"
+        self.img.save(self.out_path + filename)
 
     @staticmethod
     @timed

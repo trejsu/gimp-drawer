@@ -3,7 +3,7 @@ import numpy as np
 import operator
 
 
-times = dict()
+TIMES = dict()
 
 
 def timed(method):
@@ -12,16 +12,15 @@ def timed(method):
         result = method(*args, **kw)
         end = time.time()
         method_name = "%s.%s" % (method.__module__, method.__name__)
-        if method_name not in times:
-            times[method_name] = []
-        times[method_name].append(end - start)
-        # print '%s.%s  %2.2f ms' % (method.__module__, method.__name__, (end - start) * 1000)
+        if method_name not in TIMES:
+            TIMES[method_name] = []
+        TIMES[method_name].append(end - start)
         return result
     return timed_function
 
 
 def print_result():
-    average_times = dict(map(lambda (k, v): (k, np.mean(v)), times.iteritems()))
-    sorted_times = sorted(average_times.items(), key=operator.itemgetter(1))
+    summary_times = dict(map(lambda (k, v): (k, np.sum(v)), TIMES.iteritems()))
+    sorted_times = sorted(summary_times.items(), key=operator.itemgetter(1))
     for name, t in sorted_times:
-        print name, "%2.2f ms" % (t * 1000)
+        print name, "%2.2f s" % t
