@@ -22,7 +22,9 @@ class Environment(object):
         self.acceptable_dist = acceptable_distance
         self.state = None
         self.reward = 0
+        self.prev_reward = 0
         self.distance = sys.maxint
+        self.prev_distance = 0
         self.done = False
         self.action_space = ToolSpace()
         self.viewer = None
@@ -31,11 +33,12 @@ class Environment(object):
 
     @timed
     def __construct_version_info(self):
-        return "_{}_{}_{}_space_{}".format(
+        return "_{}_{}_{}_space_{}_{}".format(
             imprvs["eps"],
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
-            self.action_space.n
+            self.action_space.n,
+            "improved_undo"
         )
 
     @timed
@@ -55,7 +58,7 @@ class Environment(object):
     def render(self):
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()
-        images_to_display = (self.src_img.displayable_array, self.img.displayable_array)
+        images_to_display = (self.src_img.get_displayable_array(), self.img.get_displayable_array())
         image = concatenate(images_to_display, axis=1)
         self.viewer.img_show(image)
 
@@ -67,9 +70,8 @@ class Environment(object):
         filename = os.path.basename(self.src_path).split(".")[0] + parameter + "_" + ".jpg"
         self.img.save(self.out_path + filename)
 
-    @staticmethod
     @timed
-    def __format_time(seconds):
+    def __format_time(self, seconds):
         minutes = seconds / 60
         hours = seconds / 3600
         if minutes < 1:
@@ -81,13 +83,15 @@ class Environment(object):
     @timed
     def step(self, action, args):
         self.prev_img = self.img.duplicate()
+        self.prev_reward = self.reward
+        self.prev_distance = self.distance
         self.img.perform_action(action, args)
-        self.__calculate_reward()
+        self.__update_reward_and_distance()
         self.__check_if_done()
         return self.reward, self.done
 
     @timed
-    def __calculate_reward(self):
+    def __update_reward_and_distance(self):
         new_distance = sum(abs(self.src_img.array - self.img.array))
         self.reward = int(self.distance) - int(new_distance)
         self.distance = int(new_distance)
@@ -100,4 +104,5 @@ class Environment(object):
     def undo(self):
         self.img.delete()
         self.img = Image(self.prev_img.img)
-        self.__calculate_reward()
+        self.reward = self.prev_reward
+        self.distance = self.prev_distance
