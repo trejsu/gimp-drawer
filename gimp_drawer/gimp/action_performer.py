@@ -9,32 +9,27 @@ MAX_BRUSH_SIZE = 1/5.
 
 
 class Point(object):
-    @timed
     def __init__(self, x=None, y=None):
         super(Point, self).__init__()
         self.x = random.random() if x is None else x
         self.y = random.random() if y is None else y
 
-    @timed
     def __str__(self):
         return str("(" + str(self.x) + "," + str(self.y) + ")")
 
 
 class Selection(object):
-    @timed
     def __init__(self, top_left, width=None, height=None):
         super(Selection, self).__init__()
         self.top_left = top_left
         self.width = random.random() if width is None else width
         self.height = random.random() if height is None else height
 
-    @timed
     def __str__(self):
         return str(str(self.top_left) + " " + str(self.width) + "x" + str(self.height))
 
 
 class Image(object):
-    @timed
     def __init__(self, image_id):
         super(Image, self).__init__()
         self.image_id = image_id

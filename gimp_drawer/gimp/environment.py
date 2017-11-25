@@ -16,7 +16,6 @@ OUT_PATH = None
 
 
 class Environment(object):
-    @timed
     def __init__(self, src_path, acceptable_distance, mode):
         self.src_path = src_path
         src_img, img = initializer.initialize(src_path)

@@ -7,7 +7,6 @@ from gimp_drawer.gimp.initializer import reset
 
 
 class Image(object):
-    @timed
     def __init__(self, img):
         self.img = img
         self.array = None

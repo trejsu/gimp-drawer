@@ -1,6 +1,3 @@
-from gimp_drawer.decorators import timed
-
-
 class Space(object):
     def __call__(self):
         raise NotImplementedError()
