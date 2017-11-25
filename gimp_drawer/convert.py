@@ -1,8 +1,10 @@
 #!/usr/bin/python
 
 import numpy
+from gimp_drawer.decorators import timed
 
 
+@timed
 def read_drawable(drawable):
     width = drawable.width
     height = drawable.height
@@ -15,5 +17,6 @@ def read_drawable(drawable):
            __get_numpy_array(reshape, numpy.uint8, bpp)
 
 
+@timed
 def __get_numpy_array(reshape, data_type, bpp):
     return numpy.array(reshape, dtype=data_type)[:, :, 0:min(bpp, 3)]

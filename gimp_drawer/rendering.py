@@ -1,4 +1,5 @@
 import pyglet
+from gimp_drawer.decorators import timed
 
 
 class SimpleImageViewer(object):
@@ -9,6 +10,7 @@ class SimpleImageViewer(object):
         self.width = None
         self.height = None
 
+    @timed
     def img_show(self, arr):
         if self.window is None:
             height, width, channels = arr.shape
@@ -30,10 +32,12 @@ class SimpleImageViewer(object):
         image.blit(0, 0)
         self.window.flip()
 
+    @timed
     def close(self):
         if self.is_open:
             self.window.close()
             self.is_open = False
 
+    @timed
     def __del__(self):
         self.close()

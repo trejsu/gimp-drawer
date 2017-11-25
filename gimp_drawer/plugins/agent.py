@@ -5,16 +5,19 @@ from gimp_drawer.plugins.gimp_env import GimpEnv
 import random
 import numpy as np
 from gimp_drawer.config import improvements as imprvs
+from gimp_drawer.decorators import timed
 
 START = time.time()
 
 
+@timed
 def plugin_main(src_path, acceptable_distance, mode):
     env = GimpEnv(src_path, acceptable_distance, mode)
     env.reset()
     run_until_done(env)
 
 
+@timed
 def run_until_done(env):
     done = False
     while not done:
@@ -23,6 +26,7 @@ def run_until_done(env):
     env.save(end - START)
 
 
+@timed
 def execute_iteration(env):
     actions = env.action_space()
     action = random.choice(actions)
@@ -39,6 +43,7 @@ def execute_iteration(env):
     return done
 
 
+@timed
 def generate_initial_args(ranges):
     args = ()
     for r in ranges:
@@ -49,6 +54,7 @@ def generate_initial_args(ranges):
     return args
 
 
+@timed
 def improve_args(args, reward, env, action):
     modified_args_with_rewards = {reward: args}
 
@@ -65,6 +71,7 @@ def improve_args(args, reward, env, action):
     env.save(end - START)
 
 
+@timed
 def find_similar_shapes(args, env, action, modified_args_with_rewards):
     for _ in range(imprvs["improvements_by_one_attempt"]):
         new_args = calculate_new_args(args)
@@ -74,6 +81,7 @@ def find_similar_shapes(args, env, action, modified_args_with_rewards):
         modified_args_with_rewards[new_reward] = new_args
 
 
+@timed
 def calculate_new_args(old_args):
     new_args = ()
     for arg in old_args:
