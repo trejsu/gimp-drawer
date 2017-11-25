@@ -1,6 +1,8 @@
 from gimp_drawer.convert import read_drawable
 from gimpfu import pdb, gimp
 from gimp_drawer.decorators import timed
+import gimp_drawer.gimp.action_performer as action_performer
+import gimp_drawer.gimp.initializer as initializer
 
 
 class Image(object):
@@ -18,12 +20,7 @@ class Image(object):
 
     @timed
     def perform_action(self, action, args):
-        arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 = self.__just(8, args)
-        arg8 = 0.
-        if len(args) == 8:
-            arg8 = args[7]
-
-        pdb.python_fu_perform_action(self.img, action, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+        action_performer.perform_action(self.img, action, args)
         self.__update_arrays()
 
     @timed
@@ -32,7 +29,7 @@ class Image(object):
 
     @timed
     def reset(self):
-        pdb.python_fu_reset(self.img)
+        initializer.reset(self.img)
         self.__update_arrays()
 
     @timed
@@ -46,10 +43,3 @@ class Image(object):
     @timed
     def duplicate(self):
         return Image(pdb.gimp_image_duplicate(self.img))
-
-    @timed
-    def __just(self, n, seq):
-        it = iter(seq)
-        for _ in range(n - 1):
-            yield next(it, None)
-        yield tuple(it)

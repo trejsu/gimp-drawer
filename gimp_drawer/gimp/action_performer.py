@@ -57,7 +57,7 @@ class Image(object):
         self.draw_brush_line(Point(), Point())
 
     @timed
-    def draw_brush_line(self, x1, y1, x2, y2, r, g, b):
+    def draw_brush_line(self, (x1, y1, x2, y2, r, g, b)):
         change_foreground_color((r, g, b))
         # change_size(size)
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
@@ -92,7 +92,7 @@ class Image(object):
         self.draw_pencil_line(Point(), Point())
 
     @timed
-    def draw_pencil_line(self, x1, y1, x2, y2, r, g, b):
+    def draw_pencil_line(self, (x1, y1, x2, y2, r, g, b)):
         change_foreground_color((r, g, b))
         # change_size(size)
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
@@ -136,7 +136,7 @@ class Image(object):
         self.draw_rectangle(Selection(Point()), rotate)
 
     @timed
-    def draw_rectangle(self, x, y, width, height, angle, r, g, b):
+    def draw_rectangle(self, (x, y, width, height, angle, r, g, b)):
         change_foreground_color((r, g, b))
         self.__add_opacity_layer()
         self.__select_rectangle(Selection(Point(x, y), width, height))
@@ -144,7 +144,7 @@ class Image(object):
         self.__rotate_and_merge(angle)
 
     @timed
-    def draw_ellipse(self, x, y, width, height, angle, r, g, b):
+    def draw_ellipse(self, (x, y, width, height, angle, r, g, b)):
         change_foreground_color((r, g, b))
         self.__add_opacity_layer()
         self.__select_ellipse(Selection(Point(x, y), width, height))
@@ -193,13 +193,13 @@ class Image(object):
 
 
 @timed
-def plugin_main(image_id, action, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
+def perform_action(image_id, action, args):
     image = Image(image_id)
     actions = [
-        lambda: image.draw_ellipse(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8),
-        lambda: image.draw_rectangle(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8),
-        lambda: image.draw_brush_line(arg1, arg2, arg3, arg4, arg5, arg6, arg7),
-        lambda: image.draw_pencil_line(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+        lambda: image.draw_ellipse(args),
+        lambda: image.draw_rectangle(args),
+        lambda: image.draw_brush_line(args),
+        lambda: image.draw_pencil_line(args)
     ]
     actions[action]()
 
@@ -237,21 +237,3 @@ def randomize_size_if_none(size):
 @timed
 def random_size():
     return random.randint(1, MAX_BRUSH_SIZE)
-
-
-register("perform_action", "", "", "", "", "", "", "",
-         [
-             (PF_IMAGE, "image", "Image", ""),
-             (PF_INT, "action", "Action", 0),
-             (PF_FLOAT, "arg1", "Argument 1", 0.),
-             (PF_FLOAT, "arg2", "Argument 2", 0.),
-             (PF_FLOAT, "arg3", "Argument 3", 0.),
-             (PF_FLOAT, "arg4", "Argument 4", 0.),
-             (PF_FLOAT, "arg5", "Argument 5", 0.),
-             (PF_FLOAT, "arg6", "Argument 6", 0.),
-             (PF_FLOAT, "arg7", "Argument 7", 0.),
-             (PF_FLOAT, "arg8", "Argument 8", 0.),
-         ],
-         [], plugin_main)
-
-main()

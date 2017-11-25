@@ -12,6 +12,11 @@ def initialize(src_path):
 
 
 @timed
+def reset(img):
+    pdb.gimp_edit_fill(__get_drawable(img), WHITE_FILL)
+
+
+@timed
 def __new_image(width, height):
     image_id = gimp.Image(width, height, RGB_IMAGE)
     layer = gimp.Layer(image_id, "layer", width,

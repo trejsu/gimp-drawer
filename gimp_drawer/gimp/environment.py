@@ -1,15 +1,16 @@
 import sys
-from os.path import basename, expandvars, exists
 from os import mkdir
-from scipy import sum
-from gimp_drawer import rendering
+from os.path import basename, expandvars, exists
+
 from numpy import concatenate
-from gimp_drawer.image import Image
-from gimp_drawer.space import ToolSpace
+from scipy import sum
+
+import gimp_drawer.gimp.initializer as initializer
+from gimp_drawer import rendering
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.decorators import timed
-import gimp_drawer.gimp.initializer as initializer
-
+from gimp_drawer.gimp.image import Image
+from gimp_drawer.space import ToolSpace
 
 OUT_PATH = None
 
