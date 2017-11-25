@@ -7,6 +7,7 @@ from gimp_drawer import rendering
 from numpy import concatenate
 from gimp_drawer.image import Image
 from gimp_drawer.space import ToolSpace
+from gimp_drawer.config import improvements as imprvs
 
 
 OUT_PATH = None
@@ -26,7 +27,14 @@ class GimpEnv(object):
         self.done = False
         self.action_space = ToolSpace()
         self.viewer = None
-        self.version_info = ""
+        self.version_info = self.__construct_version_info()
+
+    def __construct_version_info(self):
+        return "_{}_{}_{}".format(
+            imprvs["eps"],
+            imprvs["improvements_by_one_attempt"],
+            imprvs["attempts"]
+        )
 
     def reset(self):
         self.__setup_output()
