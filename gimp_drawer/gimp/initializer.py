@@ -22,7 +22,8 @@ def __new_image(width, height):
     layer = gimp.Layer(image_id, "layer", width,
                        height, RGB_IMAGE, 100,
                        NORMAL_MODE)
-    image_id.add_layer(layer, 0)
+    position = 0
+    image_id.add_layer(layer, position)
     return image_id
 
 

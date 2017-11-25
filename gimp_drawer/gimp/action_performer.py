@@ -57,8 +57,8 @@ class Image(object):
         self.draw_brush_line(Point(), Point())
 
     @timed
-    def draw_brush_line(self, (x1, y1, x2, y2, r, g, b)):
-        change_foreground_color((r, g, b))
+    def draw_brush_line(self, (x1, y1, x2, y2, red, green, blue)):
+        change_foreground_color((red, green, blue))
         # change_size(size)
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
         self.__add_opacity_layer()
@@ -74,7 +74,8 @@ class Image(object):
         layer = gimp.Layer(self.image_id, "layer", self.get_width(),
                            self.get_height(), RGBA_IMAGE,
                            self.__random_opacity(), NORMAL_MODE)
-        self.image_id.add_layer(layer, 0)
+        position = 0
+        self.image_id.add_layer(layer, position)
 
     @timed
     def __convert_points(self, end, start):
@@ -92,8 +93,8 @@ class Image(object):
         self.draw_pencil_line(Point(), Point())
 
     @timed
-    def draw_pencil_line(self, (x1, y1, x2, y2, r, g, b)):
-        change_foreground_color((r, g, b))
+    def draw_pencil_line(self, (x1, y1, x2, y2, red, green, blue)):
+        change_foreground_color((red, green, blue))
         # change_size(size)
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
         self.__add_opacity_layer()
@@ -136,16 +137,16 @@ class Image(object):
         self.draw_rectangle(Selection(Point()), rotate)
 
     @timed
-    def draw_rectangle(self, (x, y, width, height, angle, r, g, b)):
-        change_foreground_color((r, g, b))
+    def draw_rectangle(self, (x, y, width, height, angle, red, green, blue)):
+        change_foreground_color((red, green, blue))
         self.__add_opacity_layer()
         self.__select_rectangle(Selection(Point(x, y), width, height))
         self.__fill_selection()
         self.__rotate_and_merge(angle)
 
     @timed
-    def draw_ellipse(self, (x, y, width, height, angle, r, g, b)):
-        change_foreground_color((r, g, b))
+    def draw_ellipse(self, (x, y, width, height, angle, red, green, blue)):
+        change_foreground_color((red, green, blue))
         self.__add_opacity_layer()
         self.__select_ellipse(Selection(Point(x, y), width, height))
         self.__fill_selection()
@@ -160,7 +161,10 @@ class Image(object):
     def __rotate(self, normalized_angle):
         drawable = self.__get_drawable()
         angle = self.__from_normalized_angle(normalized_angle)
-        selection = pdb.gimp_item_transform_rotate(drawable, angle, True, 0, 0)
+        auto_center = True
+        center_x = 0
+        center_y = 0
+        selection = pdb.gimp_item_transform_rotate(drawable, angle, auto_center, center_x, center_y)
         # todo: why sometimes selection is not floating selection?
         if pdb.gimp_layer_is_floating_sel(selection):
             pdb.gimp_floating_sel_anchor(selection)
@@ -188,8 +192,8 @@ class Image(object):
 
     @timed
     def __clear_selection(self):
-        pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0,
-                                        0, self.get_width(), self.get_height())
+        pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, x=0,
+                                        y=0, width=self.get_width(), height=self.get_height())
 
 
 @timed

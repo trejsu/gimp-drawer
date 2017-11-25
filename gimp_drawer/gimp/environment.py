@@ -9,7 +9,7 @@ import gimp_drawer.gimp.initializer as initializer
 from gimp_drawer import rendering
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.decorators import timed
-from gimp_drawer.gimp.image import Image
+from gimp_drawer.gimp.items.image import Image
 from gimp_drawer.space import ToolSpace
 
 OUT_PATH = None

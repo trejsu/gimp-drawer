@@ -1,8 +1,9 @@
 from gimp_drawer.convert import read_drawable
 from gimpfu import pdb, gimp
+
 from gimp_drawer.decorators import timed
-import gimp_drawer.gimp.action_performer as action_performer
-import gimp_drawer.gimp.initializer as initializer
+from gimp_drawer.gimp.action_performer import perform_action
+from gimp_drawer.gimp.initializer import reset
 
 
 class Image(object):
@@ -15,12 +16,21 @@ class Image(object):
 
     @timed
     def save(self, filename):
-        pdb.file_jpeg_save(self.img, self.__get_drawable(), filename,
-                           filename, 0.9, 0, 0, 0, "", 0, 0, 0, 0)
+        quality = 0.9
+        smoothing = 0
+        optimize = 0
+        progressive = 0
+        comment = ""
+        subsampling = 0
+        baseline = 0
+        restart = 0
+        dct = 0
+        pdb.file_jpeg_save(self.img, self.__get_drawable(), filename, filename, quality, smoothing,
+                           optimize, progressive, comment, subsampling, baseline,restart, dct)
 
     @timed
     def perform_action(self, action, args):
-        action_performer.perform_action(self.img, action, args)
+        perform_action(self.img, action, args)
         self.__update_arrays()
 
     @timed
@@ -29,7 +39,7 @@ class Image(object):
 
     @timed
     def reset(self):
-        initializer.reset(self.img)
+        reset(self.img)
         self.__update_arrays()
 
     @timed
