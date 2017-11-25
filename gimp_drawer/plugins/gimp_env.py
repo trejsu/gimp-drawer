@@ -79,7 +79,7 @@ class GimpEnv(object):
     def __check_if_done(self):
         self.done = self.distance <= self.acceptable_dist
 
-    def restore_state(self):
+    def undo(self):
         self.img.delete()
         self.img = Image(self.prev_img.img)
         self.__calculate_reward()
