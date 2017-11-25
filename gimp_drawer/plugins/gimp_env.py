@@ -1,4 +1,3 @@
-import random
 import sys
 from os.path import basename, expandvars, exists
 from os import mkdir
@@ -7,7 +6,9 @@ from scipy import sum
 from gimp_drawer import rendering
 from numpy import concatenate
 from gimp_drawer.image import Image
-from gimp_drawer.mode_resolver import resolve_mode
+from gimp_drawer.space import ToolSpace
+from gimp_drawer.config import improvements as imprvs
+
 
 OUT_PATH = None
 
@@ -24,10 +25,16 @@ class GimpEnv(object):
         self.reward = 0
         self.distance = sys.maxint
         self.done = False
-        space_dimension, self.actions = resolve_mode(mode)
-        self.action_space = self.Space(space_dimension)
+        self.action_space = ToolSpace()
         self.viewer = None
-        self.version_info = "mode_" + str(mode) + "_opacity_25_75"
+        self.version_info = self.__construct_version_info()
+
+    def __construct_version_info(self):
+        return "_{}_{}_{}".format(
+            imprvs["eps"],
+            imprvs["improvements_by_one_attempt"],
+            imprvs["attempts"]
+        )
 
     def reset(self):
         self.__setup_output()
@@ -48,12 +55,11 @@ class GimpEnv(object):
         image = concatenate(images_to_display, axis=1)
         self.viewer.img_show(image)
 
-    def save(self, seconds, i=None):
+    def save(self, seconds):
         distance = "_d_" + str(self.distance)
-        iterations = "_i_" + str(i)
         time = "_" + self.__format_time(seconds)
-        parameter = (distance if i is None else iterations) + time
-        filename = basename(self.src_path).split(".")[0] + parameter + "_" + self.version_info + "_" + ".jpg"
+        parameter = distance + time + self.version_info
+        filename = basename(self.src_path).split(".")[0] + parameter + "_" + ".jpg"
         self.img.save(OUT_PATH + filename)
 
     @staticmethod
@@ -66,13 +72,12 @@ class GimpEnv(object):
             return "%.1f" % minutes + "m"
         return "%.1f" % hours + "h"
 
-    def step(self, action):
+    def step(self, action, args):
         self.prev_img = self.img.duplicate()
-        self.actions[action](self)
+        self.img.perform_action(action, args)
         self.__calculate_reward()
         self.__check_if_done()
-        return self.state, self.reward, self.done, {
-            "current_distance": self.distance}
+        return self.reward, self.done
 
     def __calculate_reward(self):
         new_distance = sum(abs(self.src_img.array - self.img.array))
@@ -82,14 +87,7 @@ class GimpEnv(object):
     def __check_if_done(self):
         self.done = self.distance <= self.acceptable_dist
 
-    def restore_state(self):
+    def undo(self):
         self.img.delete()
         self.img = Image(self.prev_img.img)
         self.__calculate_reward()
-
-    class Space(object):
-        def __init__(self, n):
-            self.n = n
-
-        def sample(self):
-            return random.randint(0, self.n - 1)

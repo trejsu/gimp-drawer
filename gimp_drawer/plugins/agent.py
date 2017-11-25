@@ -1,56 +1,98 @@
 import time
-import tqdm
 
 from gimpfu import *
 from gimp_drawer.plugins.gimp_env import GimpEnv
+import random
+import numpy as np
+from gimp_drawer.config import improvements as imprvs
 
 START = time.time()
 
 
-def plugin_main(src_path, iterations, acceptable_distance, mode):
+def plugin_main(src_path, acceptable_distance, mode):
     env = GimpEnv(src_path, acceptable_distance, mode)
     env.reset()
-
-    if iterations is 0:
-        run_until_done(env)
-    else:
-        run_finite_times(env, iterations)
+    run_until_done(env)
 
 
 def run_until_done(env):
-    improvements = 0
     done = False
     while not done:
-        done, improvements = execute_iteration(env, improvements)
+        done = execute_iteration(env)
     end = time.time()
     env.save(end - START)
 
 
-def run_finite_times(env, iterations):
-    improvements = 0
-    for _ in tqdm.tqdm(range(iterations)):
-        done, improvements = execute_iteration(env, improvements, improvements)
-        if done:
-            break
-    env.save(improvements)
+def execute_iteration(env):
+    actions = env.action_space()
+    action = random.choice(actions)
+    subspace = env.action_space.subspace(action)
+    ranges = subspace()
+
+    args = generate_initial_args(ranges)
+    reward, done = env.step(action, tuple(map(lambda a: a.value, args)))
+    env.undo()
+
+    if reward > 0:
+        improve_args(args, reward, env, action)
+
+    return done
 
 
-def execute_iteration(env, improvements, save_parameter=None):
-    state, reward, done, info = env.step(env.action_space.sample())
-    if reward < 0:
-        env.restore_state()
-    else:
-        improvements += 1
-        end = time.time()
-        env.save(end - START, save_parameter)
+def generate_initial_args(ranges):
+    args = ()
+    for r in ranges:
+        arg_min = r[0]
+        arg_max = r[1]
+        arg_value = random.uniform(arg_min, arg_max)
+        args = args + (Argument(arg_min, arg_max, arg_value),)
+    return args
+
+
+def improve_args(args, reward, env, action):
+    modified_args_with_rewards = {reward: args}
+
+    for _ in range(imprvs["attempts"]):
+        find_similar_shapes(args, env, action, modified_args_with_rewards)
+        args = modified_args_with_rewards[max(modified_args_with_rewards)]
+        reward, done = env.step(action, tuple(map(lambda a: a.value, args)))
         env.render()
-    return done, improvements
+        env.undo()
+        modified_args_with_rewards = {reward: args}
+    env.step(action, tuple(map(lambda a: a.value, args)))
+    env.render()
+    end = time.time()
+    env.save(end - START)
+
+
+def find_similar_shapes(args, env, action, modified_args_with_rewards):
+    for _ in range(imprvs["improvements_by_one_attempt"]):
+        new_args = calculate_new_args(args)
+        new_reward, _ = env.step(action, tuple(map(lambda a: a.value, new_args)))
+        env.render()
+        env.undo()
+        modified_args_with_rewards[new_reward] = new_args
+
+
+def calculate_new_args(old_args):
+    new_args = ()
+    for arg in old_args:
+        random_arg = np.random.normal(arg.value, imprvs["eps"] * (arg.max - arg.min))
+        new_arg_value = min(arg.max, max(arg.min, random_arg))
+        new_args = new_args + (Argument(arg.min, arg.max, new_arg_value),)
+    return new_args
+
+
+class Argument(object):
+    def __init__(self, arg_min, arg_max, value):
+        self.min = arg_min
+        self.max = arg_max
+        self.value = value
 
 
 register("agent", "", "", "", "", "", "", "",
          [
              (PF_STRING, "src_path", "Input", ""),
-             (PF_INT, "iterations", "Iterations", 0),
              (PF_INT, "acceptable_distance", "Acceptable distance", 0),
              (PF_INT, "mode", "Mode", 0)
          ], [], plugin_main)

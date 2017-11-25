@@ -45,12 +45,12 @@ class Image(object):
         return pdb.gimp_image_active_drawable(self.image_id)
 
     def draw_random_brush_line(self):
-        self.__draw_brush_line(Point(), Point())
+        self.draw_brush_line(Point(), Point())
 
-    def __draw_brush_line(self, start, end, color=None, size=None):
-        change_foreground_color(color)
+    def draw_brush_line(self, x1, y1, x2, y2, r, g, b):
+        change_foreground_color((r, g, b))
         # change_size(size)
-        points = self.__convert_points(end, start)
+        points = self.__convert_points(Point(x1, y1), Point(x2, y2))
         self.__add_opacity_layer()
         pdb.gimp_paintbrush_default(self.__get_drawable(), len(points), points)
         self.__merge_layers()
@@ -74,12 +74,12 @@ class Image(object):
         return Point(point.x * self.get_width(), point.y * self.get_height())
 
     def draw_random_pencil_line(self):
-        self.__draw_pencil_line(Point(), Point())
+        self.draw_pencil_line(Point(), Point())
 
-    def __draw_pencil_line(self, start, end, color=None, size=None):
-        change_foreground_color(color)
+    def draw_pencil_line(self, x1, y1, x2, y2, r, g, b):
+        change_foreground_color((r, g, b))
         # change_size(size)
-        points = self.__convert_points(end, start)
+        points = self.__convert_points(Point(x1, y1), Point(x2, y2))
         self.__add_opacity_layer()
         pdb.gimp_pencil(self.__get_drawable(), len(points), points)
         self.__merge_layers()
@@ -111,35 +111,37 @@ class Image(object):
         )
 
     def draw_random_rectangle(self, rotate):
-        self.__draw_rectangle(Selection(Point()), rotate)
+        self.draw_rectangle(Selection(Point()), rotate)
 
-    def __draw_rectangle(self, rectangle, rotate, color=None):
-        change_foreground_color(color)
+    def draw_rectangle(self, x, y, width, height, angle, r, g, b):
+        change_foreground_color((r, g, b))
         self.__add_opacity_layer()
-        self.__select_rectangle(rectangle)
+        self.__select_rectangle(Selection(Point(x, y), width, height))
         self.__fill_selection()
-        self.__rotate_and_merge(rotate)
+        self.__rotate_and_merge(angle)
 
-    def __draw_ellipse(self, ellipse, rotate, color=None):
-        change_foreground_color(color)
+
+    def draw_ellipse(self, x, y, width, height, angle, r, g, b):
+        change_foreground_color((r, g, b))
         self.__add_opacity_layer()
-        self.__select_ellipse(ellipse)
+        self.__select_ellipse(Selection(Point(x, y), width, height))
         self.__fill_selection()
-        self.__rotate_and_merge(rotate)
+        self.__rotate_and_merge(angle)
 
-    def __rotate_and_merge(self, rotate):
-        if rotate:
-            self.__rotate()
-        else:
-            self.__clear_selection()
+    def __rotate_and_merge(self, angle):
+        self.__rotate(angle)
         self.__merge_layers()
 
-    def __rotate(self):
-        sel = pdb.gimp_item_transform_rotate(self.__get_drawable(), self.__random_angle(), True, 0,
-                                             0)
-        # todo: why sometimes sel is not floating selection?
-        if pdb.gimp_layer_is_floating_sel(sel):
-            pdb.gimp_floating_sel_anchor(sel)
+    def __rotate(self, normalized_angle):
+        drawable = self.__get_drawable()
+        angle = self.__from_normalized_angle(normalized_angle)
+        selection = pdb.gimp_item_transform_rotate(drawable, angle, True, 0, 0)
+        # todo: why sometimes selection is not floating selection?
+        if pdb.gimp_layer_is_floating_sel(selection):
+            pdb.gimp_floating_sel_anchor(selection)
+
+    def __from_normalized_angle(self, angle):
+        return angle * 180
 
     def __random_angle(self):
         return random.randint(-180, 180)
@@ -147,24 +149,25 @@ class Image(object):
     def __fill_selection(self):
         pdb.gimp_edit_fill(self.__get_drawable(), FOREGROUND_FILL)
 
+    # todo: add opacity as arg
     def __random_opacity(self):
-        return random.randint(25, 75)
+        return 75
 
     def draw_random_ellipse(self, rotate):
-        self.__draw_ellipse(Selection(Point()), rotate)
+        self.draw_ellipse(Selection(Point()), rotate)
 
     def __clear_selection(self):
         pdb.gimp_image_select_rectangle(self.image_id, CHANNEL_OP_REPLACE, 0,
                                         0, self.get_width(), self.get_height())
 
 
-def plugin_main(image_id, action, rotate):
+def plugin_main(image_id, action, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8):
     image = Image(image_id)
     actions = [
-        lambda: image.draw_random_brush_line(),
-        lambda: image.draw_random_ellipse(rotate),
-        lambda: image.draw_random_rectangle(rotate),
-        lambda: image.draw_random_pencil_line()
+        lambda: image.draw_ellipse(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8),
+        lambda: image.draw_rectangle(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8),
+        lambda: image.draw_brush_line(arg1, arg2, arg3, arg4, arg5, arg6, arg7),
+        lambda: image.draw_pencil_line(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     ]
     actions[action]()
 
@@ -201,7 +204,14 @@ register("perform_action", "", "", "", "", "", "", "",
          [
              (PF_IMAGE, "image", "Image", ""),
              (PF_INT, "action", "Action", 0),
-             (PF_BOOL, "rotate", "Rotate", False)
+             (PF_FLOAT, "arg1", "Argument 1", 0.),
+             (PF_FLOAT, "arg2", "Argument 2", 0.),
+             (PF_FLOAT, "arg3", "Argument 3", 0.),
+             (PF_FLOAT, "arg4", "Argument 4", 0.),
+             (PF_FLOAT, "arg5", "Argument 5", 0.),
+             (PF_FLOAT, "arg6", "Argument 6", 0.),
+             (PF_FLOAT, "arg7", "Argument 7", 0.),
+             (PF_FLOAT, "arg8", "Argument 8", 0.),
          ],
          [], plugin_main)
 

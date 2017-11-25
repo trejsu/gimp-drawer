@@ -13,20 +13,13 @@ class Image(object):
         pdb.file_jpeg_save(self.img, self.__get_drawable(), filename,
                            filename, 0.9, 0, 0, 0, "", 0, 0, 0, 0)
 
-    def draw_random_brush_line(self):
-        self.__perform_action(0)
+    def perform_action(self, action, args):
+        arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 = self.__just(8, args)
+        arg8 = 0.
+        if len(args) == 8:
+            arg8 = args[7]
 
-    def draw_random_ellipse(self, rotate):
-        self.__perform_action(1, rotate)
-
-    def draw_random_rectangle(self, rotate):
-        self.__perform_action(2, rotate)
-
-    def draw_random_pencil_line(self):
-        self.__perform_action(3)
-
-    def __perform_action(self, action, rotate=False):
-        pdb.python_fu_perform_action(self.img, action, rotate)
+        pdb.python_fu_perform_action(self.img, action, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
         self.__update_arrays()
 
     def delete(self):
@@ -44,3 +37,9 @@ class Image(object):
 
     def duplicate(self):
         return Image(pdb.gimp_image_duplicate(self.img))
+
+    def __just(self, n, seq):
+        it = iter(seq)
+        for _ in range(n - 1):
+            yield next(it, None)
+        yield tuple(it)
