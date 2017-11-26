@@ -20,7 +20,7 @@ class SelectionSpace(Space):
 
 class ToolSpace(Space):
     def __init__(self):
-        self.n = 4
+        self.n = 2
 
     def __call__(self):
         return list(range(self.n))

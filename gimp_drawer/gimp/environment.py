@@ -10,6 +10,7 @@ from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.decorators.timed import timed
 from gimp_drawer.gimp.items.image import Image
 from gimp_drawer.space import ToolSpace
+from gimpfu import pdb
 
 
 class Environment(object):
@@ -30,6 +31,7 @@ class Environment(object):
         self.viewer = None
         self.version_info = self.__construct_version_info()
         self.out_path = None
+        self.undo_before_step = False
 
     @timed
     def __construct_version_info(self):
@@ -38,7 +40,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "no_anchor_test"
+            "disable_undo"
         )
 
     @timed
@@ -82,12 +84,16 @@ class Environment(object):
 
     @timed
     def step(self, action, args):
-        self.prev_img = self.img.duplicate()
+        if self.prev_img is not None and not self.undo_before_step:
+            self.prev_img.delete()
+        self.prev_img = self.img
+        self.img = self.img.duplicate()
         self.prev_reward = self.reward
         self.prev_distance = self.distance
         self.img.perform_action(action, args)
         self.__update_reward_and_distance()
         self.__check_if_done()
+        self.undo_before_step = False
         return self.reward, self.done
 
     @timed
@@ -106,3 +112,4 @@ class Environment(object):
         self.img = Image(self.prev_img.img)
         self.reward = self.prev_reward
         self.distance = self.prev_distance
+        self.undo_before_step = True

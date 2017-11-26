@@ -26,7 +26,6 @@ def run_until_done(env):
     env.save(end - START)
 
 
-@timed
 def execute_iteration(env):
     actions = env.action_space()
     action = random.choice(actions)
