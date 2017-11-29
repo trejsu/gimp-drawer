@@ -152,6 +152,7 @@ class Image(object):
         center_x = 0
         center_y = 0
         pdb.gimp_floating_sel_to_layer(pdb.gimp_item_transform_rotate(self.drawable, angle, auto_center, center_x, center_y))
+        pdb.gimp_layer_set_opacity(pdb.gimp_image_get_active_layer(self.image), self.__random_opacity())
 
     @timed
     def __from_normalized_angle(self, angle):
@@ -168,7 +169,7 @@ class Image(object):
     @timed
     # todo: add opacity as arg
     def __random_opacity(self):
-        return 75
+        return 75.
 
     @timed
     def __clear_selection(self):
