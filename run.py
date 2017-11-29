@@ -13,8 +13,9 @@ def main(argv):
     acceptable_distance = 0
     verbose = False
     mode = 0
+    render_mode = 0
 
-    opts, args = getopt.getopt(argv, "i:d:vm:")
+    opts, args = getopt.getopt(argv, "i:d:vm:r:")
     for opt, arg in opts:
         if opt == '-i':
             infile = arg
@@ -24,10 +25,12 @@ def main(argv):
             verbose = True
         if opt == '-m':
             mode = arg
+        if opt == '-r':
+            render_mode = arg
 
-    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {})' -b '(gimp-quit 1)'"\
+    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} {})' -b '(gimp-quit 1)'"\
         .format("--verbose --debug-handlers --stack-trace-mode always" if verbose else "",
-                RUN_PARAMETER, infile, acceptable_distance, mode)
+                RUN_PARAMETER, infile, acceptable_distance, mode, render_mode)
     os.system(command)
 
 

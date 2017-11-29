@@ -30,6 +30,7 @@ python run.py -i <file_name> -d <acceptable_distance>
 | i    | n/a     | path to the input file                                                                                                                                                               |
 | d    | 0       | number representing "good enough" similarity between images where ```0``` means that every pixel is exactly the same. Thus, the bigger distance, the less similarity between images. |
 | v    | off     | verbose output                                                                                                                                                                       |
+| r    | 0       | render mode (0 - only "accepted" actions, 1 - no rendering, 2 - every action)                                                                                                                                                                      |
     
 ## Known bugs
 

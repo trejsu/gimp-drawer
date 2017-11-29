@@ -68,6 +68,7 @@ class Image(object):
         position = 0
         self.image.add_layer(layer, position)
         self.drawable = pdb.gimp_image_active_drawable(self.image)
+        return layer
 
     @timed
     def __convert_points(self, end, start):
@@ -131,14 +132,16 @@ class Image(object):
     @timed
     def draw_ellipse(self, (x, y, width, height, angle, red, green, blue)):
         change_foreground_color((red, green, blue))
-        self.__add_opacity_layer()
+        opacity_layer = self.__add_opacity_layer()
         self.__select_ellipse(Selection(Point(x, y), width, height))
         self.__fill_selection()
-        self.__rotate_and_merge(angle)
+        self.__rotate_and_merge(angle, opacity_layer)
 
     @timed
-    def __rotate_and_merge(self, angle):
+    def __rotate_and_merge(self, angle, opacity_layer=None):
         self.__rotate(angle)
+        if opacity_layer is not None:
+            pdb.gimp_image_remove_layer(self.image, opacity_layer)
         self.__merge_layers()
         self.drawable = pdb.gimp_image_active_drawable(self.image)
 
@@ -148,7 +151,7 @@ class Image(object):
         auto_center = True
         center_x = 0
         center_y = 0
-        pdb.gimp_item_transform_rotate(self.drawable, angle, auto_center, center_x, center_y)
+        pdb.gimp_floating_sel_to_layer(pdb.gimp_item_transform_rotate(self.drawable, angle, auto_center, center_x, center_y))
 
     @timed
     def __from_normalized_angle(self, angle):
