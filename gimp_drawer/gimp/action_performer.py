@@ -35,7 +35,7 @@ class Image(object):
     def __init__(self, image_id):
         super(Image, self).__init__()
         self.image = image_id
-        pdb.gimp_context_set_brush("2. Hardness 075")
+        pdb.gimp_context_set_brush("2. Hardness 100")
         self.drawable = pdb.gimp_image_active_drawable(self.image)
 
     @timed
@@ -47,13 +47,17 @@ class Image(object):
         return self.drawable.height
 
     @timed
-    def draw_brush_line(self, (x1, y1, x2, y2, red, green, blue)):
+    def draw_brush_line(self, (x1, y1, x2, y2, red, green, blue, size)):
         change_foreground_color((red, green, blue))
-        # change_size(size)
+        change_size(self.__from_normalized_size(size))
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
         self.__add_opacity_layer()
         pdb.gimp_paintbrush_default(self.drawable, len(points), points)
         self.__merge_layers()
+
+    @timed
+    def __from_normalized_size(self, size):
+        return max(self.get_height(), self.get_width()) * size
 
     @timed
     def __merge_layers(self):
@@ -80,15 +84,6 @@ class Image(object):
     @timed
     def __from_normalized_point(self, point):
         return Point(point.x * self.get_width(), point.y * self.get_height())
-
-    @timed
-    def draw_pencil_line(self, (x1, y1, x2, y2, red, green, blue)):
-        change_foreground_color((red, green, blue))
-        # change_size(size)
-        points = self.__convert_points(Point(x1, y1), Point(x2, y2))
-        self.__add_opacity_layer()
-        pdb.gimp_pencil(self.drawable, len(points), points)
-        self.__merge_layers()
 
     @timed
     def __select_rectangle(self, rectangle):
@@ -184,7 +179,6 @@ def perform_action(image_id, action, args):
         lambda: image.draw_ellipse(args),
         lambda: image.draw_rectangle(args),
         lambda: image.draw_brush_line(args),
-        lambda: image.draw_pencil_line(args)
     ]
     actions[action]()
 

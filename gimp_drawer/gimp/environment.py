@@ -40,7 +40,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "disable_undo"
+            "brush_with_changing_size"
         )
 
     @timed

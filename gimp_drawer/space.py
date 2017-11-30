@@ -20,7 +20,7 @@ class SelectionSpace(Space):
 
 class ToolSpace(Space):
     def __init__(self):
-        self.n = 2
+        self.n = 3
 
     def __call__(self):
         return list(range(self.n))
@@ -34,10 +34,10 @@ class ToolSpace(Space):
 
 class LineSpace(Space):
     def __init__(self):
-        self.n = 7
+        self.n = 8
 
     def __call__(self):
-        return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.)]
+        return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.), (.1, 1.)]
 
     def subspace(self, i):
         return None
