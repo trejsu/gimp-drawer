@@ -1,7 +1,7 @@
 import numpy as np
 from gimpfu import pdb, gimp
 
-from gimp_drawer.common.decorators import timed
+from gimp_drawer.common.decorators.timed import timed
 from gimp_drawer.gimp.action_performer import perform_action
 from gimp_drawer.gimp.initializer import reset
 

@@ -4,7 +4,7 @@ import random
 
 from gimpfu import *
 
-from gimp_drawer.common.decorators import timed
+from gimp_drawer.common.decorators.timed import timed
 
 
 class Point(object):
