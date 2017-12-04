@@ -28,7 +28,7 @@ def main(argv):
         if opt == '-r':
             render_mode = arg
 
-    command = "environment {} -i -b '(python-fu-agent {} \"{}\" {} {} {})' -b '(environment-quit 1)'"\
+    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} {})' -b '(gimp-quit 1)'"\
         .format("--verbose --debug-handlers --stack-trace-mode always" if verbose else "",
                 RUN_PARAMETER, infile, acceptable_distance, mode, render_mode)
     os.system(command)

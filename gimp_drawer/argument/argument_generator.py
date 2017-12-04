@@ -1,12 +1,16 @@
 import random
 
 import numpy as np
+from gimpfu import pdb, HISTOGRAM_RED, HISTOGRAM_GREEN, HISTOGRAM_BLUE
 
 from gimp_drawer.argument.argument import Argument
 from gimp_drawer.common.decorators.timed import timed
 
 
 class ArgumentGenerator(object):
+    def __init__(self, eps):
+        self.eps = eps
+
     @timed
     def new(self, args):
         new_arg_group = ()
@@ -15,18 +19,18 @@ class ArgumentGenerator(object):
             new_arg_group = new_arg_group + (Argument(arg.min, arg.max, new_arg_value),)
         return new_arg_group
 
+    @timed
     def _new_arg(self, arg):
+        random_arg = np.random.normal(arg.value, self.eps * (arg.max - arg.min))
+        return min(arg.max, max(arg.min, random_arg))
+
+    def init(self, *args):
         pass
 
 
-class PositionGenerator(ArgumentGenerator):
+class RandomInitGenerator(ArgumentGenerator, object):
     def __init__(self, eps):
-        self.eps = eps
-
-    @timed
-    def _new_arg(self, arg):
-        random_arg = np.random.normal(arg.value, self.eps * (arg.max - arg.min))
-        return min(arg.max, max(arg.min, random_arg))
+        super(RandomInitGenerator, self).__init__(eps)
 
     @timed
     def init(self, ranges):
@@ -39,23 +43,17 @@ class PositionGenerator(ArgumentGenerator):
         return args
 
 
-class ColorGenerator(ArgumentGenerator):
-    def __init__(self, eps):
-        self.eps = eps
+class ColorPickerGenerator(ArgumentGenerator, object):
+    def __init__(self, eps, src_image):
+        super(ColorPickerGenerator, self).__init__(eps)
+        self.src_image = src_image
 
-    # will be different from position one soon
     @timed
-    def _new_arg(self, arg):
-        random_arg = np.random.normal(arg.value, self.eps * (arg.max - arg.min))
-        return min(arg.max, max(arg.min, random_arg))
-
-    # will be different from position one soon
-    @timed
-    def init(self, ranges):
-        args = ()
-        for r in ranges:
-            arg_min = r[0]
-            arg_max = r[1]
-            arg_value = random.uniform(arg_min, arg_max)
-            args = args + (Argument(arg_min, arg_max, arg_value),)
-        return args
+    def init(self, ranges, position, space):
+        select_action = space.action_to_create_selection_on_given_image(self.src_image)
+        select_action(position)
+        drawable = pdb.gimp_image_get_active_drawable(self.src_image)
+        red = pdb.gimp_histogram(drawable, HISTOGRAM_RED, 0, 255)[0] / 255
+        green = pdb.gimp_histogram(drawable, HISTOGRAM_GREEN, 0, 255)[0] / 255
+        blue = pdb.gimp_histogram(drawable, HISTOGRAM_BLUE, 0, 255)[0] / 255
+        return Argument(0, 1, red), Argument(0, 1, green), Argument(0, 1, blue)

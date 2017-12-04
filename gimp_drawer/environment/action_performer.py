@@ -5,27 +5,7 @@ import random
 from gimpfu import *
 
 from gimp_drawer.common.decorators.timed import timed
-
-
-class Point(object):
-    def __init__(self, x=None, y=None):
-        super(Point, self).__init__()
-        self.x = random.random() if x is None else x
-        self.y = random.random() if y is None else y
-
-    def __str__(self):
-        return str("(" + str(self.x) + "," + str(self.y) + ")")
-
-
-class Selection(object):
-    def __init__(self, top_left, width=None, height=None):
-        super(Selection, self).__init__()
-        self.top_left = top_left
-        self.width = random.random() if width is None else width
-        self.height = random.random() if height is None else height
-
-    def __str__(self):
-        return str(str(self.top_left) + " " + str(self.width) + "x" + str(self.height))
+from gimp_drawer.environment.selection import Point, Selection
 
 
 class Image(object):
@@ -83,41 +63,11 @@ class Image(object):
         return Point(point.x * self.get_width(), point.y * self.get_height())
 
     @timed
-    def __select_rectangle(self, rectangle):
-        height, top_left, width = self.__convert_selection(rectangle)
-        pdb.gimp_image_select_rectangle(
-            self.image, CHANNEL_OP_REPLACE, top_left.x,
-            top_left.y, width, height
-        )
-
-    @timed
-    def __convert_selection(self, rectangle):
-        top_left = self.__from_normalized_point(rectangle.top_left)
-        width = self.__from_normalized_width(rectangle.width, top_left.x)
-        height = self.__from_normalized_height(rectangle.height, top_left.y)
-        return height, top_left, width
-
-    @timed
-    def __from_normalized_width(self, width, boundary):
-        return width * (self.get_width() - boundary)
-
-    @timed
-    def __from_normalized_height(self, height, boundary):
-        return height * (self.get_height() - boundary)
-
-    @timed
-    def __select_ellipse(self, ellipse):
-        height, top_left, width = self.__convert_selection(ellipse)
-        pdb.gimp_image_select_ellipse(
-            self.image, CHANNEL_OP_REPLACE, top_left.x,
-            top_left.y, width, height
-        )
-
-    @timed
     def draw_rectangle(self, (red, green, blue, x, y, width, height, angle)):
         change_foreground_color((red, green, blue))
         self.__add_opacity_layer()
-        self.__select_rectangle(Selection(Point(x, y), width, height))
+        selection = Selection(self.image, Point(x, y), width, height)
+        selection.select_rectangle()
         self.__fill_selection()
         self.__rotate_and_merge(angle)
 
@@ -125,7 +75,8 @@ class Image(object):
     def draw_ellipse(self, (red, green, blue, x, y, width, height, angle)):
         change_foreground_color((red, green, blue))
         opacity_layer = self.__add_opacity_layer()
-        self.__select_ellipse(Selection(Point(x, y), width, height))
+        selection = Selection(self.image, Point(x, y), width, height)
+        selection.select_ellipse()
         self.__fill_selection()
         self.__rotate_and_merge(angle, opacity_layer)
 

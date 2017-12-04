@@ -40,7 +40,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "agent_refactor"
+            "color_picker_with_default_render"
         )
 
     @timed

@@ -6,7 +6,7 @@ from gimpfu import *
 from gimp_drawer.agent.mode import RenderMode
 from gimp_drawer.agent.mode import ShapeMode
 from gimp_drawer.argument.argument import ArgumentGroup
-from gimp_drawer.argument.argument_generator import ColorGenerator, PositionGenerator
+from gimp_drawer.argument.argument_generator import ColorPickerGenerator, RandomInitGenerator
 from gimp_drawer.common.decorators.timed import timed, print_result
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.environment.environment import Environment
@@ -21,8 +21,8 @@ class Agent(object):
         self.env = Environment(src_path, acceptable_distance)
         self.done = False
         self.start = None
-        self.color_generator = ColorGenerator(imprvs["eps"])
-        self.position_generator = PositionGenerator(imprvs["eps"])
+        self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img)
+        self.position_generator = RandomInitGenerator(imprvs["eps"])
 
     @timed
     def run(self):
@@ -32,11 +32,15 @@ class Agent(object):
             action = random.choice(actions)
             args = self.__generate_initial_arguments(action)
             reward, self.done = self.env.step(action, self.__transform_args(args))
+            if self.__render_everything():
+                self.env.render()
+                time.sleep(5)
             self.env.undo()
             if reward > 0:
                 self.__improve_args(action, args, reward)
         self.__finish()
 
+    @timed
     def __improve_args(self, action, args, reward):
         rewards = {reward: args}
         attempts = imprvs["attempts"]
@@ -48,6 +52,7 @@ class Agent(object):
             rewards = {max(rewards): args}
         self.__perform_action_with_the_best_args(action, args)
 
+    @timed
     def __perform_action_with_the_best_args(self, action, args):
         self.env.step(action, self.__transform_args(args))
         if self.__render_default():
@@ -55,6 +60,7 @@ class Agent(object):
         end = time.time()
         self.env.save(end - self.start)
 
+    @timed
     def __calculate_rewards_for_args(self, action, args, rewards):
         new_args = []
         for arg_group in args:
@@ -69,10 +75,10 @@ class Agent(object):
     @timed
     def __generate_initial_arguments(self, action):
         subspace = self.env.action_space.subspace(action)
-        color_ranges = subspace.color()
-        init_color = self.color_generator.init(color_ranges)
         position_ranges = subspace.position()
         init_position = self.position_generator.init(position_ranges)
+        color_ranges = subspace.color()
+        init_color = self.color_generator.init(color_ranges, init_position, subspace)
         args = [ArgumentGroup(init_color, self.color_generator),
                 ArgumentGroup(init_position, self.position_generator)]
         return args
@@ -97,9 +103,11 @@ class Agent(object):
                 result = result + (arg,)
         return result
 
+    @timed
     def __render_everything(self):
         return self.render_mode == RenderMode.ALL
 
+    @timed
     def __render_default(self):
         return self.render_mode == RenderMode.ALL or self.render_mode == RenderMode.STANDARD
 
