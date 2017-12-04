@@ -1,20 +1,20 @@
-import sys
 import os
+import sys
 
 from numpy import concatenate
 from scipy import sum
 
 import gimp_drawer.gimp.initializer as initializer
 from gimp_drawer import rendering
+from gimp_drawer.common.decorators.timed import timed
 from gimp_drawer.config import improvements as imprvs
-from gimp_drawer.decorators.timed import timed
 from gimp_drawer.gimp.items.image import Image
 from gimp_drawer.space import ToolSpace
-from gimpfu import pdb
+import gimp_drawer.common.utils.format as formatter
 
 
 class Environment(object):
-    def __init__(self, src_path, acceptable_distance, mode):
+    def __init__(self, src_path, acceptable_distance):
         self.src_path = src_path
         src_img, img = initializer.initialize(src_path)
         self.src_img = Image(src_img)
@@ -40,7 +40,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "brush_with_changing_size"
+            "agent_refactor"
         )
 
     @timed
@@ -67,20 +67,10 @@ class Environment(object):
     @timed
     def save(self, seconds):
         distance = "_d_" + str(self.distance)
-        time = "_" + self.__format_time(seconds)
+        time = "_" + formatter.format_time(seconds)
         parameter = distance + time + self.version_info
         filename = os.path.basename(self.src_path).split(".")[0] + parameter + "_" + ".jpg"
         self.img.save(self.out_path + filename)
-
-    @timed
-    def __format_time(self, seconds):
-        minutes = seconds / 60
-        hours = seconds / 3600
-        if minutes < 1:
-            return "%.1f" % seconds + "s"
-        elif hours < 1:
-            return "%.1f" % minutes + "m"
-        return "%.1f" % hours + "h"
 
     @timed
     def step(self, action, args):

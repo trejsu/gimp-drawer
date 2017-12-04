@@ -4,10 +4,7 @@ import random
 
 from gimpfu import *
 
-from gimp_drawer.decorators.timed import timed
-
-MIN_SELECTION_SIZE = 0.0001
-MAX_BRUSH_SIZE = 1/5.
+from gimp_drawer.common.decorators import timed
 
 
 class Point(object):
@@ -47,7 +44,7 @@ class Image(object):
         return self.drawable.height
 
     @timed
-    def draw_brush_line(self, (x1, y1, x2, y2, red, green, blue, size)):
+    def draw_brush_line(self, (red, green, blue, x1, y1, x2, y2, size)):
         change_foreground_color((red, green, blue))
         change_size(self.__from_normalized_size(size))
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
@@ -117,7 +114,7 @@ class Image(object):
         )
 
     @timed
-    def draw_rectangle(self, (x, y, width, height, angle, red, green, blue)):
+    def draw_rectangle(self, (red, green, blue, x, y, width, height, angle)):
         change_foreground_color((red, green, blue))
         self.__add_opacity_layer()
         self.__select_rectangle(Selection(Point(x, y), width, height))
@@ -125,7 +122,7 @@ class Image(object):
         self.__rotate_and_merge(angle)
 
     @timed
-    def draw_ellipse(self, (x, y, width, height, angle, red, green, blue)):
+    def draw_ellipse(self, (red, green, blue, x, y, width, height, angle)):
         change_foreground_color((red, green, blue))
         opacity_layer = self.__add_opacity_layer()
         self.__select_ellipse(Selection(Point(x, y), width, height))
@@ -146,8 +143,14 @@ class Image(object):
         auto_center = True
         center_x = 0
         center_y = 0
-        pdb.gimp_floating_sel_to_layer(pdb.gimp_item_transform_rotate(self.drawable, angle, auto_center, center_x, center_y))
-        pdb.gimp_layer_set_opacity(pdb.gimp_image_get_active_layer(self.image), self.__random_opacity())
+        rotated_shape = pdb.gimp_item_transform_rotate(self.drawable,
+                                                       angle,
+                                                       auto_center,
+                                                       center_x,
+                                                       center_y)
+        pdb.gimp_floating_sel_to_layer(rotated_shape)
+        active_layer = pdb.gimp_image_get_active_layer(self.image)
+        pdb.gimp_layer_set_opacity(active_layer, self.__random_opacity())
 
     @timed
     def __from_normalized_angle(self, angle):
@@ -185,34 +188,12 @@ def perform_action(image_id, action, args):
 
 @timed
 def change_foreground_color(color):
-    gimp.set_foreground(randomize_color_if_none(color))
-
-
-@timed
-def randomize_color_if_none(color):
-    return random_color() if color is None else color
-
-
-@timed
-def random_color():
-    return random_byte(), random_byte(), random_byte()
-
-
-@timed
-def random_byte():
-    return random.randint(0, 255)
+    gimp.set_foreground(color)
 
 
 @timed
 def change_size(size):
-    pdb.gimp_context_set_brush_size(randomize_size_if_none(size))
+    pdb.gimp_context_set_brush_size(size)
 
 
-@timed
-def randomize_size_if_none(size):
-    return random_size() if size is None else size
 
-
-@timed
-def random_size():
-    return random.randint(1, MAX_BRUSH_SIZE)

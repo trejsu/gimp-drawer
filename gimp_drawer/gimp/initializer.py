@@ -2,7 +2,7 @@
 
 from gimpfu import *
 
-from gimp_drawer.decorators.timed import timed
+from gimp_drawer.common.decorators.timed import timed
 
 
 @timed

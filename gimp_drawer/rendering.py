@@ -1,6 +1,6 @@
 import pyglet
 
-from gimp_drawer.decorators.timed import timed
+from gimp_drawer.common.decorators.timed import timed
 
 
 class SimpleImageViewer(object):
