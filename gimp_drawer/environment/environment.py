@@ -4,13 +4,13 @@ import sys
 from numpy import concatenate
 from scipy import sum
 
-import gimp_drawer.gimp.initializer as initializer
-from gimp_drawer import rendering
+import gimp_drawer.common.utils.format as formatter
+import gimp_drawer.environment.initializer as initializer
 from gimp_drawer.common.decorators.timed import timed
 from gimp_drawer.config import improvements as imprvs
-from gimp_drawer.gimp.items.image import Image
-from gimp_drawer.space import ToolSpace
-import gimp_drawer.common.utils.format as formatter
+from gimp_drawer.environment import rendering
+from gimp_drawer.environment.image import Image
+from gimp_drawer.environment.space import ToolSpace
 
 
 class Environment(object):

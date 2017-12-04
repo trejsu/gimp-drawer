@@ -9,7 +9,7 @@ from gimp_drawer.argument.argument import ArgumentGroup
 from gimp_drawer.argument.argument_generator import ColorGenerator, PositionGenerator
 from gimp_drawer.common.decorators.timed import timed, print_result
 from gimp_drawer.config import improvements as imprvs
-from gimp_drawer.gimp.environment import Environment
+from gimp_drawer.environment.environment import Environment
 
 
 class Agent(object):
