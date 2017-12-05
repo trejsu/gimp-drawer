@@ -3,7 +3,7 @@ import random
 import numpy as np
 from gimpfu import pdb, HISTOGRAM_RED, HISTOGRAM_GREEN, HISTOGRAM_BLUE
 
-from gimp_drawer.argument.argument import Argument
+from gimp_drawer.agent.argument import Argument
 from gimp_drawer.common.decorators.timed import timed
 
 

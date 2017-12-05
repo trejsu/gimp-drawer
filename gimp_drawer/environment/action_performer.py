@@ -12,8 +12,10 @@ class Image(object):
     def __init__(self, image_id):
         super(Image, self).__init__()
         self.image = image_id
-        pdb.gimp_context_set_brush("2. Hardness 100")
         self.drawable = pdb.gimp_image_active_drawable(self.image)
+        pdb.gimp_context_set_brush("2. Hardness 100")
+        pdb.gimp_context_set_sample_transparent(True)
+        pdb.gimp_context_set_sample_merged(False)
 
     @timed
     def get_width(self):
@@ -122,8 +124,17 @@ class Image(object):
 
     @timed
     def __clear_selection(self):
-        pdb.gimp_image_select_rectangle(self.image, CHANNEL_OP_REPLACE, x=0,
-                                        y=0, width=self.get_width(), height=self.get_height())
+        pdb.gimp_image_select_rectangle(self.image, CHANNEL_OP_REPLACE, 0,
+                                        0, self.get_width(), self.get_height())
+
+    @timed
+    def draw_triangle(self, (red, green, blue, x1, y1, x2, y2, x3, y3)):
+        change_foreground_color((red, green, blue))
+        self.__add_opacity_layer()
+        Selection(self.image).select_triangle(x1, y1, x2, y2, x3, y3)
+        self.__fill_selection()
+        self.__clear_selection()
+        self.__merge_layers()
 
 
 @timed
@@ -133,6 +144,7 @@ def perform_action(image_id, action, args):
         lambda: image.draw_ellipse(args),
         lambda: image.draw_rectangle(args),
         lambda: image.draw_brush_line(args),
+        lambda: image.draw_triangle(args)
     ]
     actions[action]()
 

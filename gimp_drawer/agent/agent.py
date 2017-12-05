@@ -1,12 +1,12 @@
 import random
 import time
 
+from gimp_drawer.agent.argument_generator import ColorPickerGenerator, RandomInitGenerator
 from gimpfu import *
 
+from gimp_drawer.agent.argument import ArgumentGroup
 from gimp_drawer.agent.mode import RenderMode
 from gimp_drawer.agent.mode import ShapeMode
-from gimp_drawer.argument.argument import ArgumentGroup
-from gimp_drawer.argument.argument_generator import ColorPickerGenerator, RandomInitGenerator
 from gimp_drawer.common.decorators.timed import timed, print_result
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.environment.environment import Environment
@@ -34,7 +34,6 @@ class Agent(object):
             reward, self.done = self.env.step(action, self.__transform_args(args))
             if self.__render_everything():
                 self.env.render()
-                time.sleep(5)
             self.env.undo()
             if reward > 0:
                 self.__improve_args(action, args, reward)
