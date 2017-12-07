@@ -56,4 +56,5 @@ class ColorPickerGenerator(ArgumentGenerator, object):
         red = pdb.gimp_histogram(drawable, HISTOGRAM_RED, 0, 255)[0] / 255
         green = pdb.gimp_histogram(drawable, HISTOGRAM_GREEN, 0, 255)[0] / 255
         blue = pdb.gimp_histogram(drawable, HISTOGRAM_BLUE, 0, 255)[0] / 255
-        return Argument(0, 1, red), Argument(0, 1, green), Argument(0, 1, blue)
+        # todo: think about this 100 opacity, is it a good idea?
+        return Argument(0, 1, red), Argument(0, 1, green), Argument(0, 1, blue), Argument(0, 1, 0.8)

@@ -40,7 +40,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "color_picker_with_default_render"
+            "opacity_start_80"
         )
 
     @timed

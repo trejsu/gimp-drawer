@@ -1,5 +1,5 @@
 improvements = dict(
-    eps=0.05,
-    improvements_by_one_attempt=10,
-    attempts=20
+    eps=0.03,
+    improvements_by_one_attempt=20,
+    attempts=30
 )

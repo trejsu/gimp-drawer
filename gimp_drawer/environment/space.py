@@ -26,7 +26,7 @@ class Space(object):
         raise NotImplementedError()
 
     def color(self):
-        return [(0., 1.), (0., 1.), (0., 1.)]
+        return [(0., 1.), (0., 1.), (0., 1.), (0., 1.)]
 
     def action_to_create_selection_on_given_image(self, image):
         raise NotImplementedError()

@@ -26,11 +26,11 @@ class Image(object):
         return self.drawable.height
 
     @timed
-    def draw_brush_line(self, (red, green, blue, x1, y1, x2, y2, size)):
+    def draw_brush_line(self, (red, green, blue, opacity, x1, y1, x2, y2, size)):
         change_foreground_color((red, green, blue))
         change_size(self.__from_normalized_size(size))
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
-        self.__add_opacity_layer()
+        self.__add_opacity_layer(opacity)
         pdb.gimp_paintbrush_default(self.drawable, len(points), points)
         self.__merge_layers()
 
@@ -44,10 +44,9 @@ class Image(object):
         self.drawable = pdb.gimp_image_active_drawable(self.image)
 
     @timed
-    def __add_opacity_layer(self):
+    def __add_opacity_layer(self, opacity):
         layer = gimp.Layer(self.image, "layer", self.get_width(),
-                           self.get_height(), RGBA_IMAGE,
-                           self.__random_opacity(), NORMAL_MODE)
+                           self.get_height(), RGBA_IMAGE, self.__from_normalized_opacity(opacity), NORMAL_MODE)
         position = 0
         self.image.add_layer(layer, position)
         self.drawable = pdb.gimp_image_active_drawable(self.image)
@@ -65,33 +64,33 @@ class Image(object):
         return Point(point.x * self.get_width(), point.y * self.get_height())
 
     @timed
-    def draw_rectangle(self, (red, green, blue, x, y, width, height, angle)):
+    def draw_rectangle(self, (red, green, blue, opacity, x, y, width, height, angle)):
         change_foreground_color((red, green, blue))
-        self.__add_opacity_layer()
+        self.__add_opacity_layer(opacity)
         selection = Selection(self.image, Point(x, y), width, height)
         selection.select_rectangle()
         self.__fill_selection()
-        self.__rotate_and_merge(angle)
+        self.__rotate_and_merge(angle, opacity)
 
     @timed
-    def draw_ellipse(self, (red, green, blue, x, y, width, height, angle)):
+    def draw_ellipse(self, (red, green, blue, opacity, x, y, width, height, angle)):
         change_foreground_color((red, green, blue))
-        opacity_layer = self.__add_opacity_layer()
+        opacity_layer = self.__add_opacity_layer(opacity)
         selection = Selection(self.image, Point(x, y), width, height)
         selection.select_ellipse()
         self.__fill_selection()
-        self.__rotate_and_merge(angle, opacity_layer)
+        self.__rotate_and_merge(angle, opacity, opacity_layer)
 
     @timed
-    def __rotate_and_merge(self, angle, opacity_layer=None):
-        self.__rotate(angle)
+    def __rotate_and_merge(self, angle, opacity, opacity_layer=None):
+        self.__rotate(angle, opacity)
         if opacity_layer is not None:
             pdb.gimp_image_remove_layer(self.image, opacity_layer)
         self.__merge_layers()
         self.drawable = pdb.gimp_image_active_drawable(self.image)
 
     @timed
-    def __rotate(self, normalized_angle):
+    def __rotate(self, normalized_angle, opacity):
         angle = self.__from_normalized_angle(normalized_angle)
         auto_center = True
         center_x = 0
@@ -103,11 +102,15 @@ class Image(object):
                                                        center_y)
         pdb.gimp_floating_sel_to_layer(rotated_shape)
         active_layer = pdb.gimp_image_get_active_layer(self.image)
-        pdb.gimp_layer_set_opacity(active_layer, self.__random_opacity())
+        pdb.gimp_layer_set_opacity(active_layer, self.__from_normalized_opacity(opacity))
 
     @timed
     def __from_normalized_angle(self, angle):
         return angle * 180
+
+    @timed
+    def __from_normalized_opacity(self, opacity):
+        return opacity * 100
 
     @timed
     def __random_angle(self):
@@ -118,19 +121,14 @@ class Image(object):
         pdb.gimp_edit_fill(self.drawable, FOREGROUND_FILL)
 
     @timed
-    # todo: add opacity as arg
-    def __random_opacity(self):
-        return 75.
-
-    @timed
     def __clear_selection(self):
         pdb.gimp_image_select_rectangle(self.image, CHANNEL_OP_REPLACE, 0,
                                         0, self.get_width(), self.get_height())
 
     @timed
-    def draw_triangle(self, (red, green, blue, x1, y1, x2, y2, x3, y3)):
+    def draw_triangle(self, (red, green, blue, opacity, x1, y1, x2, y2, x3, y3)):
         change_foreground_color((red, green, blue))
-        self.__add_opacity_layer()
+        self.__add_opacity_layer(opacity)
         Selection(self.image).select_triangle(x1, y1, x2, y2, x3, y3)
         self.__fill_selection()
         self.__clear_selection()
