@@ -13,12 +13,14 @@ from gimp_drawer.environment.environment import Environment
 
 
 class Agent(object):
-    def __init__(self, src_path, acceptable_distance, shape_mode, render_mode):
-        self.src_path = src_path
-        self.acceptable_distance = acceptable_distance
+
+    RENDER_DEFAULT_MODES = {RenderMode.ALL, RenderMode.STANDARD}
+    RENDER_EVERYTHING_MODES = {RenderMode.ALL}
+
+    def __init__(self, src_path, acceptable_distance, shape_mode, render_mode, input_path):
         self.shape_mode = ShapeMode(shape_mode)
         self.render_mode = RenderMode(render_mode)
-        self.env = Environment(src_path, acceptable_distance)
+        self.env = Environment(src_path, acceptable_distance, input_path)
         self.done = False
         self.start = None
         self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img)
@@ -97,31 +99,31 @@ class Agent(object):
     def __transform_args(self, args):
         result = ()
         for arg_group in args:
-            arg_group_args = [a.value for a in arg_group.args]
-            for arg in arg_group_args:
+            for arg in arg_group.to_argument_values():
                 result = result + (arg,)
         return result
 
     @timed
     def __render_everything(self):
-        return self.render_mode == RenderMode.ALL
+        return self.render_mode in Agent.RENDER_EVERYTHING_MODES
 
     @timed
     def __render_default(self):
-        return self.render_mode == RenderMode.ALL or self.render_mode == RenderMode.STANDARD
+        return self.render_mode in Agent.RENDER_DEFAULT_MODES
 
 
-def plugin_main(src_path, acceptable_distance, shape_mode, render_mode):
-    agent = Agent(src_path, acceptable_distance, shape_mode, render_mode)
+def plugin_main(src_path, acceptable_distance, shape_mode, render_mode, input_path):
+    agent = Agent(src_path, acceptable_distance, shape_mode, render_mode, input_path)
     agent.run()
 
 
 register("agent", "", "", "", "", "", "", "",
          [
-             (PF_STRING, "src_path", "Input", ""),
+             (PF_STRING, "src_path", "Source", ""),
              (PF_INT, "acceptable_distance", "Acceptable distance", 0),
              (PF_INT, "shape_mode", "Shape mode", 0),
-             (PF_INT, "render_mode", "Render mode", 0)
+             (PF_INT, "render_mode", "Render mode", 0),
+             (PF_STRING, "input_path", "Input", "")
          ], [], plugin_main)
 
 main()

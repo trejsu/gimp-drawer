@@ -3,7 +3,6 @@ from gimpfu import pdb, gimp
 
 from gimp_drawer.common.decorators.timed import timed
 from gimp_drawer.environment.action_performer import perform_action
-from gimp_drawer.environment.initializer import reset
 
 
 class Image(object):
@@ -34,11 +33,6 @@ class Image(object):
     @timed
     def delete(self):
         gimp.delete(self.img)
-
-    @timed
-    def reset(self):
-        reset(self.img)
-        self.__update_array()
 
     @timed
     def __update_array(self):

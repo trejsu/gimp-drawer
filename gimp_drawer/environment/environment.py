@@ -14,9 +14,9 @@ from gimp_drawer.environment.space import ToolSpace
 
 
 class Environment(object):
-    def __init__(self, src_path, acceptable_distance):
+    def __init__(self, src_path, acceptable_distance, input_path):
         self.src_path = src_path
-        src_img, img = initializer.initialize(src_path)
+        src_img, img = initializer.initialize(src_path, input_path)
         self.src_img = Image(src_img)
         self.img = Image(img)
         self.prev_img = None
@@ -40,13 +40,12 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "opacity_start_80"
+            ""
         )
 
     @timed
     def reset(self):
         self.__setup_output()
-        self.img.reset()
         return self.state
 
     @timed

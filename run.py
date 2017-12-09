@@ -9,16 +9,17 @@ RUN_PARAMETER = "RUN-NONINTERACTIVE"
 
 def main(argv):
 
-    infile = None
+    source = None
     acceptable_distance = 0
     verbose = False
     mode = 0
     render_mode = 0
+    input_file = None
 
-    opts, args = getopt.getopt(argv, "i:d:vm:r:")
+    opts, args = getopt.getopt(argv, "s:d:vm:r:i:")
     for opt, arg in opts:
-        if opt == '-i':
-            infile = arg
+        if opt == '-s':
+            source = arg
         if opt == '-d':
             acceptable_distance = arg
         if opt == '-v':
@@ -27,10 +28,12 @@ def main(argv):
             mode = arg
         if opt == '-r':
             render_mode = arg
+        if opt == '-i':
+            input_file = arg
 
-    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} {})' -b '(gimp-quit 1)'"\
+    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} {} \"{}\")' -b '(gimp-quit 1)'"\
         .format("--verbose --debug-handlers --stack-trace-mode always" if verbose else "",
-                RUN_PARAMETER, infile, acceptable_distance, mode, render_mode)
+                RUN_PARAMETER, source, acceptable_distance, mode, render_mode, input_file)
     os.system(command)
 
 
