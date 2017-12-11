@@ -86,11 +86,18 @@ class Environment(object):
             "distanceBefore": self.prev_distance,
             "distanceAfter": self.distance,
             "reward": self.reward,
-            "action": self.action,
-            "actionString": self.action_space.subspace_name(self.action),
-            "args": self.args,
             "time": int(seconds_for_action * 1000),
-            "timeString": formatter.format_time(seconds_for_action)
+            "timeString": formatter.format_time(seconds_for_action),
+            "action": {
+                "actionNumber": self.action,
+                "actionString": self.action_space.subspace_name(self.action),
+                "args": self.args,
+            },
+            "configuration": {
+                "epsilon": imprvs["eps"],
+                "improvementsByOneAttempt": imprvs["improvements_by_one_attempt"],
+                "attempts": imprvs["attempts"]
+            }
         }
 
     @timed
