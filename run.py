@@ -12,11 +12,10 @@ def main(argv):
     source = None
     acceptable_distance = 0
     verbose = False
-    mode = 0
     render_mode = 0
     input_file = None
 
-    opts, args = getopt.getopt(argv, "s:d:vm:r:i:")
+    opts, args = getopt.getopt(argv, "s:d:vr:i:")
     for opt, arg in opts:
         if opt == '-s':
             source = arg
@@ -31,9 +30,9 @@ def main(argv):
         if opt == '-i':
             input_file = arg
 
-    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} {} \"{}\")' -b '(gimp-quit 1)'"\
+    command = "gimp {} -i -b '(python-fu-agent {} \"{}\" {} {} \"{}\")' -b '(gimp-quit 1)'"\
         .format("--verbose --debug-handlers --stack-trace-mode always" if verbose else "",
-                RUN_PARAMETER, source, acceptable_distance, mode, render_mode, input_file)
+                RUN_PARAMETER, source, acceptable_distance, render_mode, input_file)
     os.system(command)
 
 

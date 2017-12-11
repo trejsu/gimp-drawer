@@ -6,7 +6,6 @@ from gimpfu import *
 
 from gimp_drawer.agent.argument import ArgumentGroup
 from gimp_drawer.agent.mode import RenderMode
-from gimp_drawer.agent.mode import ShapeMode
 from gimp_drawer.common.decorators.timed import timed, print_result
 from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.environment.environment import Environment
@@ -17,8 +16,7 @@ class Agent(object):
     RENDER_DEFAULT_MODES = {RenderMode.ALL, RenderMode.STANDARD}
     RENDER_EVERYTHING_MODES = {RenderMode.ALL}
 
-    def __init__(self, src_path, acceptable_distance, shape_mode, render_mode, input_path):
-        self.shape_mode = ShapeMode(shape_mode)
+    def __init__(self, src_path, acceptable_distance, render_mode, input_path):
         self.render_mode = RenderMode(render_mode)
         self.env = Environment(src_path, acceptable_distance, input_path)
         self.done = False
@@ -114,8 +112,8 @@ class Agent(object):
         return self.render_mode in Agent.RENDER_DEFAULT_MODES
 
 
-def plugin_main(src_path, acceptable_distance, shape_mode, render_mode, input_path):
-    agent = Agent(src_path, acceptable_distance, shape_mode, render_mode, input_path)
+def plugin_main(src_path, acceptable_distance, render_mode, input_path):
+    agent = Agent(src_path, acceptable_distance, render_mode, input_path)
     agent.run()
 
 
@@ -123,7 +121,6 @@ register("agent", "", "", "", "", "", "", "",
          [
              (PF_STRING, "src_path", "Source", ""),
              (PF_INT, "acceptable_distance", "Acceptable distance", 0),
-             (PF_INT, "shape_mode", "Shape mode", 0),
              (PF_INT, "render_mode", "Render mode", 0),
              (PF_STRING, "input_path", "Input", "")
          ], [], plugin_main)

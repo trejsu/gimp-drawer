@@ -76,18 +76,20 @@ class Environment(object):
         os.mkdir(dirname)
         self.img.save(dirname + "/after.jpg")
         self.prev_img.save(dirname + "/before.jpg")
-        data = self.__construct_json_data(seconds_for_action)
+        data = self.__construct_json_data(seconds_from_start, seconds_for_action)
         with open(dirname + "/data.json", "w") as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
 
     @timed
-    def __construct_json_data(self, seconds_for_action):
+    def __construct_json_data(self, seconds_from_start, seconds_for_action):
         return {
             "distanceBefore": self.prev_distance,
             "distanceAfter": self.distance,
             "reward": self.reward,
-            "time": int(seconds_for_action * 1000),
-            "timeString": formatter.format_time(seconds_for_action),
+            "time": int(seconds_from_start * 1000),
+            "timeString": formatter.format_time(seconds_from_start),
+            "actionTime": int(seconds_for_action * 1000),
+            "actionTimeString": formatter.format_time(seconds_for_action),
             "action": {
                 "actionNumber": self.action,
                 "actionString": self.action_space.subspace_name(self.action),
