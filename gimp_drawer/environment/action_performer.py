@@ -27,7 +27,7 @@ class Image(object):
 
     @timed
     def draw_brush_line(self, (red, green, blue, opacity, x1, y1, x2, y2, size)):
-        change_foreground_color((red, green, blue))
+        change_foreground_color(self.__from_normalized_color(blue, green, red))
         change_size(self.__from_normalized_size(size))
         points = self.__convert_points(Point(x1, y1), Point(x2, y2))
         self.__add_opacity_layer(opacity)
@@ -65,7 +65,7 @@ class Image(object):
 
     @timed
     def draw_rectangle(self, (red, green, blue, opacity, x, y, width, height, angle)):
-        change_foreground_color((red, green, blue))
+        change_foreground_color(self.__from_normalized_color(blue, green, red))
         self.__add_opacity_layer(opacity)
         selection = Selection(self.image, Point(x, y), width, height)
         selection.select_rectangle()
@@ -74,7 +74,7 @@ class Image(object):
 
     @timed
     def draw_ellipse(self, (red, green, blue, opacity, x, y, width, height, angle)):
-        change_foreground_color((red, green, blue))
+        change_foreground_color(self.__from_normalized_color(blue, green, red))
         opacity_layer = self.__add_opacity_layer(opacity)
         selection = Selection(self.image, Point(x, y), width, height)
         selection.select_ellipse()
@@ -127,12 +127,16 @@ class Image(object):
 
     @timed
     def draw_triangle(self, (red, green, blue, opacity, x1, y1, x2, y2, x3, y3)):
-        change_foreground_color((red, green, blue))
+        change_foreground_color(self.__from_normalized_color(blue, green, red))
         self.__add_opacity_layer(opacity)
         Selection(self.image).select_triangle(x1, y1, x2, y2, x3, y3)
         self.__fill_selection()
         self.__clear_selection()
         self.__merge_layers()
+
+    @timed
+    def __from_normalized_color(self, blue, green, red):
+        return tuple([int(color * 255) for color in (red, green, blue)])
 
 
 @timed

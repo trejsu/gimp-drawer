@@ -89,7 +89,7 @@ class Agent(object):
     @timed
     def __finish(self):
         end = time.time()
-        self.env.save(end - self.start)
+        self.env.save(end - self.start, end - self.action_start)
         print_result()
 
     @timed
