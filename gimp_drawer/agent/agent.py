@@ -23,6 +23,7 @@ class Agent(object):
         self.env = Environment(src_path, acceptable_distance, input_path)
         self.done = False
         self.start = None
+        self.action_start = None
         self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img)
         self.position_generator = RandomInitGenerator(imprvs["eps"])
 
@@ -30,6 +31,7 @@ class Agent(object):
     def run(self):
         self.__initialize()
         while not self.done:
+            self.action_start = time.time()
             actions = self.env.action_space()
             action = random.choice(actions)
             args = self.__generate_initial_arguments(action)
@@ -59,7 +61,7 @@ class Agent(object):
         if self.__render_default():
             self.env.render()
         end = time.time()
-        self.env.save(end - self.start)
+        self.env.save(end - self.start, end - self.action_start)
 
     @timed
     def __calculate_rewards_for_args(self, action, args, rewards):

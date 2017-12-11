@@ -20,6 +20,17 @@ class ToolSpace(object):
         elif i == 3:
             return TriangleSpace()
 
+    @staticmethod
+    def subspace_name(i):
+        if i == 0:
+            return "ellipse"
+        elif i == 1:
+            return "rectangle"
+        elif i == 2:
+            return "brush"
+        elif i == 3:
+            return "triangle"
+
 
 class Space(object):
     def position(self):

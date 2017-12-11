@@ -12,6 +12,8 @@ from gimp_drawer.environment import rendering
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.space import ToolSpace
 
+import json
+
 
 class Environment(object):
     def __init__(self, src_path, acceptable_distance, input_path):
@@ -32,6 +34,8 @@ class Environment(object):
         self.version_info = self.__construct_version_info()
         self.out_path = None
         self.undo_before_step = False
+        self.action = None
+        self.args = None
 
     @timed
     def __construct_version_info(self):
@@ -64,12 +68,30 @@ class Environment(object):
         self.viewer.img_show(image)
 
     @timed
-    def save(self, seconds):
+    def save(self, seconds_from_start, seconds_for_action):
         distance = "_d_" + str(self.distance)
-        time = "_" + formatter.format_time(seconds)
+        time = "_" + formatter.format_time(seconds_from_start)
         parameter = distance + time + self.version_info
-        filename = os.path.basename(self.src_path).split(".")[0] + parameter + "_" + ".jpg"
-        self.img.save(self.out_path + filename)
+        dirname = self.out_path + os.path.basename(self.src_path).split(".")[0] + parameter
+        os.mkdir(dirname)
+        self.img.save(dirname + "/after.jpg")
+        self.prev_img.save(dirname + "/before.jpg")
+        data = self.__construct_json_data(seconds_for_action)
+        with open(dirname + "/data.json", "w") as outfile:
+            json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
+
+    @timed
+    def __construct_json_data(self, seconds_for_action):
+        return {
+            "distanceBefore": self.prev_distance,
+            "distanceAfter": self.distance,
+            "reward": self.reward,
+            "action": self.action,
+            "actionString": self.action_space.subspace_name(self.action),
+            "args": self.args,
+            "time": int(seconds_for_action * 1000),
+            "timeString": formatter.format_time(seconds_for_action)
+        }
 
     @timed
     def step(self, action, args):
@@ -83,6 +105,8 @@ class Environment(object):
         self.__update_reward_and_distance()
         self.__check_if_done()
         self.undo_before_step = False
+        self.action = action
+        self.args = args
         return self.reward, self.done
 
     @timed
