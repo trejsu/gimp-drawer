@@ -44,11 +44,20 @@ class Space(object):
 
 
 class LineSpace(Space):
-    def action_to_create_selection_on_given_image(self, image):
-        return lambda (x1, y1, x2, y2, size): 0
-
     def position(self):
         return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (.1, 1.)]
+
+    def action_to_create_selection_on_given_image(self, image):
+        # todo: remove logic from here
+        def create_selection((x1, y1, x2, y2, size)):
+            drawable = pdb.gimp_image_active_drawable(image)
+            layer = gimp.Layer(image, "layer", drawable.width, drawable.height, RGBA_IMAGE, 100, NORMAL_MODE)
+            position = 0
+            image.add_layer(layer, position)
+            Selection(image).select_brush_line(x1.value, y1.value, x2.value, y2.value, size.value)
+            image.remove_layer(layer)
+
+        return create_selection
 
 
 class SelectionSpace(Space):

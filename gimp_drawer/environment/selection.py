@@ -29,6 +29,7 @@ class Selection(object):
     def __from_normalized_height(self, height, boundary):
         return height * (self.image.height - boundary)
 
+    @timed
     def select_triangle(self, x1, y1, x2, y2, x3, y3):
         drawable = pdb.gimp_image_active_drawable(self.image)
         pdb.gimp_context_set_brush_size(1)
@@ -37,6 +38,7 @@ class Selection(object):
         pdb.gimp_image_select_contiguous_color(self.image, CHANNEL_OP_REPLACE, drawable,
                                                center.x, center.y)
 
+    @timed
     def __draw_triangle_edges(self, drawable, x1, x2, x3, y1, y2, y3):
         point1 = self.__from_normalized_point(Point(x1, y1))
         point2 = self.__from_normalized_point(Point(x2, y2))
@@ -48,6 +50,18 @@ class Selection(object):
         pdb.gimp_pencil(drawable, len(second_line), second_line)
         pdb.gimp_pencil(drawable, len(third_line), third_line)
         return point1, point2, point3
+
+    @timed
+    def select_brush_line(self, x1, y1, x2, y2, size):
+        point1 = self.__from_normalized_point(Point(x1, y1))
+        point2 = self.__from_normalized_point(Point(x2, y2))
+        drawable = pdb.gimp_image_active_drawable(self.image)
+        pdb.gimp_context_set_brush_size(max(drawable.height, drawable.width) * size)
+        points = [point1.x, point1.y, point2.x, point2.y]
+        pdb.gimp_paintbrush_default(drawable, len(points), points)
+        center = Point((point1.x + point2.x) / 2, (point1.y + point2.y) / 2)
+        pdb.gimp_image_select_contiguous_color(self.image, CHANNEL_OP_REPLACE, drawable, center.x,
+                                               center.y)
 
 
 class Point(object):
