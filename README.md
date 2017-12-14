@@ -19,22 +19,22 @@
 ./build.sh
 ```
 
-### Run
+### Run 
 
 ```
 python run.py -i <file_name> -d <acceptable_distance>
 ```
-
 | Flag | Default | Description                                                                                                                                                                          |
 |------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| i    | n/a     | path to the input file                                                                                                                                                               |
-| d    | 0       | number representing "good enough" similarity between images where ```0``` means that every pixel is exactly the same. Thus, the bigger distance, the less similarity between images. |
-| v    | off     | verbose output                                                                                                                                                                       |
-| r    | 0       | render mode (0 - only "accepted" actions, 1 - no rendering, 2 - every action)                                                                                                                                                                      |
+| s    | n/a     | Path to the source file                                                                                                                                                              |
+| d    | 0       | Number representing "good enough" similarity between images where ```0``` means that every pixel is exactly the same. Thus, the bigger distance, the less similarity between images. |
+| v    | off     | Verbose output                                                                                                                                                                       |
+| r    | 0       | Render mode (0 - only "accepted" actions, 1 - no rendering, 2 - every action)                                                                                                        |                                                             |
+| i    | n/a     | Path to the input file from which scripts starts drawing. When missing, starting point is white, empty image.                                                                                                     |                                                             |
     
-## Known bugs
+## Known bugs/issues
 
-*   Passing ```jpg``` file as argument to ```-f``` option of ```run.py``` displays following message in console at runtime:
+*   Passing ```jpg``` file as argument to ```-s``` option of ```run.py``` displays following message in console at runtime:
     ```
     While parsing XMP metadata:
     Error on line 13 char 1: End of element <xmpMM:DerivedFrom> not expected in this context
