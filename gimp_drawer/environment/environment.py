@@ -1,8 +1,9 @@
 import os
 import sys
+import json
 
 from numpy import concatenate
-from scipy import sum
+from scipy import sum, misc
 
 import gimp_drawer.common.utils.format as formatter
 import gimp_drawer.environment.initializer as initializer
@@ -11,8 +12,6 @@ from gimp_drawer.config import improvements as imprvs
 from gimp_drawer.environment import rendering
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.space import ToolSpace
-
-import json
 
 
 class Environment(object):
@@ -63,22 +62,31 @@ class Environment(object):
     def render(self):
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()
-        images_to_display = (self.src_img.get_displayable_array(), self.img.get_displayable_array())
-        image = concatenate(images_to_display, axis=1)
+        image = self.__get_concatenated_src_with_image(self.img)
         self.viewer.img_show(image)
 
     @timed
+    def __get_concatenated_src_with_image(self, image_to_concatenate):
+        images_to_display = (self.src_img.get_displayable_array(),
+                             image_to_concatenate.get_displayable_array())
+        image = concatenate(images_to_display, axis=1)
+        return image
+
+    @timed
     def save(self, seconds_from_start, seconds_for_action):
-        distance = "_d_" + str(self.distance)
         time = "_" + formatter.format_time(seconds_from_start)
-        parameter = distance + time + self.version_info
-        dirname = self.out_path + os.path.basename(self.src_path).split(".")[0] + parameter
-        os.mkdir(dirname)
-        self.img.save(dirname + "/after.jpg")
-        self.prev_img.save(dirname + "/before.jpg")
+        parameter = str(self.distance) + time + self.version_info
+        directory = self.out_path + os.path.basename(self.src_path).split(".")[0] + parameter
+        os.mkdir(directory)
+        self.__save_with_src(directory + "/after.jpg", self.img)
+        self.__save_with_src(directory + "/before.jpg", self.prev_img)
         data = self.__construct_json_data(seconds_from_start, seconds_for_action)
-        with open(dirname + "/data.json", "w") as outfile:
+        with open(directory + "/data.json", "w") as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
+
+    @timed
+    def __save_with_src(self, filename, img):
+        misc.imsave(filename, self.__get_concatenated_src_with_image(img))
 
     @timed
     def __construct_json_data(self, seconds_from_start, seconds_for_action):

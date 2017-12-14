@@ -12,20 +12,6 @@ class Image(object):
         self.__update_array()
 
     @timed
-    def save(self, filename):
-        quality = 0.9
-        smoothing = 0
-        optimize = 0
-        progressive = 0
-        comment = ""
-        subsampling = 0
-        baseline = 0
-        restart = 0
-        dct = 0
-        pdb.file_jpeg_save(self.img, self.__get_drawable(), filename, filename, quality, smoothing,
-                           optimize, progressive, comment, subsampling, baseline,restart, dct)
-
-    @timed
     def perform_action(self, action, args):
         perform_action(self.img, action, args)
         self.__update_array()
