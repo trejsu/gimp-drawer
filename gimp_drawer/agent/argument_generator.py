@@ -50,7 +50,7 @@ class ColorPickerGenerator(ArgumentGenerator, object):
 
     @timed
     def init(self, ranges, position, space):
-        select_action = space.action_to_create_selection_on_given_image(self.src_image)
+        select_action = space.create_selection_action(self.src_image)
         select_action(position)
         drawable = pdb.gimp_image_get_active_drawable(self.src_image)
         red = pdb.gimp_histogram(drawable, HISTOGRAM_RED, 0, 255)[0] / 255

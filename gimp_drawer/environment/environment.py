@@ -44,7 +44,7 @@ class Environment(object):
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             self.action_space.n,
-            "fixed_colors"
+            "brush_color_picking"
         )
 
     @timed

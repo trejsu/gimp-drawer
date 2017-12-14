@@ -39,15 +39,30 @@ class Space(object):
     def color(self):
         return [(0., 1.), (0., 1.), (0., 1.), (0., 1.)]
 
-    def action_to_create_selection_on_given_image(self, image):
+    def create_selection_action(self, image):
+        raise NotImplementedError()
+
+    def create_pixel_rgn_action(self, image):
         raise NotImplementedError()
 
 
 class LineSpace(Space):
+    def create_pixel_rgn_action(self, image):
+        # todo: remove logic from here
+        def create_pixel_rgn((x1, y1, x2, y2, size)):
+            pixel_rgn = None
+            drawable = pdb.gimp_image_active_drawable(image)
+            width = x2 - x1
+            height = y2 - y1
+            pdb.gimp_pixel_rgn_init(pixel_rgn, drawable, x1, y1, width, height, 0, 0)
+            return pixel_rgn
+
+        return create_pixel_rgn
+
     def position(self):
         return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (.1, 1.)]
 
-    def action_to_create_selection_on_given_image(self, image):
+    def create_selection_action(self, image):
         # todo: remove logic from here
         def create_selection((x1, y1, x2, y2, size)):
             drawable = pdb.gimp_image_active_drawable(image)
@@ -61,7 +76,17 @@ class LineSpace(Space):
 
 
 class SelectionSpace(Space):
-    def action_to_create_selection_on_given_image(self, image):
+    def create_pixel_rgn_action(self, image):
+        # todo: remove logic from here
+        def create_pixel_rgn((x, y, width, height, angle)):
+            pixel_rgn = None
+            drawable = pdb.gimp_image_active_drawable(image)
+            pdb.gimp_pixel_rgn_init(pixel_rgn, drawable, x, y, width, height, 0, 0)
+            return pixel_rgn
+
+        return create_pixel_rgn
+
+    def create_selection_action(self, image):
         raise NotImplementedError()
 
     def position(self):
@@ -69,10 +94,24 @@ class SelectionSpace(Space):
 
 
 class TriangleSpace(Space):
+    def create_pixel_rgn_action(self, image):
+        # todo: remove logic from here
+        def create_pixel_rgn((x1, y1, x2, y2, x3, y3)):
+            pixel_rgn = None
+            drawable = pdb.gimp_image_active_drawable(image)
+            x = min(x1, x2, x3)
+            y = min(y1, y2, y3)
+            width = max(x1, x2, x3) - x
+            height = max(y1, y2, y3) - y
+            pdb.gimp_pixel_rgn_init(pixel_rgn, drawable, x, y, width, height, 0, 0)
+            return pixel_rgn
+
+        return create_pixel_rgn
+
     def position(self):
         return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.)]
 
-    def action_to_create_selection_on_given_image(self, image):
+    def create_selection_action(self, image):
         # todo: remove logic from here
         def create_selection((x1, y1, x2, y2, x3, y3)):
             drawable = pdb.gimp_image_active_drawable(image)
@@ -86,10 +125,10 @@ class TriangleSpace(Space):
 
 
 class RectangleSelectionSpace(SelectionSpace):
-    def action_to_create_selection_on_given_image(self, image):
+    def create_selection_action(self, image):
         return lambda (x, y, width, height, angle): Selection(image, Point(x.value, y.value), width.value, height.value).select_rectangle()
 
 
 class EllipseSelectionSpace(SelectionSpace):
-    def action_to_create_selection_on_given_image(self, image):
+    def create_selection_action(self, image):
         return lambda (x, y, width, height, angle): Selection(image, Point(x.value, y.value), width.value, height.value).select_ellipse()
