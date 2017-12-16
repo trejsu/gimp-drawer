@@ -76,7 +76,7 @@ class Environment(object):
     def save(self, seconds_from_start, seconds_for_action):
         time = "_" + formatter.format_time(seconds_from_start)
         parameter = str(self.distance) + time + self.version_info
-        directory = self.out_path + os.path.basename(self.src_path).split(".")[0] + parameter
+        directory = self.out_path + os.path.basename(self.src_path).split(".")[0] + "_" + parameter
         os.mkdir(directory)
         self.__save_with_src(directory + "/after.jpg", self.img)
         self.__save_with_src(directory + "/before.jpg", self.prev_img)
