@@ -9,6 +9,7 @@ import gimp_drawer.common.utils.format as formatter
 import gimp_drawer.environment.initializer as initializer
 from gimp_drawer.common.decorators.timed import timed
 from gimp_drawer.config import improvements as imprvs
+from gimp_drawer.config import reducer_rate
 from gimp_drawer.environment import rendering
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.space import ToolSpace
@@ -25,7 +26,8 @@ class Environment(object):
         self.state = None
         self.reward = 0
         self.prev_reward = 0
-        self.distance = sys.maxint
+        # todo: czy to czegos nie psuje?
+        self.distance = sum(abs(self.src_img.array - self.img.array))
         self.prev_distance = 0
         self.done = False
         self.action_space = ToolSpace()
@@ -38,12 +40,13 @@ class Environment(object):
 
     @timed
     def __construct_version_info(self):
-        return "_{}_{}_{}_space_{}_{}".format(
+        return "_{}_{}_{}_{}_space_{}_{}".format(
             imprvs["eps"],
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
+            reducer_rate,
             self.action_space.n,
-            "brush_color_picking"
+            "smaller_shapes_selections"
         )
 
     @timed
@@ -77,6 +80,7 @@ class Environment(object):
         time = "_" + formatter.format_time(seconds_from_start)
         parameter = str(self.distance) + time + self.version_info
         directory = self.out_path + os.path.basename(self.src_path).split(".")[0] + "_" + parameter
+        directory = directory if not os.path.exists(directory) else directory + "_"
         os.mkdir(directory)
         self.__save_with_src(directory + "/after.jpg", self.img)
         self.__save_with_src(directory + "/before.jpg", self.prev_img)

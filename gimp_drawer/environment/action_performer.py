@@ -25,6 +25,7 @@ class Image(object):
     def get_height(self):
         return self.drawable.height
 
+    # todo: adjust argument to position and size
     @timed
     def draw_brush_line(self, (red, green, blue, opacity, x1, y1, x2, y2, size)):
         change_foreground_color(self.__from_normalized_color(blue, green, red))
@@ -36,7 +37,7 @@ class Image(object):
 
     @timed
     def __from_normalized_size(self, size):
-        return max(self.get_height(), self.get_width()) * size
+        return max(1, max(self.get_height(), self.get_width()) * size)
 
     @timed
     def __merge_layers(self):
@@ -61,10 +62,10 @@ class Image(object):
 
     @timed
     def __from_normalized_point(self, point):
-        return Point(point.x * self.get_width(), point.y * self.get_height())
+        return Point(max(1, point.x * self.get_width()), max(1, point.y * self.get_height()))
 
     @timed
-    def draw_rectangle(self, (red, green, blue, opacity, x, y, width, height, angle)):
+    def draw_rectangle(self, (red, green, blue, opacity, x, y, angle, width, height)):
         change_foreground_color(self.__from_normalized_color(blue, green, red))
         self.__add_opacity_layer(opacity)
         selection = Selection(self.image, Point(x, y), width, height)
@@ -73,7 +74,7 @@ class Image(object):
         self.__rotate_and_merge(angle, opacity)
 
     @timed
-    def draw_ellipse(self, (red, green, blue, opacity, x, y, width, height, angle)):
+    def draw_ellipse(self, (red, green, blue, opacity, x, y, angle, width, height)):
         change_foreground_color(self.__from_normalized_color(blue, green, red))
         opacity_layer = self.__add_opacity_layer(opacity)
         selection = Selection(self.image, Point(x, y), width, height)
@@ -110,7 +111,7 @@ class Image(object):
 
     @timed
     def __from_normalized_opacity(self, opacity):
-        return opacity * 100
+        return max(1, opacity * 100)
 
     @timed
     def __random_angle(self):
@@ -125,6 +126,7 @@ class Image(object):
         pdb.gimp_image_select_rectangle(self.image, CHANNEL_OP_REPLACE, 0,
                                         0, self.get_width(), self.get_height())
 
+    # todo: adjust argument to position and size
     @timed
     def draw_triangle(self, (red, green, blue, opacity, x1, y1, x2, y2, x3, y3)):
         change_foreground_color(self.__from_normalized_color(blue, green, red))
@@ -136,7 +138,7 @@ class Image(object):
 
     @timed
     def __from_normalized_color(self, blue, green, red):
-        return tuple([int(color * 255) for color in (red, green, blue)])
+        return tuple([max(int(color * 255), 1) for color in (red, green, blue)])
 
 
 @timed

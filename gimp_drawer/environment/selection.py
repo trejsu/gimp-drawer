@@ -5,7 +5,12 @@ from gimp_drawer.common.decorators.timed import timed
 class Selection(object):
     def __init__(self, image, top_left=None, width=None, height=None):
         self.image = image
-        self.top_left = self.__from_normalized_point(top_left) if top_left is not None else None
+        top_left = self.__from_normalized_point(top_left) if top_left is not None else None
+        if top_left.x == self.image.width:
+            top_left.x -= 1
+        if top_left.y == self.image.height:
+            top_left.y -= 1
+        self.top_left = top_left
         self.width = self.__from_normalized_width(width, self.top_left.x) if width is not None else None
         self.height = self.__from_normalized_height(height, self.top_left.y) if height is not None else None
 
@@ -19,15 +24,15 @@ class Selection(object):
 
     @timed
     def __from_normalized_point(self, point):
-        return Point(point.x * self.image.width, point.y * self.image.height)
+        return Point(max(1, point.x * self.image.width), max(1, point.y * self.image.height))
 
     @timed
     def __from_normalized_width(self, width, boundary):
-        return width * (self.image.width - boundary)
+        return max(1, width * (self.image.width - boundary))
 
     @timed
     def __from_normalized_height(self, height, boundary):
-        return height * (self.image.height - boundary)
+        return max(1, height * (self.image.height - boundary))
 
     @timed
     def select_triangle(self, x1, y1, x2, y2, x3, y3):
