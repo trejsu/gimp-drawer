@@ -1,7 +1,7 @@
 import random
 import time
 
-from gimp_drawer.agent.argument_generator import ColorPickerGenerator, RandomInitGenerator, SmallerInTimeInitGenerator
+from gimp_drawer.agent.argument_generator import ColorPickerGenerator, ScalingInitGenerator
 from gimpfu import *
 
 from gimp_drawer.agent.argument import ArgumentGroup
@@ -23,8 +23,7 @@ class Agent(object):
         self.start = None
         self.action_start = None
         self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img)
-        self.position_generator = RandomInitGenerator(imprvs["eps"])
-        self.size_generator = SmallerInTimeInitGenerator(imprvs["eps"])
+        self.position_generator = ScalingInitGenerator(imprvs["eps"])
 
     @timed
     def run(self):
@@ -57,7 +56,7 @@ class Agent(object):
     @timed
     def __perform_action_with_the_best_args(self, action, args):
         end = time.time()
-        self.env.step(action, self.__transform_args(args), end - self.start)
+        self.env.step(action, self.__transform_args(args))
         if self.__render_default():
             self.env.render()
         self.env.save(end - self.start, end - self.action_start)
@@ -78,14 +77,11 @@ class Agent(object):
     def __generate_initial_arguments(self, action):
         subspace = self.env.action_space.subspace(action)
         position_ranges = subspace.position()
-        size_ranges = subspace.size()
-        init_position = self.position_generator.init(position_ranges)
-        init_size = self.size_generator.init(size_ranges, self.start - time.time())
+        init_position = self.position_generator.init(position_ranges, time.time() - self.start, subspace)
         color_ranges = subspace.color()
-        init_color = self.color_generator.init(color_ranges, init_position, init_size, subspace)
+        init_color = self.color_generator.init(color_ranges, init_position, subspace)
         args = [ArgumentGroup(init_color, self.color_generator),
-                ArgumentGroup(init_position, self.position_generator),
-                ArgumentGroup(init_size, self.size_generator)]
+                ArgumentGroup(init_position, self.position_generator)]
         return args
 
     @timed

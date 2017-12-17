@@ -50,9 +50,9 @@ class ColorPickerGenerator(ArgumentGenerator, object):
         self.src_image = src_image
 
     @timed
-    def init(self, ranges, position, size, space):
+    def init(self, ranges, position, space):
         select_action = space.create_selection_action(self.src_image)
-        select_action(position, size)
+        select_action(position)
         drawable = pdb.gimp_image_get_active_drawable(self.src_image)
         red = pdb.gimp_histogram(drawable, HISTOGRAM_RED, 0, 255)[0] / 255
         green = pdb.gimp_histogram(drawable, HISTOGRAM_GREEN, 0, 255)[0] / 255
@@ -61,17 +61,20 @@ class ColorPickerGenerator(ArgumentGenerator, object):
         return Argument(0, 1, red), Argument(0, 1, green), Argument(0, 1, blue), Argument(0, 1, 0.8)
 
 
-class SmallerInTimeInitGenerator(ArgumentGenerator, object):
+class ScalingInitGenerator(ArgumentGenerator, object):
     def __init__(self, eps):
-        super(SmallerInTimeInitGenerator, self).__init__(eps)
+        super(ScalingInitGenerator, self).__init__(eps)
 
     @timed
-    def init(self, ranges, time):
-        arg_reducer = (time / 10) * reducer_rate
+    def init(self, ranges, time, space):
         args = ()
         for r in ranges:
             arg_min = r[0]
-            arg_max = r[1] - arg_reducer
+            arg_max = r[1]
             arg_value = random.uniform(arg_min, arg_max)
             args = args + (Argument(arg_min, arg_max, arg_value),)
+        reducer = int(time / 10) * reducer_rate
+        scale = 1 - reducer
+        scale_action = space.scale_action(scale)
+        scale_action(args)
         return args

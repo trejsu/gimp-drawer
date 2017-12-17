@@ -46,7 +46,7 @@ class Environment(object):
             imprvs["attempts"],
             reducer_rate,
             self.action_space.n,
-            "smaller_shapes_selections"
+            "smaller_shapes"
         )
 
     @timed

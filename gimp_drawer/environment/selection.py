@@ -1,15 +1,17 @@
 from gimpfu import *
 from gimp_drawer.common.decorators.timed import timed
+from gimp_drawer.common.figures import Point
 
 
 class Selection(object):
     def __init__(self, image, top_left=None, width=None, height=None):
         self.image = image
         top_left = self.__from_normalized_point(top_left) if top_left is not None else None
-        if top_left.x == self.image.width:
-            top_left.x -= 1
-        if top_left.y == self.image.height:
-            top_left.y -= 1
+        if top_left is not None:
+            if top_left.x == self.image.width:
+                top_left.x -= 1
+            if top_left.y == self.image.height:
+                top_left.y -= 1
         self.top_left = top_left
         self.width = self.__from_normalized_width(width, self.top_left.x) if width is not None else None
         self.height = self.__from_normalized_height(height, self.top_left.y) if height is not None else None
@@ -61,22 +63,12 @@ class Selection(object):
         point1 = self.__from_normalized_point(Point(x1, y1))
         point2 = self.__from_normalized_point(Point(x2, y2))
         drawable = pdb.gimp_image_active_drawable(self.image)
-        pdb.gimp_context_set_brush_size(max(drawable.height, drawable.width) * size)
+        size_to_change = max(drawable.height, drawable.width) * size
+        print "size to change from select brush line =", size_to_change
+        pdb.gimp_context_set_brush_size(size_to_change)
         points = [point1.x, point1.y, point2.x, point2.y]
         pdb.gimp_paintbrush_default(drawable, len(points), points)
         center = Point((point1.x + point2.x) / 2, (point1.y + point2.y) / 2)
         pdb.gimp_image_select_contiguous_color(self.image, CHANNEL_OP_REPLACE, drawable, center.x,
                                                center.y)
-
-
-class Point(object):
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    def __str__(self):
-        return "(" + str(self.x) + "," + str(self.y) + ")"
 
