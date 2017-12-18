@@ -1,12 +1,15 @@
 import os
 
 from gimpfu import *
+from tqdm import tqdm
 
 
 def plugin_main(directory, out):
     print directory
     filenames = [name for name in os.listdir(directory)]
-    for filename in filenames:
+    filenames_in_out = [name for name in os.listdir(out)]
+    filenames = [name for name in filenames if name not in filenames_in_out]
+    for filename in tqdm(filenames):
         load_path = directory + "/" + filename
         img = pdb.gimp_file_load(load_path, load_path)
         drawable = pdb.gimp_image_get_active_drawable(img)
@@ -22,7 +25,6 @@ def plugin_main(directory, out):
         filename_without_format = filename.split(".")[0]
         file_format = filename.split(".")[1]
         if file_format == "png":
-            print "PNG!"
             layer = gimp.Layer(img, "layer", new_size, new_size, RGB_IMAGE, 100, NORMAL_MODE)
             position = 1
             img.add_layer(layer, position)
@@ -30,6 +32,7 @@ def plugin_main(directory, out):
             pdb.gimp_image_merge_visible_layers(img, CLIP_TO_BOTTOM_LAYER)
         save_path = out + "/" + filename_without_format + ".jpg"
         pdb.file_jpeg_save(img, pdb.gimp_image_get_active_drawable(img), save_path, save_path, 0.9, 0, 0, 0, "", 0, 0, 0, 0)
+        pdb.gimp_image_delete(img)
 
 
 register("image_processor", "", "", "", "", "", "", "",

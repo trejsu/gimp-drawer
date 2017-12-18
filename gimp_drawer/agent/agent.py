@@ -1,5 +1,6 @@
 import random
 import time
+import numpy as np
 
 from gimpfu import *
 
@@ -17,14 +18,15 @@ class Agent(object):
     RENDER_DEFAULT_MODES = {RenderMode.ALL, RenderMode.STANDARD}
     RENDER_EVERYTHING_MODES = {RenderMode.ALL}
 
-    def __init__(self, src_path, acceptable_distance, render_mode, input_path):
+    def __init__(self, src_path, acceptable_distance, render_mode, input_path, seed):
         self.render_mode = RenderMode(render_mode)
         self.env = Environment(src_path, acceptable_distance, input_path)
         self.done = False
         self.start = None
         self.action_start = None
-        self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img)
-        self.position_generator = ScalingInitGenerator(imprvs["eps"])
+        self.rng = np.random.RandomState(seed)
+        self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img, self.rng)
+        self.position_generator = ScalingInitGenerator(imprvs["eps"], self.rng)
 
     @timed
     def run(self):
@@ -32,7 +34,7 @@ class Agent(object):
         while not self.done:
             self.action_start = time.time()
             actions = self.env.action_space()
-            action = random.choice(actions)
+            action = self.rng.choice(actions)
             args = self.__generate_initial_arguments(action)
             reward, self.done = self.env.step(action, self.__transform_args(args))
             if self.__render_everything():
@@ -113,8 +115,8 @@ class Agent(object):
         return self.render_mode in Agent.RENDER_DEFAULT_MODES
 
 
-def plugin_main(src_path, acceptable_distance, render_mode, input_path):
-    agent = Agent(src_path, acceptable_distance, render_mode, input_path)
+def plugin_main(src_path, acceptable_distance, render_mode, input_path, seed):
+    agent = Agent(src_path, acceptable_distance, render_mode, input_path, seed)
     agent.run()
 
 
@@ -123,7 +125,8 @@ register("agent", "", "", "", "", "", "", "",
              (PF_STRING, "src_path", "Source", ""),
              (PF_INT, "acceptable_distance", "Acceptable distance", 0),
              (PF_INT, "render_mode", "Render mode", 0),
-             (PF_STRING, "input_path", "Input", "")
+             (PF_STRING, "input_path", "Input", ""),
+             (PF_INT, "Seed", "seed", 0)
          ], [], plugin_main)
 
 main()

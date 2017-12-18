@@ -6,8 +6,8 @@ from gimp_drawer.common.decorators.timed import timed
 
 
 class ColorPickerGenerator(ArgumentGenerator, object):
-    def __init__(self, eps, src_image):
-        super(ColorPickerGenerator, self).__init__(eps)
+    def __init__(self, eps, src_image, rng):
+        super(ColorPickerGenerator, self).__init__(eps, rng)
         self.src_image = src_image
 
     @timed

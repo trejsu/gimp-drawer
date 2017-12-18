@@ -132,10 +132,6 @@ class Image(object):
         return max(1, opacity * 100)
 
     @timed
-    def __random_angle(self):
-        return random.randint(-180, 180)
-
-    @timed
     def __fill_selection(self):
         pdb.gimp_edit_fill(self.drawable, FOREGROUND_FILL)
 
