@@ -1,4 +1,5 @@
 #!/bin/bash
 
-cp -R gimp_drawer/agent/agent.py ${GIMP_PLUGIN}
+cp -R ${GIMP_PROJECT}/gimp_drawer/agent/agent.py ${GIMP_PLUGIN}
+cp -R ${GIMP_PROJECT}/gimp_drawer/agent/image_generator.py ${GIMP_PLUGIN}
 chmod -R 700 ${GIMP_PLUGIN}

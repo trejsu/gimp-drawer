@@ -1,5 +1,6 @@
 import os
 import json
+import datetime
 
 from numpy import concatenate
 from scipy import sum
@@ -35,10 +36,11 @@ class Environment(object):
         self.undo_before_step = False
         self.action = None
         self.args = None
+        self.successful_actions = 0
 
     @timed
     def __construct_version_info(self):
-        return "_{}_{}_{}_{}_space_{}_{}".format(
+        return "{}_{}_{}_{}_space_{}_{}".format(
             imprvs["eps"],
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
@@ -55,9 +57,13 @@ class Environment(object):
     @timed
     def __setup_output(self):
         filename = str(os.path.basename(self.src_path).split(".")[0])
-        self.out_path = os.path.expandvars("$GIMP_PROJECT/out/%s/" % filename)
-        if not os.path.exists(self.out_path):
-            os.mkdir(self.out_path)
+        image_dir = os.path.expandvars("$GIMP_PROJECT/out/%s" % filename)
+        execution_dirname = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S") + "_" + self.version_info
+        if not os.path.exists(image_dir):
+            os.mkdir(image_dir)
+        self.out_path = "%s/%s" % (image_dir, execution_dirname)
+        os.mkdir(self.out_path)
+        self.src_img.save(self.out_path + "/src.jpg")
 
     @timed
     def render(self):
@@ -75,14 +81,8 @@ class Environment(object):
 
     @timed
     def save(self, seconds_from_start, seconds_for_action):
-        time = "_" + formatter.format_time(seconds_from_start)
-        parameter = str(self.distance) + time + self.version_info
-        directory = self.out_path + os.path.basename(self.src_path).split(".")[0] + "_" + parameter
-        directory = directory if not os.path.exists(directory) else directory + "_"
-        os.mkdir(directory)
-        self.prev_img.save(directory + "/before.jpg")
         data = self.__construct_json_data(seconds_from_start, seconds_for_action)
-        with open(directory + "/data.json", "w") as outfile:
+        with open(self.out_path + "/action_{}.json".format(self.successful_actions), "w") as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
 
     @timed
@@ -109,6 +109,7 @@ class Environment(object):
 
     @timed
     def step(self, action, args):
+        self.successful_actions += 1
         if self.prev_img is not None and not self.undo_before_step:
             self.prev_img.delete()
         self.prev_img = self.img
@@ -125,6 +126,7 @@ class Environment(object):
 
     @timed
     def __update_reward_and_distance(self):
+        # time consuming
         new_distance = sum(abs(self.src_img.array - self.img.array))
         self.reward = int(self.distance) - int(new_distance)
         self.distance = int(new_distance)
@@ -135,6 +137,7 @@ class Environment(object):
 
     @timed
     def undo(self):
+        self.successful_actions -= 1
         self.img.delete()
         self.img = Image(self.prev_img.img, self.prev_img.array)
         self.reward = self.prev_reward

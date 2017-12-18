@@ -95,14 +95,33 @@ class Image(object):
         auto_center = True
         center_x = 0
         center_y = 0
-        rotated_shape = pdb.gimp_item_transform_rotate(self.drawable,
-                                                       angle,
-                                                       auto_center,
-                                                       center_x,
-                                                       center_y)
-        pdb.gimp_floating_sel_to_layer(rotated_shape)
-        active_layer = pdb.gimp_image_get_active_layer(self.image)
+        rotated_shape = self.__item_transform_rotate(angle, auto_center, center_x, center_y)
+        self.__floating_sel_to_layer(rotated_shape)
+        active_layer = self.__get_active_layer()
+        self.__layer_set_opacity(active_layer, opacity)
+
+    # todo: put it back to __rotate
+    @timed
+    def __layer_set_opacity(self, active_layer, opacity):
         pdb.gimp_layer_set_opacity(active_layer, self.__from_normalized_opacity(opacity))
+
+    # todo: put it back to __rotate
+    @timed
+    def __get_active_layer(self):
+        return pdb.gimp_image_get_active_layer(self.image)
+
+    # todo: put it back to __rotate
+    @timed
+    def __floating_sel_to_layer(self, rotated_shape):
+        pdb.gimp_floating_sel_to_layer(rotated_shape)
+
+    # time consuming
+    # todo: put it back to __rotate
+    @timed
+    def __item_transform_rotate(self, angle, auto_center, center_x, center_y):
+        rotated_shape = pdb.gimp_item_transform_rotate(self.drawable, angle, auto_center, center_x,
+                                                       center_y)
+        return rotated_shape
 
     @timed
     def __from_normalized_angle(self, angle):
