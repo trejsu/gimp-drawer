@@ -1,10 +1,11 @@
 import random
 import time
 
-from gimp_drawer.agent.argument_generator import ColorPickerGenerator, ScalingInitGenerator
 from gimpfu import *
 
-from gimp_drawer.agent.argument import ArgumentGroup
+from gimp_drawer.agent.argument.argument import ArgumentGroup
+from gimp_drawer.agent.argument.color_picker_generator import ColorPickerGenerator
+from gimp_drawer.agent.argument.scaling_init_generator import ScalingInitGenerator
 from gimp_drawer.agent.mode import RenderMode
 from gimp_drawer.common.decorators.timed import timed, print_result
 from gimp_drawer.config import improvements as imprvs
