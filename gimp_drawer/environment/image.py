@@ -34,6 +34,20 @@ class Image(object):
         return Image(pdb.gimp_image_duplicate(self.img), self.array)
 
     @timed
+    def save(self, filename):
+        quality = 0.9
+        smoothing = 0
+        optimize = 0
+        progressive = 0
+        comment = ""
+        subsampling = 0
+        baseline = 0
+        restart = 0
+        dct = 0
+        pdb.file_jpeg_save(self.img, self.__get_drawable(), filename, filename, quality, smoothing,
+                           optimize, progressive, comment, subsampling, baseline, restart, dct)
+
+    @timed
     def __to_array(self):
         bpp, reshape = self.__process_drawable()
         return self.__get_numpy_array(reshape, "d", bpp)

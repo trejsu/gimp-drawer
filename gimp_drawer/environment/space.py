@@ -6,7 +6,7 @@ from gimp_drawer.common.decorators.timed import timed
 
 class ToolSpace(object):
     def __init__(self):
-        self.n = 1
+        self.n = 4
 
     def __call__(self):
         return list(range(self.n))

@@ -1,9 +1,8 @@
 import os
-import sys
 import json
 
 from numpy import concatenate
-from scipy import sum, misc
+from scipy import sum
 
 import gimp_drawer.common.utils.format as formatter
 import gimp_drawer.environment.initializer as initializer
@@ -26,7 +25,6 @@ class Environment(object):
         self.state = None
         self.reward = 0
         self.prev_reward = 0
-        # todo: czy to czegos nie psuje?
         self.distance = sum(abs(self.src_img.array - self.img.array))
         self.prev_distance = 0
         self.done = False
@@ -46,7 +44,7 @@ class Environment(object):
             imprvs["attempts"],
             reducer_rate,
             self.action_space.n,
-            "UNDO_SPEEDUP_THIS_TIME_FOR_REAL"
+            "removed_src_and_after_from_saved"
         )
 
     @timed
@@ -82,15 +80,10 @@ class Environment(object):
         directory = self.out_path + os.path.basename(self.src_path).split(".")[0] + "_" + parameter
         directory = directory if not os.path.exists(directory) else directory + "_"
         os.mkdir(directory)
-        self.__save_with_src(directory + "/after.jpg", self.img)
-        self.__save_with_src(directory + "/before.jpg", self.prev_img)
+        self.prev_img.save(directory + "/before.jpg")
         data = self.__construct_json_data(seconds_from_start, seconds_for_action)
         with open(directory + "/data.json", "w") as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
-
-    @timed
-    def __save_with_src(self, filename, img):
-        misc.imsave(filename, self.__get_concatenated_src_with_image(img))
 
     @timed
     def __construct_json_data(self, seconds_from_start, seconds_for_action):
