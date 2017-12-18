@@ -38,6 +38,7 @@ class Environment(object):
         self.action = None
         self.args = None
         self.successful_actions = 0
+        self.actions_before_success = 0
 
     @timed
     def __construct_version_info(self):
@@ -88,6 +89,7 @@ class Environment(object):
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
         if self.successful_actions % 100 == 0:
             np.save(self.out_path + "/{}.npy".format(action_string), self.img.array)
+        self.actions_before_success = 0
 
     @timed
     def __construct_json_data(self, seconds_from_start, seconds_for_action):
@@ -108,12 +110,14 @@ class Environment(object):
                 "epsilon": imprvs["eps"],
                 "improvementsByOneAttempt": imprvs["improvements_by_one_attempt"],
                 "attempts": imprvs["attempts"]
-            }
+            },
+            "numberOfActionsBeforeSuccess": self.actions_before_success - 1
         }
 
     @timed
     def step(self, action, args):
         self.successful_actions += 1
+        self.actions_before_success += 1
         if self.prev_img is not None and not self.undo_before_step:
             self.prev_img.delete()
         self.prev_img = self.img
