@@ -6,10 +6,11 @@ from gimp_drawer.environment.action_performer import perform_action
 
 
 class Image(object):
-    def __init__(self, img):
+    def __init__(self, img, array=None):
         self.img = img
-        self.array = None
-        self.__update_array()
+        self.array = array
+        if array is None:
+            self.__update_array()
 
     @timed
     def perform_action(self, action, args):
@@ -30,7 +31,7 @@ class Image(object):
 
     @timed
     def duplicate(self):
-        return Image(pdb.gimp_image_duplicate(self.img))
+        return Image(pdb.gimp_image_duplicate(self.img), self.array)
 
     @timed
     def __to_array(self):

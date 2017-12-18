@@ -64,7 +64,6 @@ class Selection(object):
         point2 = self.__from_normalized_point(Point(x2, y2))
         drawable = pdb.gimp_image_active_drawable(self.image)
         size_to_change = max(drawable.height, drawable.width) * size
-        print "size to change from select brush line =", size_to_change
         pdb.gimp_context_set_brush_size(size_to_change)
         points = [point1.x, point1.y, point2.x, point2.y]
         pdb.gimp_paintbrush_default(drawable, len(points), points)

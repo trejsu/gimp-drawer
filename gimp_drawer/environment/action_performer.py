@@ -158,7 +158,6 @@ def change_foreground_color(color):
 
 @timed
 def change_size(size):
-    print "size to change =", size
     pdb.gimp_context_set_brush_size(size)
 
 

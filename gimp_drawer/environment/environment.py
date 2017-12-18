@@ -46,7 +46,7 @@ class Environment(object):
             imprvs["attempts"],
             reducer_rate,
             self.action_space.n,
-            "smaller_shapes"
+            "UNDO_SPEEDUP_THIS_TIME_FOR_REAL"
         )
 
     @timed
@@ -143,7 +143,7 @@ class Environment(object):
     @timed
     def undo(self):
         self.img.delete()
-        self.img = Image(self.prev_img.img)
+        self.img = Image(self.prev_img.img, self.prev_img.array)
         self.reward = self.prev_reward
         self.distance = self.prev_distance
         self.undo_before_step = True
