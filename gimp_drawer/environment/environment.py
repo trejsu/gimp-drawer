@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import numpy as np
 
 from numpy import concatenate
 from scipy import sum
@@ -46,7 +47,7 @@ class Environment(object):
             imprvs["attempts"],
             reducer_rate,
             self.action_space.n,
-            "removed_src_and_after_from_saved"
+            "numpy_backup"
         )
 
     @timed
@@ -82,8 +83,11 @@ class Environment(object):
     @timed
     def save(self, seconds_from_start, seconds_for_action):
         data = self.__construct_json_data(seconds_from_start, seconds_for_action)
-        with open(self.out_path + "/action_{}.json".format(self.successful_actions), "w") as outfile:
+        action_string = "action_{}".format(self.successful_actions)
+        with open(self.out_path + "/{}.json".format(action_string), "w") as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
+        if self.successful_actions % 100 == 0:
+            np.save(self.out_path + "/{}.npy".format(action_string), self.img.array)
 
     @timed
     def __construct_json_data(self, seconds_from_start, seconds_for_action):
@@ -126,7 +130,7 @@ class Environment(object):
 
     @timed
     def __update_reward_and_distance(self):
-        # time consuming
+        # time consuming!
         new_distance = sum(abs(self.src_img.array - self.img.array))
         self.reward = int(self.distance) - int(new_distance)
         self.distance = int(new_distance)
