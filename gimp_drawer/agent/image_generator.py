@@ -13,15 +13,16 @@ class ImageGenerator(object):
         self.image = Image(image)
 
     def run(self):
-        actions = self.parse_actions()
+        actions = self.__parse_actions()
         for action in actions:
             self.image.perform_action(action[0], action[1])
         self.image.save(self.src_path + "/generated_image.jpg")
 
-    def parse_actions(self):
+    def __parse_actions(self):
         import glob
         path_to_actions = self.src_path + "/*.json"
         action_files = glob.glob(path_to_actions)
+        action_files.sort(key=self.__natural_keys)
 
         actions = []
 
@@ -31,6 +32,13 @@ class ImageGenerator(object):
                 actions.append((action_data["actionNumber"], tuple(action_data["args"])))
 
         return actions
+
+    def __atoi(self, text):
+        return int(text) if text.isdigit() else text
+
+    def __natural_keys(self, text):
+        import re
+        return [self.__atoi(c) for c in re.split('(\d+)', text)]
 
 
 def plugin_main(src_path):
