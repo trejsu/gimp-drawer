@@ -1,4 +1,5 @@
 import json
+import time
 
 from gimpfu import *
 
@@ -13,10 +14,13 @@ class ImageGenerator(object):
         self.image = Image(image)
 
     def run(self):
+        start = time.time()
         actions = self.__parse_actions()
         for action in actions:
             self.image.perform_action(action[0], action[1])
         self.image.save(self.src_path + "/generated_image.jpg")
+        end = time.time()
+        print "Image generated in {} seconds".format(end - start)
 
     def __parse_actions(self):
         import glob
