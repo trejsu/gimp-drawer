@@ -15,6 +15,8 @@ from gimp_drawer.environment import rendering
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.space import ToolSpace
 
+from gimpfu import pdb
+
 
 class Environment(object):
     def __init__(self, src_path, acceptable_distance, input_path, actions):
@@ -156,4 +158,13 @@ class Environment(object):
 
     @timed
     def generate_image(self):
-        pass
+        pdb.python_fu_image_generator(self.out_path)
+        results_dir = os.path.expandvars("$GIMP_PROJECT/results")
+        if not os.path.exists(results_dir):
+            os.mkdir(results_dir)
+        filename = str(os.path.basename(self.src_path).split(".")[0])
+        image_result_dir = results_dir + "/" + filename
+        if not os.path.exists(image_result_dir):
+            os.mkdir(image_result_dir)
+        os.system("cp {} {}".format(self.out_path + "/generated_image.jpg", image_result_dir))
+        os.system("cp {} {}".format(self.out_path + "/src.jpg", image_result_dir))
