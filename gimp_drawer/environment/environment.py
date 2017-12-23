@@ -153,3 +153,7 @@ class Environment(object):
         self.reward = self.prev_reward
         self.distance = self.prev_distance
         self.undo_before_step = True
+
+    @timed
+    def generate_image(self):
+        pass

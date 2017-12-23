@@ -4,3 +4,4 @@ improvements = dict(
     attempts=30
 )
 reducer_rate = 0.002
+timers = False

@@ -1,4 +1,3 @@
-import random
 import time
 import numpy as np
 
@@ -9,7 +8,7 @@ from gimp_drawer.agent.argument.color_picker_generator import ColorPickerGenerat
 from gimp_drawer.agent.argument.scaling_init_generator import ScalingInitGenerator
 from gimp_drawer.agent.mode import RenderMode
 from gimp_drawer.common.decorators.timed import timed, print_result
-from gimp_drawer.config import improvements as imprvs
+from gimp_drawer.config import improvements as imprvs, timers
 from gimp_drawer.environment.environment import Environment
 
 
@@ -90,9 +89,9 @@ class Agent(object):
 
     @timed
     def __finish(self):
-        # end = time.time()
-        # self.env.save(end - self.start, end - self.action_start)
-        print_result()
+        self.env.generate_image()
+        if timers:
+            print_result()
 
     @timed
     def __initialize(self):
