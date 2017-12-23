@@ -17,7 +17,7 @@ from gimp_drawer.environment.space import ToolSpace
 
 
 class Environment(object):
-    def __init__(self, src_path, acceptable_distance, input_path):
+    def __init__(self, src_path, acceptable_distance, input_path, actions):
         self.src_path = src_path
         src_img, img = initializer.initialize(src_path, input_path)
         self.src_img = Image(src_img)
@@ -39,6 +39,7 @@ class Environment(object):
         self.args = None
         self.successful_actions = 0
         self.actions_before_success = 0
+        self.actions = actions
 
     @timed
     def __construct_version_info(self):
@@ -60,7 +61,8 @@ class Environment(object):
     def __setup_output(self):
         filename = str(os.path.basename(self.src_path).split(".")[0])
         image_dir = os.path.expandvars("$GIMP_PROJECT/out/%s" % filename)
-        execution_dirname = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S") + "_" + self.version_info
+        date = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        execution_dirname = date + "_" + self.version_info
         if not os.path.exists(image_dir):
             os.mkdir(image_dir)
         self.out_path = "%s/%s" % (image_dir, execution_dirname)
@@ -141,7 +143,7 @@ class Environment(object):
 
     @timed
     def __check_if_done(self):
-        self.done = self.distance <= self.acceptable_dist
+        self.done = self.distance <= self.acceptable_dist or self.successful_actions >= self.actions
 
     @timed
     def undo(self):

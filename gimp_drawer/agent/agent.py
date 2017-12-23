@@ -18,9 +18,9 @@ class Agent(object):
     RENDER_DEFAULT_MODES = {RenderMode.ALL, RenderMode.STANDARD}
     RENDER_EVERYTHING_MODES = {RenderMode.ALL}
 
-    def __init__(self, src_path, acceptable_distance, render_mode, input_path, seed):
+    def __init__(self, src_path, acceptable_distance, render_mode, input_path, seed, actions):
         self.render_mode = RenderMode(render_mode)
-        self.env = Environment(src_path, acceptable_distance, input_path)
+        self.env = Environment(src_path, acceptable_distance, input_path, actions)
         self.done = False
         self.start = None
         self.action_start = None
@@ -80,7 +80,8 @@ class Agent(object):
     def __generate_initial_arguments(self, action):
         subspace = self.env.action_space.subspace(action)
         position_ranges = subspace.position()
-        init_position = self.position_generator.init(position_ranges, time.time() - self.start, subspace)
+        time_passed = time.time() - self.start
+        init_position = self.position_generator.init(position_ranges, time_passed, subspace)
         color_ranges = subspace.color()
         init_color = self.color_generator.init(color_ranges, init_position, subspace)
         args = [ArgumentGroup(init_color, self.color_generator),
@@ -89,8 +90,8 @@ class Agent(object):
 
     @timed
     def __finish(self):
-        end = time.time()
-        self.env.save(end - self.start, end - self.action_start)
+        # end = time.time()
+        # self.env.save(end - self.start, end - self.action_start)
         print_result()
 
     @timed
@@ -115,8 +116,8 @@ class Agent(object):
         return self.render_mode in Agent.RENDER_DEFAULT_MODES
 
 
-def plugin_main(src_path, acceptable_distance, render_mode, input_path, seed):
-    agent = Agent(src_path, acceptable_distance, render_mode, input_path, seed)
+def plugin_main(src_path, acceptable_distance, render_mode, input_path, seed, actions):
+    agent = Agent(src_path, acceptable_distance, render_mode, input_path, seed, actions)
     agent.run()
 
 
@@ -126,7 +127,8 @@ register("agent", "", "", "", "", "", "", "",
              (PF_INT, "acceptable_distance", "Acceptable distance", 0),
              (PF_INT, "render_mode", "Render mode", 0),
              (PF_STRING, "input_path", "Input", ""),
-             (PF_INT, "Seed", "seed", 0)
+             (PF_INT, "Seed", "seed", 0),
+             (PF_INT, "Actions", "actions", 0)
          ], [], plugin_main)
 
 main()
