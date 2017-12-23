@@ -24,7 +24,7 @@ class Agent(object):
         self.done = False
         self.start = None
         self.action_start = None
-        self.rng = np.random.RandomState(seed)
+        self.rng = np.random.RandomState(int(seed))
         self.color_generator = ColorPickerGenerator(imprvs["eps"], self.env.src_img.img, self.rng)
         self.position_generator = ScalingInitGenerator(imprvs["eps"], self.rng)
 
@@ -127,8 +127,8 @@ register("agent", "", "", "", "", "", "", "",
              (PF_INT, "acceptable_distance", "Acceptable distance", 0),
              (PF_INT, "render_mode", "Render mode", 0),
              (PF_STRING, "input_path", "Input", ""),
-             (PF_INT, "Seed", "seed", 0),
-             (PF_INT, "Actions", "actions", 0)
+             (PF_FLOAT, "Seed", "seed", 0),
+             (PF_FLOAT, "Actions", "actions", 0)
          ], [], plugin_main)
 
 main()
