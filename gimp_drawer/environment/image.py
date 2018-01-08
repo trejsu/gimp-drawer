@@ -17,6 +17,13 @@ class Image(object):
         perform_action(self.img, action, args)
         self.__update_array()
 
+    def perform_action_without_array_update(self, action, args):
+        perform_action(self.img, action, args)
+
+    def get_updated_array(self):
+        self.__update_array()
+        return self.array
+
     @timed
     def delete(self):
         gimp.delete(self.img)
