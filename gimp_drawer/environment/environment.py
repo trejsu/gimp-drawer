@@ -45,13 +45,13 @@ class Environment(object):
 
     @timed
     def __construct_version_info(self):
+        additional_info = ""
         return "{}_{}_{}_{}_space_{}_{}".format(
             imprvs["eps"],
             imprvs["improvements_by_one_attempt"],
             imprvs["attempts"],
             reducer_rate,
-            self.action_space.n,
-            "numpy_backup"
+            self.action_space.n, additional_info
         )
 
     @timed
