@@ -9,23 +9,27 @@ RUN_PARAMETER = "RUN-NONINTERACTIVE"
 
 def main(argv):
 
-    source = None
+    path = None
     action_type = -1
     limit = -1
+    size = 300
+    diffs = 0
 
-    opts, args = getopt.getopt(argv, "s:a:l:")
+    opts, args = getopt.getopt(argv, "p:a:l:s:d")
     for opt, arg in opts:
-        if opt == '-s':
-            source = arg
+        if opt == '-p':
+            path = arg
         if opt == '-a':
             action_type = arg
         if opt == '-l':
             limit = arg
+        if opt == '-s':
+            size = arg
+        if opt == '-d':
+            diffs = 1
 
-    print "before command"
-
-    command = "gimp -i -b '(python-fu-image-generator {} \"{}\" {} {})' -b '(gimp-quit 1)'"\
-        .format(RUN_PARAMETER, source, action_type, limit)
+    command = "gimp -i -b '(python-fu-image-generator {} \"{}\" {} {} {} {})' -b '(gimp-quit 1)'"\
+        .format(RUN_PARAMETER, path, action_type, limit, size, diffs)
     os.system(command)
 
 
