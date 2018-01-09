@@ -60,23 +60,21 @@ class ImageGenerator(object):
             self.image.save(self.src_path + "/generated_image.jpg")
 
     def perform_actions_with_saving_data(self, actions):
-        for index, (action_type, action_args, action_json) in enumerate(actions):
-
+        for index, (action_type, action_args) in enumerate(actions):
             if self.should_save(action_type):
-                self.save(index)
-
+                self.save(index, action_type, action_args)
             self.image.perform_action_without_array_update(action_type, action_args)
-
-            if self.should_save(action_type):
-                os.system("cp {} {}".format(action_json, self.out_path))
 
     def should_save(self, action_type):
         return self.diffs and (not self.action_type_limited or action_type == self.action_type)
 
-    def save(self, index):
-        diff_image_array = (self.src_image.array - self.image.get_updated_array()) / 255
-        path = "{}/diff_before_action_{}.npy".format(self.out_path, index + 1)
-        np.save(path, diff_image_array)
+    def save(self, index, action_type, action_args):
+        def get_path(x): return "{}/{}_{}.npy".format(self.out_path, x, index + 1)
+        X = (self.src_image.array - self.image.get_updated_array()) / 255
+        np.save(get_path("X"), X)
+        # Y without action_type for now
+        Y = np.array(list(action_args))
+        np.save(get_path("Y"), Y)
 
     def parse_actions(self):
         import glob
@@ -91,7 +89,7 @@ class ImageGenerator(object):
         for action_file in action_files:
             with open(action_file) as json_file:
                 data = json.load(json_file)["action"]
-                actions.append((data["actionNumber"], tuple(data["args"]), action_file))
+                actions.append((data["actionNumber"], tuple(data["args"])))
 
         return actions
 
