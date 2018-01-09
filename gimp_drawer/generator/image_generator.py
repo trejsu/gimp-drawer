@@ -1,7 +1,6 @@
 import json
 import time
 import numpy as np
-import scipy.misc
 import os
 
 from gimpfu import *
@@ -40,33 +39,42 @@ class ImageGenerator(object):
         self.out_path = None
 
     def setup_diffs_output(self):
-        image_number = self.src_path.split("/")[-2]
-        image_dir = os.path.expandvars("$GIMP_PROJECT/diffs/%s" % image_number)
-        if not os.path.exists(image_dir):
-            os.mkdir(image_dir)
-        self.out_path = image_dir
+        if self.diffs:
+            image_number = self.src_path.split("/")[-2]
+            image_dir = os.path.expandvars("$GIMP_PROJECT/diffs/%s" % image_number)
+            if not os.path.exists(image_dir):
+                os.mkdir(image_dir)
+            self.out_path = image_dir
 
     def run(self):
         start = time.time()
-        if self.diffs:
-            self.setup_diffs_output()
+        self.setup_diffs_output()
         actions = self.parse_actions()
-        for index, (action_type, action_args, action_json) in enumerate(actions):
-            if self.should_save(action_type):
-                self.save(index)
-            self.image.perform_action_without_array_update(action_type, action_args)
-            if self.should_save(action_type):
-                os.system("cp {} {}".format(action_json, self.out_path))
-        if not self.diffs:
-            self.image.save(self.src_path + "/generated_image.jpg")
+        self.perform_actions_with_saving_data(actions)
+        self.save_generated_image()
         end = time.time()
         print "Script executed in {} seconds".format(end - start)
+
+    def save_generated_image(self):
+        if not self.diffs:
+            self.image.save(self.src_path + "/generated_image.jpg")
+
+    def perform_actions_with_saving_data(self, actions):
+        for index, (action_type, action_args, action_json) in enumerate(actions):
+
+            if self.should_save(action_type):
+                self.save(index)
+
+            self.image.perform_action_without_array_update(action_type, action_args)
+
+            if self.should_save(action_type):
+                os.system("cp {} {}".format(action_json, self.out_path))
 
     def should_save(self, action_type):
         return self.diffs and (not self.action_type_limited or action_type == self.action_type)
 
     def save(self, index):
-        diff_image_array = abs(self.src_image.array - self.image.get_updated_array())
+        diff_image_array = (self.src_image.array - self.image.get_updated_array()) / 255
         path = "{}/diff_before_action_{}.npy".format(self.out_path, index + 1)
         np.save(path, diff_image_array)
 
