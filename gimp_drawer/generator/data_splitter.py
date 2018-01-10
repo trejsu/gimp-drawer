@@ -17,21 +17,21 @@ def create_data(image_dirs, set_name, path):
     data = correlate_x_y_and_labels(image_dirs)
     random.shuffle(data)
 
-    X = np.array([])
-    Y = np.array([])
-    labels = np.array([])
+    X = []
+    Y = []
+    labels = []
 
     for d in tqdm.tqdm(data, "Creating {} data set".format(set_name)):
         x = np.load(d[0])
-        X = np.append(X, x)
+        X.append(x.tolist())
         y = np.load(d[1])
-        Y = np.append(Y, y)
-        labels = np.append(labels, d[2])
+        Y.append(y.tolist())
+        labels.append(d[2])
 
     x = np.load(data[0][0])
     y = np.load(data[0][1])
-    X = X.reshape([len(data), x.shape[0], x.shape[1], x.shape[2]])
-    Y = Y.reshape([len(data), y.shape[0]])
+    X = np.array(X).reshape([len(data), x.shape[0], x.shape[1], x.shape[2]])
+    Y = np.array(Y).reshape([len(data), y.shape[0]])
 
     save(X, "X")
     save(Y, "Y")
