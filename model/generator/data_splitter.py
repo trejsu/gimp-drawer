@@ -1,15 +1,15 @@
 #!/usr/bin/python
 
 import getopt
-import sys
 import glob
 import random
-import tqdm
+import sys
 
 import numpy as np
+import tqdm
 from scipy import sum
 
-from gimp_drawer.generator.natural_keys import natural_keys
+from model.generator.natural_keys import natural_keys
 
 
 def create_data(image_dirs, set_name, path):
