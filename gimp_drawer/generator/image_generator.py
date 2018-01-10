@@ -7,15 +7,7 @@ from gimpfu import *
 
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.initializer import initialize_with_scaled_src
-
-
-def atoi(text):
-    return int(text) if text.isdigit() else text
-
-
-def natural_keys(text):
-    import re
-    return [atoi(c) for c in re.split('(\d+)', text)]
+from gimp_drawer.generator.natural_keys import natural_keys
 
 
 def extract_number(name):
