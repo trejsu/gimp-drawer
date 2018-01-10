@@ -28,10 +28,8 @@ def create_data(image_dirs, set_name, path):
         Y.append(y.tolist())
         labels.append(d[2])
 
-    x = np.load(data[0][0])
-    y = np.load(data[0][1])
-    X = np.array(X).reshape([len(data), x.shape[0], x.shape[1], x.shape[2]])
-    Y = np.array(Y).reshape([len(data), y.shape[0]])
+    X = np.array(X)
+    Y = np.array(Y)
 
     save(X, "X")
     save(Y, "Y")
