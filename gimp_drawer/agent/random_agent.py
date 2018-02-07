@@ -35,7 +35,7 @@ class Agent(object):
             actions = self.env.action_space()
             action = self.rng.choice(actions)
             args = self.__generate_initial_arguments(action)
-            reward, self.done = self.env.step(action, self.__transform_args(args))
+            reward, self.done, _ = self.env.step(action, self.__transform_args(args))
             if self.__render_everything():
                 self.env.render()
             self.env.undo()
@@ -61,7 +61,7 @@ class Agent(object):
         self.env.step(action, self.__transform_args(args))
         if self.__render_default():
             self.env.render()
-        self.env.save(end - self.start, end - self.action_start)
+        # self.env.save(end - self.start, end - self.action_start)
 
     @timed
     def __calculate_rewards_for_args(self, action, args, rewards):
@@ -69,7 +69,7 @@ class Agent(object):
         for arg_group in args:
             new_arg_group = arg_group.generator.new(arg_group.args)
             new_args.append(ArgumentGroup(new_arg_group, arg_group.generator))
-        new_reward, _ = self.env.step(action, self.__transform_args(new_args))
+        new_reward, _, _ = self.env.step(action, self.__transform_args(new_args))
         if self.__render_everything():
             self.env.render()
         self.env.undo()
