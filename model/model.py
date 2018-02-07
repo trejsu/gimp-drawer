@@ -11,7 +11,7 @@ import tensorflow as tf
 
 
 def convolutional_network(image):
-    # First convolutional layer - maps one grayscale image to 32 feature maps.
+    # First convolutional layer - maps image to 32 feature maps.
     with tf.name_scope('conv1'):
         W_conv1 = weight_variable([5, 5, 3, 32])
         b_conv1 = bias_variable([32])
@@ -21,7 +21,7 @@ def convolutional_network(image):
     with tf.name_scope('pool1'):
         h_pool1 = max_pool_2x2(h_conv1)
 
-    # Second convolutional layer -- maps 32 feature maps to 64.
+    # Second convolutional layer - maps 32 feature maps to 64.
     with tf.name_scope('conv2'):
         W_conv2 = weight_variable([5, 5, 32, 64])
         b_conv2 = bias_variable([64])
@@ -31,27 +31,26 @@ def convolutional_network(image):
     with tf.name_scope('pool2'):
         h_pool2 = max_pool_2x2(h_conv2)
 
-    # Fully connected layer 1 -- after 2 round of downsampling, our 100x100 image
+    # Fully connected layer 1 - after 2 round of downsampling, our 100x100 image
     # is down to 25x25x64 feature maps -- maps this to 512 features.
-    with tf.name_scope('fc1'):
-        W_fc1 = weight_variable([25 * 25 * 64, 512])
-        b_fc1 = bias_variable([512])
+    with tf.name_scope('fully_connected1'):
+        W_fully_connected1 = weight_variable([25 * 25 * 64, 512])
+        b_fully_connected1 = bias_variable([512])
 
         h_pool2_flat = tf.reshape(h_pool2, [-1, 25 * 25 * 64])
-        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+        h_fully_connected_1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fully_connected1) + b_fully_connected1)
 
-    # Dropout - controls the complexity of the model, prevents co-adaptation of
-    # features.
+    # Dropout - controls the complexity of the model, prevents co-adaptation of features.
     with tf.name_scope('dropout'):
         keep_prob = tf.placeholder(tf.float32)
-        h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+        h_fully_connected1_dropout = tf.nn.dropout(h_fully_connected_1, keep_prob)
 
     # Map the 512 features to 9 action arguments
-    with tf.name_scope('fc2'):
-        W_fc2 = weight_variable([512, 9])
-        b_fc2 = bias_variable([9])
+    with tf.name_scope('fully_connected2'):
+        W_fully_connected2 = weight_variable([512, 9])
+        b_fully_connected2 = bias_variable([9])
 
-        y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
+        y_conv = tf.matmul(h_fully_connected1_dropout, W_fully_connected2) + b_fully_connected2
     return y_conv, keep_prob
 
 
@@ -96,7 +95,9 @@ def read_data_sets(data_dir):
     }
 
 
-def main(_):
+def main(argv):
+    print(argv)
+
     data_dir = "data/1125"
     data = read_data_sets(data_dir)
 
@@ -111,9 +112,7 @@ def main(_):
     with tf.name_scope('adam_optimizer'):
         train_step = tf.train.AdamOptimizer(1e-4).minimize(mean_squared_error)
 
-    with tf.name_scope('accuracy'):
-        correct_prediction = mean_squared_error
-    accuracy = tf.reduce_mean(correct_prediction)
+    accuracy = tf.reduce_mean(mean_squared_error)
 
     graph_location = tempfile.mkdtemp()
     print('Saving graph to: %s' % graph_location)
