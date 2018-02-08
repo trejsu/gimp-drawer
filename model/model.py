@@ -34,23 +34,24 @@ def convolutional_network(image):
     # Fully connected layer 1 - after 2 round of downsampling, our 100x100 image
     # is down to 25x25x64 feature maps -- maps this to 512 features.
     with tf.name_scope('fully_connected1'):
-        W_fully_connected1 = weight_variable([25 * 25 * 64, 512])
-        b_fully_connected1 = bias_variable([512])
+        W_fully_conn1 = weight_variable([25 * 25 * 64, 512])
+        b_fully_conn1 = bias_variable([512])
 
         h_pool2_flat = tf.reshape(h_pool2, [-1, 25 * 25 * 64])
-        h_fully_connected_1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fully_connected1) + b_fully_connected1)
+        h_fully_conn1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fully_conn1) + b_fully_conn1)
 
     # Dropout - controls the complexity of the model, prevents co-adaptation of features.
     with tf.name_scope('dropout'):
         keep_prob = tf.placeholder(tf.float32)
-        h_fully_connected1_dropout = tf.nn.dropout(h_fully_connected_1, keep_prob)
+        h_fully_conn1_dropout = tf.nn.dropout(h_fully_conn1, keep_prob)
 
     # Map the 512 features to 9 action arguments
     with tf.name_scope('fully_connected2'):
-        W_fully_connected2 = weight_variable([512, 9])
-        b_fully_connected2 = bias_variable([9])
+        W_fully_conn2 = weight_variable([512, 9])
+        b_fully_conn2 = bias_variable([9])
 
-        y_conv = tf.matmul(h_fully_connected1_dropout, W_fully_connected2) + b_fully_connected2
+        y_conv = tf.matmul(h_fully_conn1_dropout, W_fully_conn2) + b_fully_conn2
+
     return y_conv, keep_prob
 
 
@@ -112,7 +113,7 @@ def main(argv):
     with tf.name_scope('adam_optimizer'):
         train_step = tf.train.AdamOptimizer(1e-4).minimize(mean_squared_error)
 
-    accuracy = tf.reduce_mean(mean_squared_error)
+    error = tf.reduce_mean(mean_squared_error)
 
     graph_location = tempfile.mkdtemp()
     print('Saving graph to: %s' % graph_location)
@@ -133,11 +134,10 @@ def main(argv):
             train_Y = data["train"]["Y"][batch_start:batch_start + 50]
 
             if i % 100 == 0:
-                train_accuracy = accuracy.eval(
-                    feed_dict={x: train_X, y_: train_Y, keep_prob: 1.0})
-                print('step %d, mean squared error %g' % (i, train_accuracy))
+                train_error = error.eval(feed_dict={x: train_X, y_: train_Y, keep_prob: 1.0})
+                print('step %d, mean squared error %g' % (i, train_error))
                 if i != 0:
-                    saver.save(sess, './hopefully-improved-model', global_step=i)
+                    saver.save(sess, './512_model', global_step=i)
 
             train_step.run(feed_dict={x: train_X, y_: train_Y, keep_prob: 0.5})
 
@@ -145,8 +145,7 @@ def main(argv):
             batch_start = i * 50
             test_X = data["test"]["X"][batch_start:batch_start + 50]
             test_Y = data["test"]["Y"][batch_start:batch_start + 50]
-            print('mse = %g' % accuracy.eval(
-                feed_dict={x: test_X, y_: test_Y, keep_prob: 1.0}))
+            print('mse = %g' % error.eval(feed_dict={x: test_X, y_: test_Y, keep_prob: 1.0}))
 
 
 if __name__ == '__main__':
