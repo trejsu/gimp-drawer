@@ -1,3 +1,5 @@
+import os
+
 from numpy import concatenate
 
 import gimp_drawer.environment.initializer as initializer
@@ -12,17 +14,21 @@ class TestModelEnvironment(object):
         self.label_img = Image(label_img)
         self.conv_img = Image(conv_img)
         self.viewer = None
+        self.size = size
 
     @timed
-    def render(self):
+    def render_with(self, src_name):
+        images_dir = os.path.expandvars("$GIMP_PROJECT/scaled_images/")
+        src_img = initializer.load_scaled_src(images_dir + src_name + ".jpg", self.size)
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()
-        image = self.__get_concatenated_label_with_conv()
+        image = self.__get_concatenated_label_with_conv(Image(src_img))
         self.viewer.img_show(image)
 
     @timed
-    def __get_concatenated_label_with_conv(self):
-        images_to_display = (self.label_img.get_displayable_array(),
+    def __get_concatenated_label_with_conv(self, src_img):
+        images_to_display = (src_img.get_displayable_array(),
+                             self.label_img.get_displayable_array(),
                              self.conv_img.get_displayable_array())
         image = concatenate(images_to_display, axis=1)
         return image

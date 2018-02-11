@@ -34,8 +34,7 @@ def plugin_main(model_path):
         action = 0
         env.label_step(action, Y)
         env.conv_step(action, args)
-        env.render()
-        print "image number:", label[0]
+        env.render_with(str(label[0]))
         print "mse: %g" % conv_network.eval_error(X, Y)
         raw_input("press Enter to continue...")
         env.reset()
