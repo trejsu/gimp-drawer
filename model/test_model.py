@@ -1,46 +1,44 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import sys
-import tqdm
 import getopt
 
 import numpy as np
-import tensorflow as tf
+
+from model.conv_network import ConvNetwork
+from gimpfu import *
+from gimp_drawer.environment.test_model_environment import TestModelEnvironment
 
 
 def read_test_set(data_dir):
     X = np.load(data_dir + "/test_X.npy", mmap_mode="r")
     Y = np.load(data_dir + "/test_Y.npy", mmap_mode="r")
+    labels = np.load(data_dir + "/test_labels.npy", mmap_mode="r")
     return {
         "X": X,
         "Y": Y,
+        "labels": labels
     }
 
 
-def main(argv):
+def plugin_main(model_path):
     data_dir = "data/1125"
     data = read_test_set(data_dir)
-    model_path = get_model_path(argv[1:])
+    conv_network = ConvNetwork(model_path)
+    env = TestModelEnvironment(100)
 
-    graph = tf.Graph()
-    with graph.as_default():
-        sess = tf.Session(graph=graph)
-        saver = tf.train.import_meta_graph(model_path + ".meta")
-        saver.restore(sess, model_path)
-
-    y_ = graph.get_tensor_by_name("Placeholder_1:0")
-    x = graph.get_tensor_by_name("Placeholder:0")
-    keep_prob = graph.get_tensor_by_name("dropout/Placeholder:0")
-    error = graph.get_tensor_by_name("Mean_1:0")
-
-    with sess:
-        for i in tqdm.tqdm(range(440)):
-            batch_start = i * 50
-            X = data["X"][batch_start:batch_start + 50]
-            Y = data["Y"][batch_start:batch_start + 50]
-            print('mse = %g' % error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0}))
+    for i in range(20):
+        print "Test number %d" % (i + 1)
+        index = np.random.randint(0, 22019)
+        X = data["X"][index]
+        Y = data["Y"][index]
+        label = data["labels"][index]
+        args = conv_network.generate_args(X)
+        action = 0
+        env.label_step(action, Y)
+        env.conv_step(action, args)
+        env.render()
+        print "image number:", label[0]
+        print "mse: %g" % conv_network.eval_error(X, Y)
+        raw_input("press Enter to continue...")
+        env.reset()
 
 
 def get_model_path(argv):
@@ -52,5 +50,11 @@ def get_model_path(argv):
     return model_path
 
 
-if __name__ == '__main__':
-    tf.app.run(main=main, argv=sys.argv)
+register("test_model", "", "", "", "", "", "", "",
+         [
+             (PF_STRING, "model_path", "Path to the trained model", ""),
+         ], [], plugin_main)
+
+main()
+
+# gimp -i -b '(python-fu-test-model RUN-NONINTERACTIVE "my-model-1700")' -b '(gimp-quit 1)'

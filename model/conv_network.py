@@ -10,18 +10,17 @@ class ConvNetwork(object):
             saver = tf.train.import_meta_graph(model_path + ".meta")
             saver.restore(self.sess, model_path)
 
-        self.y = self.graph.get_tensor_by_name("fc2/add:0")
-        # self.y = self.graph.get_tensor_by_name("fully_connected2/add:0")
+        self.y_conv = self.graph.get_tensor_by_name("fc2/add:0")
+        self.y_ = self.graph.get_tensor_by_name("Placeholder_1:0")
         self.x = self.graph.get_tensor_by_name("Placeholder:0")
         self.keep_prob = self.graph.get_tensor_by_name("dropout/Placeholder:0")
+        self.error = self.graph.get_tensor_by_name("Mean_1:0")
 
-    def generate_args(self, diff):
-        return self.sess.run(self.y, feed_dict={self.x: np.expand_dims(diff, 0), self.keep_prob: 1.0})[0]
+    def generate_args(self, x):
+        return self.sess.run(self.y_conv, feed_dict={self.x: np.expand_dims(x, 0), self.keep_prob: 1.0})[0]
 
-
-if __name__ == '__main__':
-    c = ConvNetwork("../hopefully-improved-model-900")
-    print c.generate_args(np.ones((100, 100, 3)))
+    def eval_error(self, X, Y):
+        return self.error.eval(session=self.sess, feed_dict={self.x: np.expand_dims(X, 0), self.y_: np.expand_dims(Y, 0), self.keep_prob: 1.0})
 
 
 
