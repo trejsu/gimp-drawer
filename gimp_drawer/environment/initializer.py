@@ -30,6 +30,11 @@ def initialize_with_scaled_src(src_path, size):
 
 
 @timed
+def initialize_for_model_testing(size):
+    return __new_image(size, size), __new_image(size, size)
+
+
+@timed
 def __new_image(width, height):
     image_id = gimp.Image(width, height, RGB_IMAGE)
     layer = gimp.Layer(image_id, "layer", width,
