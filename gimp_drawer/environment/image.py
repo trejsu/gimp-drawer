@@ -1,5 +1,5 @@
 import numpy as np
-from gimpfu import pdb, gimp
+from gimpfu import pdb, gimp, WHITE_FILL
 
 from gimp_drawer.common.decorators.timed import timed
 from gimp_drawer.environment.action_performer import perform_action
@@ -83,3 +83,7 @@ class Image(object):
     @timed
     def get_displayable_array(self):
         return self.__to_displayable_array()
+
+    @timed
+    def clear(self):
+        pdb.gimp_edit_fill(pdb.gimp_image_active_drawable(self.img), WHITE_FILL)
