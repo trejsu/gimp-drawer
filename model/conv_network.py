@@ -5,7 +5,6 @@ import numpy as np
 class ConvNetwork(object):
     def __init__(self, model_path):
         self.graph = tf.Graph()
-        self.prev = None
         with self.graph.as_default():
             self.sess = tf.Session(graph=self.graph)
             saver = tf.train.import_meta_graph(model_path + ".meta")
@@ -17,8 +16,6 @@ class ConvNetwork(object):
         self.keep_prob = self.graph.get_tensor_by_name("dropout/Placeholder:0")
 
     def generate_args(self, diff):
-        print np.array_equal(diff, self.prev)
-        self.prev = diff
         return self.sess.run(self.y, feed_dict={self.x: np.expand_dims(diff, 0), self.keep_prob: 1.0})[0]
 
 
