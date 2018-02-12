@@ -31,6 +31,7 @@ def plugin_main(model_path):
         Y = data["Y"][index]
         label = data["labels"][index]
         args = conv_network.generate_args(X)
+        args = fix_out_of_bounds_args(args)
         action = 0
         env.label_step(action, Y)
         env.conv_step(action, args)
@@ -47,6 +48,14 @@ def get_model_path(argv):
         if opt == '-m':
             model_path = arg
     return model_path
+
+
+def fix_out_of_bounds_args(args):
+    upper_bound = [1., 1., 1., 1., 1., 1., 1., 1., 1.]
+    lower_bound = [0., 0., 0., 0., 0., 0., 0., 0., -1.]
+    args = np.minimum(args, upper_bound)
+    args = np.maximum(args, lower_bound)
+    return args
 
 
 register("test_model", "", "", "", "", "", "", "",
