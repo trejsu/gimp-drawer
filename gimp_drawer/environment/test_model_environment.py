@@ -18,7 +18,7 @@ class TestModelEnvironment(object):
 
     @timed
     def render_with(self, src_name):
-        images_dir = os.path.expandvars("$GIMP_PROJECT/scaled_images/")
+        images_dir = os.path.expandvars("$GIMP_PROJECT/resources/scaled_images/")
         src_img = initializer.load_scaled_src(images_dir + src_name + ".jpg", self.size)
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()

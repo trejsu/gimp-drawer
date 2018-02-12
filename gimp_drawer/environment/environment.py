@@ -61,7 +61,7 @@ class Environment(object):
     @timed
     def __setup_output(self):
         filename = str(os.path.basename(self.src_path).split(".")[0])
-        image_dir = os.path.expandvars("$GIMP_PROJECT/out/%s" % filename)
+        image_dir = os.path.expandvars("$GIMP_PROJECT/out/drawing/%s" % filename)
         date = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
         execution_dirname = date + "_" + self.version_info
         if not os.path.exists(image_dir):
