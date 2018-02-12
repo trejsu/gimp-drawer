@@ -38,6 +38,7 @@ class Agent(object):
         diff = self.env.reset()
         # only action 0 (ellipse) for now
         action = 0
+        prev_args = (0, 0, 0, 0, 0, 0, 0, 0, 0)
         while not self.done:
             args = self.conv_network.generate_args(diff)
             # args += np.random.normal(size=9, scale=0.4)
@@ -45,8 +46,13 @@ class Agent(object):
             args = np.minimum(args, upper_bound)
             args = np.maximum(args, lower_bound)
             print "fixed args:", args
+            if all(prev_args == args):
+                args = np.random.normal(size=9)
+            args = np.minimum(args, upper_bound)
+            args = np.maximum(args, lower_bound)
             reward, self.done, diff = self.env.step(action, args)
             self.env.render()
+            prev_args = args
         self.__finish()
 
     @timed
