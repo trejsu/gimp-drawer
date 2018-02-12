@@ -1,10 +1,7 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import sys
 import tqdm
 import getopt
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -87,19 +84,21 @@ def main(argv):
     data_dir = "data/1125"
     data = read_train_set(data_dir)
     model_path = get_model_path(argv[1:])
+    saved_model_dir = os.path.expandvars("$GIMP_PROJECT/out/model/")
 
     x = tf.placeholder(tf.float32, [None, 100, 100, 3])
     y_ = tf.placeholder(tf.float32, [None, 9])
     y_conv, keep_prob = convolutional_network(x)
 
     with tf.name_scope('loss'):
-        mean_squared_error = tf.losses.mean_squared_error(labels=y_, predictions=y_conv)
-    mean_squared_error = tf.reduce_mean(mean_squared_error)
+        loss = tf.reduce_mean(tf.losses.mean_squared_error(labels=y_, predictions=y_conv))
+        # loss = tf.reduce_mean(tf.square(tf.nn.sigmoid(y_conv) - y_))
 
-    with tf.name_scope('adam_optimizer'):
-        train_step = tf.train.AdamOptimizer(1e-4).minimize(mean_squared_error)
+    with tf.name_scope('optimizer'):
+        learning_rate = 0.0001
+        train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
 
-    error = tf.reduce_mean(mean_squared_error)
+    error = tf.reduce_mean(loss)
 
     with tf.Session() as sess:
 
@@ -120,9 +119,9 @@ def main(argv):
                 train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
                 print('step %d, mean squared error %g' % (i, train_error))
                 if i != 0:
-                    saver.save(sess, './512_model', global_step=i)
+                    saver.save(sess, saved_model_dir + "no_dropout", global_step=i)
 
-            train_step.run(feed_dict={x: X, y_: Y, keep_prob: 0.5})
+            train_step.run(feed_dict={x: X, y_: Y, keep_prob: 1.0})
 
 
 def get_model_path(argv):
