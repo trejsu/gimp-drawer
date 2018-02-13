@@ -28,7 +28,7 @@ def main(argv):
         if opt == '-d':
             diffs = 1
 
-    command = "gimp -i -b '(python-fu-image-generator {} \"{}\" {} {} {} {})' -b '(gimp-quit 1)'"\
+    command = "gimp -i -b '(python-fu-image-dataset {} \"{}\" {} {} {} {})' -b '(gimp-quit 1)'"\
         .format(RUN_PARAMETER, path, action_type, limit, size, diffs)
     os.system(command)
 
