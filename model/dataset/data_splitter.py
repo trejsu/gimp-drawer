@@ -48,6 +48,7 @@ def create_data(image_dirs, set_name):
             data_left -= ARGS.limit
             current_part_size = ARGS.limit if data_left >= 0 else (ARGS.limit + data_left)
             current_part_number += 1
+            del X, Y, labels
             X, Y, labels = initialize(current_part_size)
 
         x = np.load(d[0])
