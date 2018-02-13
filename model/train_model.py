@@ -4,8 +4,9 @@ import argparse
 import os
 import json
 
-import numpy as np
 import tensorflow as tf
+
+from model.dataset.data_set import DataSet
 
 
 ARGS = None
@@ -78,7 +79,7 @@ def bias_variable(shape):
 
 
 def main(_):
-    data = read_train_set()
+    data = DataSet()
 
     x = tf.placeholder(tf.float32, [None, 100, 100, 3])
     y_ = tf.placeholder(tf.float32, [None, 9])
@@ -100,8 +101,8 @@ def main(_):
         if global_step != 0:
             saver.restore(sess, ARGS.model)
 
-        for step in tqdm.tqdm(range(global_step, 1759)):
-            X, Y = get_next_batch(data, step)
+        for step in tqdm.tqdm(range(global_step, data.train.batch_n)):
+            X, Y, _ = data.train.next_batch()
             if step % 100 == 0:
                 train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
                 tqdm.tqdm.write('step %d, mean squared error %g' % (step, train_error))
@@ -118,20 +119,6 @@ def save_model(step, saver, sess):
               "fc1": ARGS.fc1, "rate": ARGS.rate, "dropout": ARGS.dropout}
     with open(path + "_config.json", 'w+') as outfile:
         json.dump(config, outfile)
-
-
-def get_next_batch(data, i):
-    batch_start = i * 50
-    X = data["X"][batch_start:batch_start + 50]
-    Y = data["Y"][batch_start:batch_start + 50]
-    return X, Y
-
-
-def read_train_set():
-    data_dir = "data/1125"
-    X = np.load(data_dir + "/train_X.npy", mmap_mode="r")
-    Y = np.load(data_dir + "/train_Y.npy", mmap_mode="r")
-    return {"X": X, "Y": Y}
 
 
 if __name__ == '__main__':

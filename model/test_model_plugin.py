@@ -5,34 +5,24 @@ import numpy as np
 from model.conv_network import ConvNetwork
 from gimpfu import *
 from gimp_drawer.environment.test_model_environment import TestModelEnvironment
-
-
-def read_test_set(data_dir):
-    X = np.load(data_dir + "/test_X.npy", mmap_mode="r")
-    Y = np.load(data_dir + "/test_Y.npy", mmap_mode="r")
-    labels = np.load(data_dir + "/test_labels.npy", mmap_mode="r")
-    return {"X": X, "Y": Y, "labels": labels}
+from model.dataset.data_set import DataSet
 
 
 def plugin_main(model_path, tests_number):
-    data_dir = "data/1125"
-    data = read_test_set(data_dir)
+    data = DataSet()
     conv_network = ConvNetwork(model_path)
     env = TestModelEnvironment(100)
 
     for i in range(tests_number):
         print "Test number %d" % (i + 1)
-        index = np.random.randint(0, 22019)
-        X = data["X"][index]
-        Y = data["Y"][index]
-        label = data["labels"][index]
-        args = conv_network.generate_args(X)
+        x, y, label = data.test.random()
+        args = conv_network.generate_args(x)
         args = fix_out_of_bounds_args(args)
         action = 0
-        env.label_step(action, Y)
+        env.label_step(action, y)
         env.conv_step(action, args)
         env.render_with(str(label[0]))
-        print "mse: %g" % conv_network.eval_error(X, Y)
+        print "mse: %g" % conv_network.eval_error(x, y)
         raw_input("press Enter to continue...")
         env.reset()
 
