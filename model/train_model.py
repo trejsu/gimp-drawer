@@ -88,6 +88,7 @@ def main(_):
     with tf.name_scope('loss'):
         loss = tf.reduce_mean(tf.losses.mean_squared_error(labels=y_, predictions=y_conv))
         # loss = tf.reduce_mean(tf.square(tf.nn.sigmoid(y_conv) - y_))
+    tf.summary.scalar('loss', loss)
 
     with tf.name_scope('optimizer'):
         train_step = tf.train.AdamOptimizer(ARGS.rate).minimize(loss)
@@ -95,6 +96,10 @@ def main(_):
     error = tf.reduce_mean(loss)
 
     with tf.Session() as sess:
+
+        merged = tf.summary.merge_all()
+        writer = tf.summary.FileWriter(MODEL_DIR + "summary", sess.graph)
+
         saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
         global_step = 0 if ARGS.model is None else int(ARGS.model.split('-')[-1])
@@ -108,7 +113,8 @@ def main(_):
                 tqdm.tqdm.write('step %d, mean squared error %g' % (step, train_error))
                 if step != 0:
                     save_model(step, saver, sess)
-            train_step.run(feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
+            summary, _ = sess.run([merged, train_step], feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
+            writer.add_summary(summary, step)
 
 
 def save_model(step, saver, sess):
