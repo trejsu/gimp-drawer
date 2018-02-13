@@ -30,6 +30,21 @@ def initialize_with_scaled_src(src_path, size):
 
 
 @timed
+def load_scaled_src(src_path, size):
+    src_img = pdb.gimp_file_load(src_path, src_path)
+    pdb.gimp_image_scale(src_img, size, size)
+    src_drawable = pdb.gimp_image_active_drawable(src_img)
+    if not pdb.gimp_drawable_is_rgb(src_drawable):
+        pdb.gimp_image_convert_rgb(src_img)
+    return src_img
+
+
+@timed
+def initialize_for_model_testing(size):
+    return __new_image(size, size), __new_image(size, size)
+
+
+@timed
 def __new_image(width, height):
     image_id = gimp.Image(width, height, RGB_IMAGE)
     layer = gimp.Layer(image_id, "layer", width,

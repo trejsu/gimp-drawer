@@ -1,13 +1,13 @@
 import json
-import time
-import numpy as np
 import os
+import time
 
+import numpy as np
 from gimpfu import *
 
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.initializer import initialize_with_scaled_src
-from gimp_drawer.generator.natural_keys import natural_keys
+from model.generator.natural_keys import natural_keys
 
 
 def extract_number(name):
