@@ -13,7 +13,7 @@ TRAIN = 689368
 TEST = 172577
 # TEST = 313
 BATCH_SIZE = 200
-# BATCH_SIZE = 4
+# BATCH_SIZE = 38
 
 
 class DataSet(object):
@@ -82,12 +82,17 @@ class Set(object):
 
     def __next_batch_from_different_parts(self):
         left_in_current_part = (PART_SIZE - self.next_index)
+        load_in_next_part = BATCH_SIZE - left_in_current_part
         X = self.X[-left_in_current_part:]
         Y = self.Y[-left_in_current_part:]
         labels = self.labels[-left_in_current_part:]
         self.current_part += 1
         self.__load_current_part()
-        self.next_index = 0
+        if load_in_next_part != 0:
+            X = np.concatenate((X, self.X[0:load_in_next_part]))
+            Y = np.concatenate((Y, self.Y[0:load_in_next_part]))
+            labels = np.concatenate((labels, self.labels[0:load_in_next_part]))
+        self.next_index = load_in_next_part
         return X, Y, labels
 
     def __next_batch_from_same_part(self):
