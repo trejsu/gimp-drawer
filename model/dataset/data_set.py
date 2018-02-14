@@ -4,16 +4,16 @@ import math
 import numpy as np
 
 
-# PATH = os.path.expandvars("$GIMP_PROJECT/diffs/")
-PATH = os.path.expandvars("$GIMP_PROJECT/model/diffs/")
-# PART_SIZE = 70000
-PART_SIZE = 50
-# TRAIN = 689368
-TRAIN = 869
-# TEST = 172577
-TEST = 313
-# BATCH_SIZE = 200
-BATCH_SIZE = 38
+PATH = os.path.expandvars("$GIMP_PROJECT/diffs/")
+# PATH = os.path.expandvars("$GIMP_PROJECT/model/diffs/")
+PART_SIZE = 70000
+# PART_SIZE = 50
+TRAIN = 689368
+# TRAIN = 869
+TEST = 172577
+# TEST = 313
+BATCH_SIZE = 200
+# BATCH_SIZE = 38
 
 
 class DataSet(object):
