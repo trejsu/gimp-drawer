@@ -20,7 +20,7 @@ class ConvNetwork(object):
         return self.sess.run(self.y_conv, feed_dict={self.x: np.expand_dims(x, 0), self.keep_prob: 1.0})[0]
 
     def eval_error(self, X, Y):
-        return self.error.eval(session=self.sess, feed_dict={self.x: np.expand_dims(X, 0), self.y_: np.expand_dims(Y, 0), self.keep_prob: 1.0})
+        return self.error.eval(session=self.sess, feed_dict={self.x: X, self.y_: Y, self.keep_prob: 1.0})
 
 
 

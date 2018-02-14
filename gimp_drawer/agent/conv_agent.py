@@ -42,12 +42,12 @@ class Agent(object):
         while not self.done:
             args = self.conv_network.generate_args(diff)
             # args += np.random.normal(size=9, scale=0.4)
-            print "original args:", args
+            # print "original args:", args
             args = np.minimum(args, upper_bound)
             args = np.maximum(args, lower_bound)
-            print "fixed args:", args
+            # print "fixed args:", args
             if all(prev_args == args):
-                args = np.random.normal(size=9)
+                args += np.random.normal(size=9, scale=0.4)
             args = np.minimum(args, upper_bound)
             args = np.maximum(args, lower_bound)
             reward, self.done, diff = self.env.step(action, args)

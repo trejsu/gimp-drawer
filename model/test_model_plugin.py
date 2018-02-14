@@ -1,55 +1,40 @@
-import getopt
-
-import numpy as np
+import os
+import tqdm
 
 from model.conv_network import ConvNetwork
 from gimpfu import *
-from gimp_drawer.environment.test_model_environment import TestModelEnvironment
 from model.dataset.data_set import DataSet
 
 
-def plugin_main(model_path, tests_number):
+def plugin_main(model_path, actions_number):
     data = DataSet()
+    test_mse(data, model_path)
+    test_whole_images(data, model_path, actions_number)
+
+
+def test_whole_images(data, model_path, actions_number):
+    images_dir = os.path.expandvars("$GIMP_PROJECT/resources/scaled_images/")
+    print "Train image test"
+    label = data.train.random_label()
+    image_path = images_dir + str(label[0]) + ".jpg"
+    pdb.python_fu_conv_agent(image_path, 0, "None", actions_number, model_path)
+    print "Test image test"
+    label = data.test.random_label()
+    image_path = images_dir + str(label[0]) + ".jpg"
+    pdb.python_fu_conv_agent(image_path, 0, "None", actions_number, model_path)
+
+
+def test_mse(data, model_path):
     conv_network = ConvNetwork(model_path)
-    env = TestModelEnvironment(100)
-
-    for i in range(tests_number):
-        print "Test number %d" % (i + 1)
-        x, y, label = data.test.random()
-        args = conv_network.generate_args(x)
-        args = fix_out_of_bounds_args(args)
-        action = 0
-        env.label_step(action, y)
-        env.conv_step(action, args)
-        env.render_with(str(label[0]))
-        print "mse: %g" % conv_network.eval_error(x, y)
-        raw_input("press Enter to continue...")
-        env.reset()
-
-
-def get_model_path(argv):
-    model_path = None
-    opts, args = getopt.getopt(argv, "m:")
-    for opt, arg in opts:
-        if opt == '-m':
-            model_path = arg
-    return model_path
-
-
-def fix_out_of_bounds_args(args):
-    upper_bound = [1., 1., 1., 1., 1., 1., 1., 1., 1.]
-    lower_bound = [0., 0., 0., 0., 0., 0., 0., 0., -1.]
-    args = np.minimum(args, upper_bound)
-    args = np.maximum(args, lower_bound)
-    return args
+    for _ in tqdm.tqdm(range(data.test.batch_n)):
+        x, y, label = data.test.next_batch()
+        tqdm.tqdm.write("mse: %g" % conv_network.eval_error(x, y))
 
 
 register("test_model", "", "", "", "", "", "", "",
          [
              (PF_STRING, "model_path", "path to the tested model", ""),
-             (PF_INT, "tests_number", "number of tests to run", 20)
+             (PF_INT, "actions_number", "number of actions to perform", 1000)
          ], [], plugin_main)
 
 main()
-
-# gimp -i -b '(python-fu-test-model RUN-NONINTERACTIVE "my-model-1700")' -b '(gimp-quit 1)'

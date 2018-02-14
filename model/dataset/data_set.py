@@ -4,16 +4,16 @@ import math
 import numpy as np
 
 
-PATH = os.path.expandvars("$GIMP_PROJECT/diffs/")
-# PATH = os.path.expandvars("$GIMP_PROJECT/model/diffs/")
-PART_SIZE = 70000
-# PART_SIZE = 50
-TRAIN = 689368
-# TRAIN = 869
-TEST = 172577
-# TEST = 313
-BATCH_SIZE = 200
-# BATCH_SIZE = 38
+# PATH = os.path.expandvars("$GIMP_PROJECT/diffs/")
+PATH = os.path.expandvars("$GIMP_PROJECT/model/diffs/")
+# PART_SIZE = 70000
+PART_SIZE = 50
+# TRAIN = 689368
+TRAIN = 869
+# TEST = 172577
+TEST = 313
+# BATCH_SIZE = 200
+BATCH_SIZE = 38
 
 
 class DataSet(object):
@@ -26,7 +26,7 @@ class Set(object):
     def __init__(self, name, set_n):
         self.name = name
         self.next_index = 0
-        self.part_n = math.ceil(set_n / float(PART_SIZE))
+        self.part_n = int(math.ceil(set_n / float(PART_SIZE)))
         self.current_part = 1
         self.last_part_size = set_n % PART_SIZE
         self.batch_n = int(math.ceil(set_n / float(BATCH_SIZE)))
@@ -51,14 +51,23 @@ class Set(object):
         return X, Y, labels
 
     def random(self):
-        part = np.random.randint(1, self.last_part_size + 1)
+        index, part = self.__get_random_part_and_index()
+        X, Y, labels = self.__load_part(part)
+        return X[index], Y[index], labels[index]
+
+    def random_label(self):
+        index, part = self.__get_random_part_and_index()
+        labels = np.load(PATH + "%s_labels_%d.npy" % (self.name, part), mmap_mode="r")
+        return labels[index]
+
+    def __get_random_part_and_index(self):
+        part = np.random.randint(1, self.part_n + 1)
         if part == self.part_n:
             index_upper_bound = self.last_part_size
         else:
             index_upper_bound = PART_SIZE
         index = np.random.randint(0, index_upper_bound)
-        X, Y, labels = self.__load_part(part)
-        return X[index], Y[index], labels[index]
+        return index, part
 
     def __load_current_part(self):
         del self.X, self.Y, self.labels
