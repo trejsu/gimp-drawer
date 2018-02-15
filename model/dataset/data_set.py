@@ -17,17 +17,17 @@ BATCH_SIZE = 200
 
 
 class DataSet(object):
-    def __init__(self):
-        self.train = Set("train", TRAIN)
-        self.test = Set("test", TEST)
+    def __init__(self, step):
+        self.train = Set("train", TRAIN, step)
+        self.test = Set("test", TEST, step)
 
 
 class Set(object):
-    def __init__(self, name, set_n):
+    def __init__(self, name, set_n, step):
         self.name = name
-        self.next_index = 0
+        self.next_index = (BATCH_SIZE * step) % PART_SIZE
         self.part_n = int(math.ceil(set_n / float(PART_SIZE)))
-        self.current_part = 1
+        self.current_part = (BATCH_SIZE * step) / PART_SIZE + 1
         self.last_part_size = set_n % PART_SIZE
         self.batch_n = int(math.ceil(set_n / float(BATCH_SIZE)))
         self.set_n = set_n
@@ -35,9 +35,11 @@ class Set(object):
         self.Y = None
         self.labels = None
         self.has_next = True
-        self.__load_current_part()
 
     def next_batch(self):
+        not_initialized = self.X is None or self.Y is None or self.labels is None
+        if not_initialized:
+            self.__load_current_part()
         last_part = self.current_part == self.part_n
         end_of_part = self.next_index + BATCH_SIZE >= PART_SIZE
         end_of_last_part = self.next_index + BATCH_SIZE >= self.last_part_size

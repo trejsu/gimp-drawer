@@ -79,8 +79,6 @@ def bias_variable(shape):
 
 
 def main(_):
-    data = DataSet()
-
     x = tf.placeholder(tf.float32, [None, 100, 100, 3])
     y_ = tf.placeholder(tf.float32, [None, 9])
     y_conv, keep_prob = convolutional_network(x)
@@ -105,6 +103,8 @@ def main(_):
         global_step = 0 if ARGS.model is None else int(ARGS.model.split('-')[-1])
         if global_step != 0:
             saver.restore(sess, ARGS.model)
+
+        data = DataSet(global_step)
 
         for step in tqdm.tqdm(range(global_step, data.train.batch_n)):
             X, Y, _ = data.train.next_batch()
