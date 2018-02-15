@@ -119,6 +119,7 @@ def main(_):
                     save_model(step, saver, sess)
             summary, _ = sess.run([merged, train_step], feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
             writer.add_summary(summary, step)
+        save_model(data.train.batch_n, saver, sess)
 
 
 def save_model(step, saver, sess):
