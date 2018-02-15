@@ -106,7 +106,11 @@ def main(_):
 
         data = DataSet(global_step)
 
+        X = None
+        Y = None
+
         for step in tqdm.tqdm(range(global_step, data.train.batch_n)):
+            del X, Y
             X, Y, _ = data.train.next_batch()
             if step % 100 == 0:
                 train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
