@@ -1,9 +1,9 @@
 import time
 import numpy as np
+import os
 
 from gimpfu import *
 
-from gimp_drawer.agent.mode import RenderMode
 from gimp_drawer.common.decorators.timed import timed, print_result
 from gimp_drawer.config import timers
 from gimp_drawer.environment.environment import Environment
@@ -12,15 +12,15 @@ from model.conv_network import ConvNetwork
 
 class Agent(object):
 
-    RENDER_DEFAULT_MODES = {RenderMode.ALL, RenderMode.STANDARD}
-
-    def __init__(self, src_path, render_mode, input_path, actions, model_path):
-        self.render_mode = RenderMode(render_mode)
+    def __init__(self, src_path, render, input_path, actions, model_path, save):
+        self.render = render
         self.env = Environment(src_path, 0, input_path, actions)
         self.done = False
         self.start = None
         self.action_start = None
         self.conv_network = ConvNetwork(model_path)
+        self.save = save
+        self.model_path = model_path
 
     @timed
     def run(self):
@@ -51,7 +51,8 @@ class Agent(object):
             args = np.minimum(args, upper_bound)
             args = np.maximum(args, lower_bound)
             reward, self.done, diff = self.env.step(action, args)
-            self.env.render()
+            if self.render:
+                self.env.render()
             prev_args = args
         self.__finish()
 
@@ -60,28 +61,29 @@ class Agent(object):
         # self.env.generate_image()
         if timers:
             print_result()
+        if self.save:
+            model_name = str(os.path.basename(self.model_path))
+            image_dir = os.path.expandvars("$GIMP_PROJECT/out/model/test/")
+            self.env.save_jpg(image_dir + model_name + "_" + str(time.time()) + ".jpg")
 
     @timed
     def __initialize(self):
         self.start = time.time()
 
-    @timed
-    def __render_default(self):
-        return self.render_mode in Agent.RENDER_DEFAULT_MODES
 
-
-def plugin_main(src_path, render_mode, input_path, actions, model_path):
-    agent = Agent(src_path, render_mode, input_path, actions, model_path)
+def plugin_main(src_path, render, input_path, actions, model_path, save):
+    agent = Agent(src_path, render, input_path, actions, model_path, save)
     agent.run()
 
 
 register("conv_agent", "", "", "", "", "", "", "",
          [
              (PF_STRING, "src_path", "Path to the source image", ""),
-             (PF_INT, "render_mode", "Render mode", 0),
+             (PF_BOOL, "render", "render image during drawing", True),
              (PF_STRING, "input_path", "Path to the input image - None means starting from white blank image", ""),
              (PF_FLOAT, "Actions", "Number of actions which will be performed", 0),
-             (PF_STRING, "model_path", "Path to the model which will be computing action parameters", "")
+             (PF_STRING, "model_path", "Path to the model which will be computing action parameters", ""),
+             (PF_BOOL, "save", "Save drawn image", False)
          ], [], plugin_main)
 
 main()

@@ -4,7 +4,7 @@ import datetime
 import numpy as np
 
 from numpy import concatenate
-from scipy import sum
+from scipy import sum, misc
 
 import gimp_drawer.common.utils.format as formatter
 import gimp_drawer.environment.initializer as initializer
@@ -93,6 +93,10 @@ class Environment(object):
         if self.successful_actions % 100 == 0:
             np.save(self.out_path + "/{}.npy".format(action_string), self.img.array)
         self.actions_before_success = 0
+
+    @timed
+    def save_jpg(self, path):
+        misc.imsave(path, self.__get_concatenated_src_with_image(self.img))
 
     @timed
     def __construct_json_data(self, seconds_from_start, seconds_for_action):
