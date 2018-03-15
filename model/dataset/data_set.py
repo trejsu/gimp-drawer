@@ -4,30 +4,30 @@ import math
 import numpy as np
 
 
-PATH = os.path.expandvars("$GIMP_PROJECT/diffs/")
+PATH = os.path.expandvars("$GIMP_PROJECT/dataset/")
 # PATH = os.path.expandvars("$GIMP_PROJECT/model/diffs/")
 PART_SIZE = 70000
-# PART_SIZE = 50
+# PART_SIZE = 200
 TRAIN = 689368
-# TRAIN = 869
+# TRAIN = 1118
 TEST = 172577
 # TEST = 313
 BATCH_SIZE = 200
-# BATCH_SIZE = 38
+# BATCH_SIZE = 50
 
 
 class DataSet(object):
-    def __init__(self, step):
-        self.train = Set("train", TRAIN, step)
-        self.test = Set("test", TEST, step)
+    def __init__(self):
+        self.train = Set("train", TRAIN)
+        self.test = Set("test", TEST)
 
 
 class Set(object):
-    def __init__(self, name, set_n, step):
+    def __init__(self, name, set_n):
         self.name = name
-        self.next_index = (BATCH_SIZE * step) % PART_SIZE
+        self.next_index = 0
         self.part_n = int(math.ceil(set_n / float(PART_SIZE)))
-        self.current_part = (BATCH_SIZE * step) / PART_SIZE + 1
+        self.current_part = 1
         self.last_part_size = set_n % PART_SIZE
         self.batch_n = int(math.ceil(set_n / float(BATCH_SIZE)))
         self.set_n = set_n
@@ -77,6 +77,7 @@ class Set(object):
         self.Y = np.load(PATH + "%s_Y_%d.npy" % (self.name, self.current_part), mmap_mode="r")
         self.labels = np.load(
             PATH + "%s_labels_%d.npy" % (self.name, self.current_part), mmap_mode="r")
+        self.__shuffle()
 
     def __load_part(self, part):
         return np.load(PATH + "%s_X_%d.npy" % (self.name, part), mmap_mode="r"), \
@@ -112,6 +113,14 @@ class Set(object):
         labels = self.labels[self.next_index:self.next_index + BATCH_SIZE]
         self.next_index += BATCH_SIZE
         return X, Y, labels
+
+    def __shuffle(self):
+        indexes = np.arange(self.X.shape[0])
+        np.random.shuffle(indexes)
+        self.X = self.X[indexes]
+        self.Y = self.Y[indexes]
+        self.labels = self.labels[indexes]
+
 
 
 

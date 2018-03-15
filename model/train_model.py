@@ -100,26 +100,28 @@ def main(_):
 
         saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
-        global_step = 0 if ARGS.model is None else int(ARGS.model.split('-')[-1])
-        if global_step != 0:
+        global_epoch = 0 if ARGS.model is None else int(ARGS.model.split('-')[-1])
+        if global_epoch != 0:
             saver.restore(sess, ARGS.model)
 
-        data = DataSet(global_step)
+        data = DataSet()
 
         X = None
         Y = None
 
-        for step in tqdm.tqdm(range(global_step, data.train.batch_n)):
-            del X, Y
-            X, Y, _ = data.train.next_batch()
-            if step % 100 == 0:
-                train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
-                tqdm.tqdm.write('step %d, mean squared error %g' % (step, train_error))
-                if step != 0:
-                    save_model(step, saver, sess)
-            summary, _ = sess.run([merged, train_step], feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
-            writer.add_summary(summary, step)
-        save_model(data.train.batch_n, saver, sess)
+        for epoch in tqdm.tqdm(range(global_epoch, ARGS.epoch)):
+
+            for step in tqdm.tqdm(range(data.train.batch_n)):
+                del X, Y
+                X, Y, _ = data.train.next_batch()
+                summary, _ = sess.run([merged, train_step],
+                                      feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
+                writer.add_summary(summary, step)
+                if step == 0:
+                    train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
+                    tqdm.tqdm.write('epoch %d, mean squared error %g' % (epoch, train_error))
+
+            save_model(epoch, saver, sess)
 
 
 def save_model(step, saver, sess):
@@ -150,5 +152,6 @@ if __name__ == '__main__':
                         help="number of neurons in first fully connected layer")
     parser.add_argument("-r", "--rate", type=float, default=0.0001, help="learning rate")
     parser.add_argument("-d", "--dropout", type=float, default=0.5, help="dropout")
+    parser.add_argument("-e", "--epoch", type=int, default=100, help="epoch number")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)

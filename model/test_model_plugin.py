@@ -7,7 +7,7 @@ from model.dataset.data_set import DataSet
 
 
 def plugin_main(model_path, actions_number, render, save):
-    data = DataSet(0)
+    data = DataSet()
     test_mse(data, model_path)
     test_whole_images(data, model_path, actions_number, render, save)
 
