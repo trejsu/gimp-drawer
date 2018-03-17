@@ -1,48 +1,44 @@
 import os
 import math
+import json
 
 import numpy as np
 
 
 PATH = os.path.expandvars("$GIMP_PROJECT/dataset/")
-# PATH = os.path.expandvars("$GIMP_PROJECT/model/diffs/")
-PART_SIZE = 70000
-# PART_SIZE = 200
-TRAIN = 689368
-# TRAIN = 1118
-TEST = 172577
-# TEST = 313
-BATCH_SIZE = 200
-# BATCH_SIZE = 50
 
 
 class DataSet(object):
     def __init__(self):
-        self.train = Set("train", TRAIN)
-        self.test = Set("test", TEST)
+        with open(PATH + "config.json") as json_file:
+            config = json.load(json_file)
+        self.train = Set("train", config["train"], config["partSize"], config["batchSize"])
+        self.test = Set("test", config["test"], config["partSize"], config["batchSize"])
 
 
 class Set(object):
-    def __init__(self, name, set_n):
+    def __init__(self, name, set_n, part_size, batch_size):
         self.name = name
         self.next_index = 0
-        self.part_n = int(math.ceil(set_n / float(PART_SIZE)))
+        self.part_n = int(math.ceil(set_n / float(part_size)))
         self.current_part = 1
-        self.last_part_size = set_n % PART_SIZE
-        self.batch_n = int(math.ceil(set_n / float(BATCH_SIZE)))
+        self.last_part_size = set_n % part_size
+        self.batch_n = int(math.ceil(set_n / float(batch_size)))
         self.set_n = set_n
         self.X = None
         self.Y = None
         self.labels = None
         self.has_next = True
+        self.batch_size = batch_size
+        self.part_size = part_size
 
     def next_batch(self):
         not_initialized = self.X is None or self.Y is None or self.labels is None
         if not_initialized:
             self.__load_current_part()
         last_part = self.current_part == self.part_n
-        end_of_part = self.next_index + BATCH_SIZE >= PART_SIZE
-        end_of_last_part = self.next_index + BATCH_SIZE >= self.last_part_size
+        end_of_part = self.next_index + self.batch_size >= self.part_size
+        end_of_last_part = self.next_index + self.batch_size >= self.last_part_size
 
         if last_part:
             X, Y, labels = self.__next_batch_from_last_part() if end_of_last_part \
@@ -67,7 +63,7 @@ class Set(object):
         if part == self.part_n:
             index_upper_bound = self.last_part_size
         else:
-            index_upper_bound = PART_SIZE
+            index_upper_bound = self.part_size
         index = np.random.randint(0, index_upper_bound)
         return index, part
 
@@ -93,8 +89,8 @@ class Set(object):
         return X, Y, labels
 
     def __next_batch_from_different_parts(self):
-        left_in_current_part = (PART_SIZE - self.next_index)
-        load_in_next_part = BATCH_SIZE - left_in_current_part
+        left_in_current_part = (self.part_size - self.next_index)
+        load_in_next_part = self.batch_size - left_in_current_part
         X = self.X[-left_in_current_part:]
         Y = self.Y[-left_in_current_part:]
         labels = self.labels[-left_in_current_part:]
@@ -108,10 +104,10 @@ class Set(object):
         return X, Y, labels
 
     def __next_batch_from_same_part(self):
-        X = self.X[self.next_index:self.next_index + BATCH_SIZE]
-        Y = self.Y[self.next_index:self.next_index + BATCH_SIZE]
-        labels = self.labels[self.next_index:self.next_index + BATCH_SIZE]
-        self.next_index += BATCH_SIZE
+        X = self.X[self.next_index:self.next_index + self.batch_size]
+        Y = self.Y[self.next_index:self.next_index + self.batch_size]
+        labels = self.labels[self.next_index:self.next_index + self.batch_size]
+        self.next_index += self.batch_size
         return X, Y, labels
 
     def __shuffle(self):
