@@ -4,7 +4,6 @@ import time
 
 import numpy as np
 from gimpfu import *
-from scipy import misc
 
 from gimp_drawer.environment.image import Image
 from gimp_drawer.environment.initializer import initialize_with_scaled_src
@@ -37,17 +36,9 @@ class ImageGenerator(object):
         if self.diffs:
             image_number = self.src_path.split("/")[-2]
             image_dir = os.path.expandvars("$GIMP_PROJECT/out/diffs/%s" % image_number)
-            image_dir_img_src = os.path.expandvars("$GIMP_PROJECT/out/diffs_img_src/%s" % image_number)
-            image_dir_abs = os.path.expandvars("$GIMP_PROJECT/out/diffs_abs/%s" % image_number)
             if not os.path.exists(image_dir):
                 os.mkdir(image_dir)
-            if not os.path.exists(image_dir_img_src):
-                os.mkdir(image_dir_img_src)
-            if not os.path.exists(image_dir_abs):
-                os.mkdir(image_dir_abs)
             self.out_path = image_dir
-            self.img_src_out_path = image_dir_img_src
-            self.abs_out_path = image_dir_abs
 
     def run(self):
         start = time.time()
