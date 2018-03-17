@@ -5,6 +5,7 @@ import os
 import json
 
 import tensorflow as tf
+import matplotlib.pylab as plt
 
 from model.dataset.data_set import DataSet
 
@@ -86,7 +87,6 @@ def main(_):
     with tf.name_scope('loss'):
         loss = tf.reduce_mean(tf.losses.mean_squared_error(labels=y_, predictions=y_conv))
         # loss = tf.reduce_mean(tf.square(tf.nn.sigmoid(y_conv) - y_))
-    tf.summary.scalar('loss', loss)
 
     with tf.name_scope('optimizer'):
         train_step = tf.train.AdamOptimizer(ARGS.rate).minimize(loss)
@@ -94,9 +94,6 @@ def main(_):
     error = tf.reduce_mean(loss)
 
     with tf.Session() as sess:
-
-        merged = tf.summary.merge_all()
-        writer = tf.summary.FileWriter(MODEL_DIR + "summary", sess.graph)
 
         saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
@@ -106,22 +103,28 @@ def main(_):
 
         data = DataSet()
 
-        X = None
-        Y = None
-
+        mse_loss = []
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epoch)):
 
             for step in tqdm.tqdm(range(data.train.batch_n)):
-                del X, Y
                 X, Y, _ = data.train.next_batch()
-                summary, _ = sess.run([merged, train_step],
-                                      feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
-                writer.add_summary(summary, step)
-                if step == 0:
+                train_step.run(feed_dict={x: X, y_: Y, keep_prob: 1.0})
+                if step % 100 == 0:
                     train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
-                    tqdm.tqdm.write('epoch %d, mean squared error %g' % (epoch, train_error))
+                    tqdm.tqdm.write('epoch %d, step %d, mean squared error %g' % (epoch, step, train_error))
+                    mse_loss.append(train_error)
 
             save_model(epoch, saver, sess)
+
+        save_learning_curve(mse_loss)
+
+
+def save_learning_curve(mse_loss):
+    plt.plot(mse_loss)
+    plt.xlabel("step * 100")
+    plt.ylabel("MSE")
+    model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
+    plt.savefig(MODEL_DIR + model_name + "_learning_curve.png")
 
 
 def save_model(step, saver, sess):
