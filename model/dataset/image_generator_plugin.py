@@ -72,19 +72,12 @@ class ImageGenerator(object):
         return self.diffs and (not self.action_type_limited or action_type == self.action_type)
 
     def save(self, index, action_type, action_args):
-        # def get_path(x): return "{}/{}_{}.npy".format(self.out_path, x, index + 1)
-        # X = (self.src_image.array - self.image.get_updated_array()) / 255
-        # np.save(get_path("X"), X)
-        # # Y without action_type for now
-        # Y = np.array(list(action_args))
-        # np.save(get_path("Y"), Y)
-        X = (self.image.get_updated_array() - self.src_image.array) / 255
+        def get_path(x): return "{}/{}_{}.npy".format(self.out_path, x, index + 1)
+        X = (self.src_image.array - self.image.get_updated_array()) / 255
+        np.save(get_path("X"), X)
+        # Y without action_type for now
         Y = np.array(list(action_args))
-        np.save("{}/{}_{}.npy".format(self.img_src_out_path, "X", index + 1), X)
-        np.save("{}/{}_{}.npy".format(self.img_src_out_path, "Y", index + 1), Y)
-        X = abs(self.image.get_updated_array() - self.src_image.array) / 255
-        np.save("{}/{}_{}.npy".format(self.abs_out_path, "X", index + 1), X)
-        np.save("{}/{}_{}.npy".format(self.abs_out_path, "Y", index + 1), Y)
+        np.save(get_path("Y"), Y)
 
     def parse_actions(self):
         import glob
