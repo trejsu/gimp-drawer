@@ -37,7 +37,7 @@ def convolutional_network(image):
     with tf.name_scope('pool2'):
         h_pool2 = max_pool_2x2(h_conv2)
 
-    # Fully connected layer 1 - after 2 round of downsampling, our 100x100 image
+    # Fully connected layer 1 - after 2 round of downsampling, our ARGS.size x ARGS.size image
     # is down to 25 x 25 x ARGS.conv2 feature maps -- maps this to ARGS.fc1 features.
     with tf.name_scope('fully_connected1'):
         W_fully_conn1 = weight_variable([25 * 25 * ARGS.conv2, ARGS.fc1])
@@ -80,7 +80,7 @@ def bias_variable(shape):
 
 
 def main(_):
-    x = tf.placeholder(tf.float32, [None, 100, 100, 3])
+    x = tf.placeholder(tf.float32, [None, ARGS.size, ARGS.size, 3])
     y_ = tf.placeholder(tf.float32, [None, 9])
     y_conv, keep_prob = convolutional_network(x)
 
@@ -156,5 +156,6 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--rate", type=float, default=0.0001, help="learning rate")
     parser.add_argument("-d", "--dropout", type=float, default=0.5, help="dropout")
     parser.add_argument("-e", "--epoch", type=int, default=100, help="epoch number")
+    parser.add_argument("-s", "--size", type=int, default=100, help="image size")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
