@@ -142,8 +142,7 @@ class Environment(object):
 
     @timed
     def __update_reward_and_distance(self):
-        # time consuming!
-        new_distance = sum(abs(self.src_img.array - self.img.array))
+        new_distance = np.sum(np.abs(self.src_img.array - self.img.array))
         self.reward = int(self.distance) - int(new_distance)
         self.distance = int(new_distance)
 

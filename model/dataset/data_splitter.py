@@ -54,6 +54,8 @@ def create_data(image_dirs, set_name):
         x = np.load(d[0])
         X[index] = x
         y = np.load(d[1])
+        # temporary fix to scale rotation argument to from [-1,1] to [0,1]
+        y[-1] = y[-1] / 2 + 0.5
         Y[index] = y
         labels[index] = d[2]
 

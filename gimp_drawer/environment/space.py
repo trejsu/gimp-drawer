@@ -93,7 +93,7 @@ class SelectionSpace(Space):
         raise NotImplementedError()
 
     def position(self):
-        return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (-1., 1.)]
+        return [(0., 1.), (0., 1.), (0., 1.), (0., 1.), (0., 1.)]
 
 
 class TriangleSpace(Space):

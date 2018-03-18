@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-import random
-
 from gimpfu import *
 
 from gimp_drawer.common.decorators.timed import timed
@@ -125,7 +123,7 @@ class Image(object):
 
     @timed
     def __from_normalized_angle(self, angle):
-        return angle * 180
+        return (angle - 0.5) * 360
 
     @timed
     def __from_normalized_opacity(self, opacity):
