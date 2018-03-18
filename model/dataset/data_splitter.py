@@ -77,7 +77,7 @@ def correlate_x_y_and_labels(image_dirs):
 
 
 def initialize(size):
-    X = np.empty((size, 100, 100, 3))
+    X = np.empty((size, ARGS.size, ARGS.size, 3))
     Y = np.empty((size, 9))
     labels = np.empty((size, 2), np.int)
     return X, Y, labels
@@ -94,5 +94,6 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--path", type=str, help="path to the directory with diffs")
     parser.add_argument("-l", "--limit", type=int, default=70000,
                         help="number of actions for one numpy file of data set")
+    parser.add_argument("-s", "--size", type=int, default=100, help="size of each image sample")
     ARGS = parser.parse_args()
     main()
