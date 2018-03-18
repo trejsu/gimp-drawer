@@ -3,6 +3,7 @@ import tqdm
 import argparse
 import os
 import json
+import math
 
 import tensorflow as tf
 import matplotlib.pylab as plt
@@ -38,12 +39,13 @@ def convolutional_network(image):
         h_pool2 = max_pool_2x2(h_conv2)
 
     # Fully connected layer 1 - after 2 round of downsampling, our ARGS.size x ARGS.size image
-    # is down to 25 x 25 x ARGS.conv2 feature maps -- maps this to ARGS.fc1 features.
+    # is down to ARGS.SIZE / 4 x ARGS.SIZE / 4 x ARGS.conv2 feature maps -- maps this to ARGS.fc1 features.
     with tf.name_scope('fully_connected1'):
-        W_fully_conn1 = weight_variable([25 * 25 * ARGS.conv2, ARGS.fc1])
+        image_size = math.ceil(ARGS.size / 4)
+        W_fully_conn1 = weight_variable([image_size * image_size * ARGS.conv2, ARGS.fc1])
         b_fully_conn1 = bias_variable([ARGS.fc1])
 
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 25 * 25 * ARGS.conv2])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, image_size * image_size * ARGS.conv2])
         h_fully_conn1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fully_conn1) + b_fully_conn1)
 
     # Dropout - controls the complexity of the model, prevents co-adaptation of features.
