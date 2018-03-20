@@ -41,7 +41,7 @@ def convolutional_network(image):
     # Fully connected layer 1 - after 2 round of downsampling, our ARGS.size x ARGS.size image
     # is down to ARGS.SIZE / 4 x ARGS.SIZE / 4 x ARGS.conv2 feature maps -- maps this to ARGS.fc1 features.
     with tf.name_scope('fully_connected1'):
-        image_size = math.ceil(ARGS.size / 4)
+        image_size = math.ceil(ARGS.size / 4.)
         W_fully_conn1 = weight_variable([image_size * image_size * ARGS.conv2, ARGS.fc1])
         b_fully_conn1 = bias_variable([ARGS.fc1])
 
@@ -101,6 +101,7 @@ def main(_):
         sess.run(tf.global_variables_initializer())
         global_epoch = 0 if ARGS.model is None else int(ARGS.model.split('-')[-1])
         if global_epoch != 0:
+            print("RESTORING")
             saver.restore(sess, ARGS.model)
 
         data = DataSet()
@@ -113,12 +114,11 @@ def main(_):
                 train_step.run(feed_dict={x: X, y_: Y, keep_prob: 1.0})
                 if step % 100 == 0:
                     train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
-                    tqdm.tqdm.write('epoch %d, step %d, mean squared error %g' % (epoch, step, train_error))
+                    tqdm.tqdm.write('epoch %d, step %d, mean squared error %g' % (epoch + 1, step, train_error))
                     mse_loss.append(train_error)
 
-            save_model(epoch, saver, sess)
-
-        save_learning_curve(mse_loss)
+            save_model(epoch + 1, saver, sess)
+            save_learning_curve(mse_loss)
 
 
 def save_learning_curve(mse_loss):
@@ -131,7 +131,7 @@ def save_learning_curve(mse_loss):
 
 def save_model(step, saver, sess):
     model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
-    path = MODEL_DIR + model_name
+    path = MODEL_DIR + model_name.split('-')[0]
     saver.save(sess, path, global_step=step)
     config = {"noise": ARGS.noise, "init": ARGS.init, "conv1": ARGS.conv1, "conv2": ARGS.conv2,
               "fc1": ARGS.fc1, "rate": ARGS.rate, "dropout": ARGS.dropout}
