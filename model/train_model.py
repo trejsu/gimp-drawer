@@ -41,7 +41,7 @@ def convolutional_network(image):
     # Fully connected layer 1 - after 2 round of downsampling, our ARGS.size x ARGS.size image
     # is down to ARGS.SIZE / 4 x ARGS.SIZE / 4 x ARGS.conv2 feature maps -- maps this to ARGS.fc1 features.
     with tf.name_scope('fully_connected1'):
-        image_size = math.ceil(ARGS.size / 4.)
+        image_size = int(math.ceil(ARGS.size / 4.))
         W_fully_conn1 = weight_variable([image_size * image_size * ARGS.conv2, ARGS.fc1])
         b_fully_conn1 = bias_variable([ARGS.fc1])
 
