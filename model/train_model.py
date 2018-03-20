@@ -111,7 +111,7 @@ def main(_):
 
             for step in tqdm.tqdm(range(data.train.batch_n)):
                 X, Y, _ = data.train.next_batch()
-                train_step.run(feed_dict={x: X, y_: Y, keep_prob: 1.0})
+                train_step.run(feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
                 if step % 100 == 0:
                     train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
                     tqdm.tqdm.write('epoch %d, step %d, mean squared error %g' % (epoch + 1, step, train_error))
