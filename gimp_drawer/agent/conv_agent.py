@@ -26,14 +26,7 @@ class Agent(object):
     def run(self):
         self.__initialize()
         upper_bound = [1., 1., 1., 1., 1., 1., 1., 1., 1.]
-        lower_bound = [0., 0., 0., 0., 0., 0., 0., 0., -1.]
-        # for _ in range(1000):
-        #     args = np.random.normal(size=9)
-        #     args = np.minimum(args, upper_bound)
-        #     args = np.maximum(args, lower_bound)
-        #     # print args
-        #     self.env.step(0, args)
-
+        lower_bound = [0., 0., 0., 0., 0., 0., 0., 0., 0.]
         self.action_start = time.time()
         diff = self.env.reset()
         # only action 0 (ellipse) for now
@@ -41,19 +34,16 @@ class Agent(object):
         prev_args = (0, 0, 0, 0, 0, 0, 0, 0, 0)
         while not self.done:
             args = self.conv_network.generate_args(diff)
-            # args += np.random.normal(size=9, scale=0.4)
-            # print "original args:", args
-            args = np.minimum(args, upper_bound)
-            args = np.maximum(args, lower_bound)
-            # print "fixed args:", args
+            # assert (all(0. <= arg <= 1. for arg in args))
             if all(prev_args == args):
                 args += np.random.normal(size=9, scale=0.4)
+            prev_args = args
             args = np.minimum(args, upper_bound)
             args = np.maximum(args, lower_bound)
+            print args
             reward, self.done, diff = self.env.step(action, args)
             if self.render:
                 self.env.render()
-            prev_args = args
         self.__finish()
 
     @timed
