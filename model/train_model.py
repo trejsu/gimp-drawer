@@ -109,7 +109,8 @@ def main(_):
         mse_loss = []
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epoch)):
 
-            for step in tqdm.tqdm(range(data.train.batch_n)):
+            num_batches = data.train.batch_n if ARGS.batch is None else ARGS.batch
+            for step in tqdm.tqdm(range(num_batches)):
                 X, Y, _ = data.train.next_batch()
                 train_step.run(feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
                 if step % 100 == 0:
@@ -159,5 +160,6 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--dropout", type=float, default=0.5, help="dropout")
     parser.add_argument("-e", "--epoch", type=int, default=100, help="epoch number")
     parser.add_argument("-s", "--size", type=int, default=100, help="image size")
+    parser.add_argument("-b", "--batch", type=int, help="number of batches to train in each epoch. whole training set if missing")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
