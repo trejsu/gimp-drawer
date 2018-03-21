@@ -40,25 +40,25 @@ def convolutional_network(image):
 
     # Fully connected layer 1 - after 2 round of downsampling, our ARGS.size x ARGS.size image
     # is down to ARGS.SIZE / 4 x ARGS.SIZE / 4 x ARGS.conv2 feature maps -- maps this to ARGS.fc1 features.
-    with tf.name_scope('fully_connected1'):
+    with tf.name_scope('fc1'):
         image_size = int(math.ceil(ARGS.size / 4.))
-        W_fully_conn1 = weight_variable([image_size * image_size * ARGS.conv2, ARGS.fc1])
-        b_fully_conn1 = bias_variable([ARGS.fc1])
+        W_fc1 = weight_variable([image_size * image_size * ARGS.conv2, ARGS.fc1])
+        b_fc1 = bias_variable([ARGS.fc1])
 
         h_pool2_flat = tf.reshape(h_pool2, [-1, image_size * image_size * ARGS.conv2])
-        h_fully_conn1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fully_conn1) + b_fully_conn1)
+        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
     # Dropout - controls the complexity of the model, prevents co-adaptation of features.
     with tf.name_scope('dropout'):
-        keep_prob = tf.placeholder(tf.float32)
-        h_fully_conn1_dropout = tf.nn.dropout(h_fully_conn1, keep_prob)
+        keep_prob = tf.placeholder(tf.float32, name="keep_prob")
+        h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob)
 
     # Map the ARGS.fc1 features to 9 action arguments
-    with tf.name_scope('fully_connected2'):
-        W_fully_conn2 = weight_variable([ARGS.fc1, 9])
-        b_fully_conn2 = bias_variable([9])
+    with tf.name_scope('fc2'):
+        W_fc2 = weight_variable([ARGS.fc1, 9])
+        b_fc2 = bias_variable([9])
 
-        y_conv = tf.matmul(h_fully_conn1_dropout, W_fully_conn2) + b_fully_conn2
+        y_conv = tf.add(tf.matmul(h_fc1_dropout, W_fc2), b_fc2, name="y_conv")
 
     return y_conv, keep_prob
 
@@ -73,27 +73,25 @@ def max_pool_2x2(x):
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=ARGS.noise)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name="W")
 
 
 def bias_variable(shape):
     initial = tf.constant(ARGS.init, shape=shape)
-    return tf.Variable(initial)
+    return tf.Variable(initial, name="b")
 
 
 def main(_):
-    x = tf.placeholder(tf.float32, [None, ARGS.size, ARGS.size, 3])
-    y_ = tf.placeholder(tf.float32, [None, 9])
+    x = tf.placeholder(tf.float32, [None, ARGS.size, ARGS.size, 3], name="x")
+    y = tf.placeholder(tf.float32, [None, 9], name="y")
     y_conv, keep_prob = convolutional_network(x)
 
     with tf.name_scope('loss'):
-        loss = tf.reduce_mean(tf.losses.mean_squared_error(labels=y_, predictions=y_conv))
+        loss = tf.reduce_mean(tf.losses.mean_squared_error(labels=y, predictions=y_conv), name="loss")
         # loss = tf.reduce_mean(tf.square(tf.nn.sigmoid(y_conv) - y_))
 
     with tf.name_scope('optimizer'):
         train_step = tf.train.AdamOptimizer(ARGS.rate).minimize(loss)
-
-    error = tf.reduce_mean(loss)
 
     with tf.Session() as sess:
 
@@ -112,9 +110,9 @@ def main(_):
             num_batches = data.train.batch_n if ARGS.batch is None else ARGS.batch
             for step in tqdm.tqdm(range(num_batches)):
                 X, Y, _ = data.train.next_batch()
-                train_step.run(feed_dict={x: X, y_: Y, keep_prob: ARGS.dropout})
+                train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout})
                 if step % 100 == 0:
-                    train_error = error.eval(feed_dict={x: X, y_: Y, keep_prob: 1.0})
+                    train_error = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0})
                     tqdm.tqdm.write('epoch %d, step %d, mean squared error %g' % (epoch + 1, step, train_error))
                     mse_loss.append(train_error)
 
