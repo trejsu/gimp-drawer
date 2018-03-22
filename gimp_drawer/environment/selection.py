@@ -30,11 +30,13 @@ class Selection(object):
 
     @timed
     def __from_normalized_width(self, width, boundary):
-        return max(1, width * (self.image.width - boundary))
+        # return max(1, width * (self.image.width - boundary))
+        return width * self.image.width
 
     @timed
     def __from_normalized_height(self, height, boundary):
-        return max(1, height * (self.image.height - boundary))
+        # return max(1, height * (self.image.height - boundary))
+        return height * self.image.height
 
     @timed
     def select_triangle(self, x1, y1, x2, y2, x3, y3):
