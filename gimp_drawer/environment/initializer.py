@@ -6,8 +6,10 @@ from gimp_drawer.common.decorators.timed import timed
 
 
 @timed
-def initialize(src_path, input_path):
+def initialize(src_path, input_path, size=None):
     src_img = pdb.gimp_file_load(src_path, src_path)
+    if size is not None:
+        pdb.gimp_image_scale(src_img, size, size)
     src_drawable = pdb.gimp_image_active_drawable(src_img)
     if not pdb.gimp_drawable_is_rgb(src_drawable):
         pdb.gimp_image_convert_rgb(src_img)

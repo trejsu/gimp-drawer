@@ -12,9 +12,9 @@ from model.conv_network import ConvNetwork
 
 class Agent(object):
 
-    def __init__(self, src_path, render, input_path, actions, model_path, save):
+    def __init__(self, src_path, render, input_path, actions, model_path, save, size):
         self.render = render
-        self.env = Environment(src_path, 0, input_path, actions)
+        self.env = Environment(src_path, 0, input_path, actions, size)
         self.done = False
         self.start = None
         self.action_start = None
@@ -73,7 +73,8 @@ register("conv_agent", "", "", "", "", "", "", "",
              (PF_STRING, "input_path", "Path to the input image - None means starting from white blank image", ""),
              (PF_FLOAT, "Actions", "Number of actions which will be performed", 0),
              (PF_STRING, "model_path", "Path to the model which will be computing action parameters", ""),
-             (PF_BOOL, "save", "Save drawn image", False)
+             (PF_BOOL, "save", "Save drawn image", False),
+             (PF_INT, "size", "Size of drawn image", False)
          ], [], plugin_main)
 
 main()

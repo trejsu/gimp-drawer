@@ -5,6 +5,7 @@ import numpy as np
 
 from numpy import concatenate
 from scipy import sum, misc
+from gimpfu import pdb
 
 import gimp_drawer.common.utils.format as formatter
 import gimp_drawer.environment.initializer as initializer
@@ -17,10 +18,9 @@ from gimp_drawer.environment.space import ToolSpace
 
 
 class Environment(object):
-    def __init__(self, src_path, acceptable_distance, input_path, actions):
+    def __init__(self, src_path, acceptable_distance, input_path, actions, size):
         self.src_path = src_path
-        # todo: change (right now random agent uses initialize and conv agent initialize_with_scaled_src)
-        src_img, img = initializer.initialize_with_scaled_src(src_path, 100)
+        src_img, img = initializer.initialize(src_path, input_path, size)
         self.src_img = Image(src_img)
         self.img = Image(img)
         self.prev_img = None
@@ -159,15 +159,15 @@ class Environment(object):
         self.distance = self.prev_distance
         self.undo_before_step = True
 
-    # @timed
-    # def generate_image(self):
-    #     pdb.python_fu_image_generator(self.out_path)
-    #     results_dir = os.path.expandvars("$GIMP_PROJECT/results")
-    #     if not os.path.exists(results_dir):
-    #         os.mkdir(results_dir)
-    #     filename = str(os.path.basename(self.src_path).split(".")[0])
-    #     image_result_dir = results_dir + "/" + filename
-    #     if not os.path.exists(image_result_dir):
-    #         os.mkdir(image_result_dir)
-    #     os.system("cp {} {}".format(self.out_path + "/generated_image.jpg", image_result_dir))
-    #     os.system("cp {} {}".format(self.out_path + "/src.jpg", image_result_dir))
+    @timed
+    def generate_image(self):
+        pdb.python_fu_image_generator(self.out_path)
+        results_dir = os.path.expandvars("$GIMP_PROJECT/results")
+        if not os.path.exists(results_dir):
+            os.mkdir(results_dir)
+        filename = str(os.path.basename(self.src_path).split(".")[0])
+        image_result_dir = results_dir + "/" + filename
+        if not os.path.exists(image_result_dir):
+            os.mkdir(image_result_dir)
+        os.system("cp {} {}".format(self.out_path + "/generated_image.jpg", image_result_dir))
+        os.system("cp {} {}".format(self.out_path + "/src.jpg", image_result_dir))
