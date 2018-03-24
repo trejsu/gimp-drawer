@@ -137,7 +137,7 @@ class Environment(object):
         self.undo_before_step = False
         self.action = action
         self.args = args
-        diff = (self.src_img.array - self.img.array) / 255
+        diff = (self.src_img.array - self.img.array) / 255.
         return self.reward, self.done, diff
 
     @timed

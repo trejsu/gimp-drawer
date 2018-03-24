@@ -64,7 +64,7 @@ class ImageGenerator(object):
 
     def save(self, index, action_type, action_args):
         def get_path(x): return "{}/{}_{}.npy".format(self.out_path, x, index + 1)
-        X = (self.src_image.array - self.image.get_updated_array()) / 255
+        X = (self.src_image.array - self.image.get_updated_array()) / 255.
         np.save(get_path("X"), X)
         # Y without action_type for now
         Y = np.array(list(action_args))
