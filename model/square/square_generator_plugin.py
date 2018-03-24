@@ -26,10 +26,10 @@ def generate_set(image_n, image_size, square_size, name):
     def initialize():
         X = np.zeros((image_n, image_size, image_size))
         Y_1 = np.zeros((image_n, 2))
-        Y_2 = np.zeros((image_n, 1))
-        Y_4 = np.zeros((image_n, 1))
-        Y_9 = np.zeros((image_n, 1))
-        Y_25 = np.zeros((image_n, 1))
+        Y_2 = np.zeros((image_n, 1), dtype=np.int8)
+        Y_4 = np.zeros((image_n, 1), dtype=np.int8)
+        Y_9 = np.zeros((image_n, 1), dtype=np.int8)
+        Y_25 = np.zeros((image_n, 1), dtype=np.int8)
         return X, Y_1, Y_2, Y_25, Y_4, Y_9
 
     X, Y_1, Y_2, Y_25, Y_4, Y_9 = initialize()
