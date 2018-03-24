@@ -7,27 +7,27 @@ from gimpfu import *
 from model.dataset.data_set import DataSet
 
 
-def plugin_main(model_path, actions_number, render, save, train, examples):
+def plugin_main(model_path, actions_number, render, save, train, examples, size):
     data = DataSet()
     conv_network = ConvNetwork(model_path)
     test_mse(data, conv_network, examples if examples is not None else data.test.batch_n, "Testing test set mse")
     if train:
         test_mse(data, conv_network, examples if examples is not None else data.train.batch_n, "Testing train set mse")
-    test_whole_images(data, model_path, actions_number, render, save)
+    test_whole_images(data, model_path, actions_number, render, save, size)
 
 
-def test_whole_images(data, model_path, actions_number, render, save):
+def test_whole_images(data, model_path, actions_number, render, save, size):
     images_dir = os.path.expandvars("$GIMP_PROJECT/resources/scaled_images/")
     print "Train image test"
     label = data.train.random_label()
     print "Testing image", label
     image_path = images_dir + str(label[0]) + ".jpg"
-    pdb.python_fu_conv_agent(image_path, render, "None", actions_number, model_path, save)
+    pdb.python_fu_conv_agent(image_path, render, "None", actions_number, model_path, save, size)
     print "Test image test"
     label = data.test.random_label()
     print "Testing image", label
     image_path = images_dir + str(label[0]) + ".jpg"
-    pdb.python_fu_conv_agent(image_path, render, "None", actions_number, model_path, save)
+    pdb.python_fu_conv_agent(image_path, render, "None", actions_number, model_path, save, size)
 
 
 def test_mse(data, conv_network, examples, message):
@@ -47,7 +47,8 @@ register("test_model", "", "", "", "", "", "", "",
              (PF_BOOL, "render", "render image during drawing", True),
              (PF_BOOL, "save", "save drawn image", False),
              (PF_BOOL, "train", "include mse testing for train set", False),
-             (PF_INT, "examples", "number of batches for mse testing - whole set when argument missing", False)
+             (PF_INT, "examples", "number of batches for mse testing - whole set when argument missing", False),
+             (PF_INT, "size", "Size of drawn image", 100)
          ], [], plugin_main)
 
 main()
