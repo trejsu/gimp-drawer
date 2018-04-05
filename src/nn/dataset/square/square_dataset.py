@@ -6,7 +6,7 @@ import numpy as np
 from nn.dataset.dataset import Dataset
 
 
-PATH = os.path.expandvars("$GIMP_PROJECT/dataset/square/")
+PATH = os.path.expandvars("$SQUARE_DATASET_PATH")
 BATCH_SIZE = 50
 TRAIN = 3500
 TEST = 1500
@@ -38,8 +38,8 @@ class Set(object):
 
     def __load(self):
         del self.X, self.Y
-        self.X = np.load(PATH + "%s_X.npy" % self.name, mmap_mode="r")
-        self.Y = np.load(PATH + "%s_Y_%d.npy" % (self.name, self.class_n), mmap_mode="r")
+        self.X = np.load(PATH + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(PATH + "/%s_Y_%d.npy" % (self.name, self.class_n), mmap_mode="r")
         self.__shuffle()
 
     def __next_batch_from_the_end(self):

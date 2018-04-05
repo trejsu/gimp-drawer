@@ -9,14 +9,19 @@ import tensorflow as tf
 import matplotlib.pylab as plt
 import numpy as np
 
+from textwrap import wrap
+
+sys.path.insert(0, os.path.realpath('../../'))
 from nn.dataset.square.square_dataset import SquareDataset
 
 
 ARGS = None
 FILTER_SIZE = 5
 CHANNELS = 1
-MODEL_DIR = os.path.expandvars("$GIMP_PROJECT/out/model/square/")
+MODEL_DIR = os.path.expandvars("$SQUARE_MODEL_PATH")
 EPSILON = 1e-3
+
+CONFIG = None
 
 
 def conv_net(image, training):
@@ -146,21 +151,25 @@ def main(_):
 
 def save_learning_curve(loss):
     plt.plot(loss)
-    plt.xlabel("step")
-    plt.ylabel("loss")
+    plt.xlabel('step')
+    plt.ylabel('loss')
     model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
-    plt.title("%s %d epoch" % (model_name, ARGS.epoch))
-    plt.savefig("%s../learning_curves/%s_%d_epoch.png" % (MODEL_DIR, model_name, ARGS.epoch))
+    config = ', '.join(['%s: %s' % (key, value) for key, value in CONFIG.items()])
+    title = '%s %d epoch. %s' % (model_name, ARGS.epoch, config)
+    plt.suptitle("\n".join(wrap(title, 60)))
+    plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (MODEL_DIR, model_name, ARGS.epoch))
 
 
 def save_model(step, saver, sess):
     model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
-    path = "%s%s" % (MODEL_DIR, model_name.split('-')[0])
-    config = {"noise": ARGS.noise, "init": ARGS.init, "conv1": ARGS.conv1, "conv2": ARGS.conv2,
-              "fc1": ARGS.fc1, "rate": ARGS.rate, "dropout": ARGS.dropout}
-    with open("%s_config.json" % path, 'w+') as outfile:
-        json.dump(config, outfile)
-    return saver.save(sess, path, global_step=step)
+    model_name = model_name.split('-')[0]
+    model_dir = "%s/%s" % (MODEL_DIR, model_name)
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)
+    model_path = "%s/%s" % (model_dir, model_name)
+    with open("%s_config.json" % model_path, 'w+') as outfile:
+        json.dump(CONFIG, outfile)
+    return saver.save(sess, model_path, global_step=step)
 
 
 if __name__ == '__main__':
@@ -186,4 +195,6 @@ if __name__ == '__main__':
     parser.add_argument("-b", "--batch", type=int, help="number of batches to train in each epoch. whole training set if missing")
     parser.add_argument("--classes", type=int, help="number of classes (image parts)")
     ARGS = parser.parse_args()
+    CONFIG = {"noise": ARGS.noise, "init": ARGS.init, "conv1": ARGS.conv1, "conv2": ARGS.conv2,
+              "fc1": ARGS.fc1, "rate": ARGS.rate, "dropout": ARGS.dropout}
     tf.app.run(main=main, argv=sys.argv)
