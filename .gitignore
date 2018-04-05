@@ -1,5 +1,3 @@
-resources/**
-out/**
-images/**
+data/**
+result/**
 .idea/**
-test/**
