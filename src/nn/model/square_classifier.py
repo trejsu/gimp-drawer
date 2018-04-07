@@ -2,104 +2,43 @@ import sys
 import tqdm
 import argparse
 import os
-import json
-import math
 
 import tensorflow as tf
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
-
-from textwrap import wrap
 
 sys.path.insert(0, os.path.realpath('../../'))
 from nn.dataset.square.square_dataset import SquareDataset
+from nn.model.model import Model
 
 
 ARGS = None
-FILTER_SIZE = 5
+
 CHANNELS = 1
-MODEL_DIR = os.path.expandvars("$SQUARE_MODEL_PATH")
 EPSILON = 1e-3
 
-CONFIG = None
 
+class SquareClassifier(Model):
+    def __init__(self, args):
+        super().__init__(args, CHANNELS, args.classes)
 
-def conv_net(image, training):
-    image = tf.reshape(image, [-1, ARGS.image_size, ARGS.image_size, 1])
-
-    with tf.name_scope('conv1'):
-        W_conv1 = weight_variable([FILTER_SIZE, FILTER_SIZE, CHANNELS, ARGS.conv1_filters])
-        b_conv1 = bias_variable([ARGS.conv1_filters])
-        conv1 = conv2d(image, W_conv1) + b_conv1
-        if ARGS.batch_norm:
-            conv1 = tf.layers.batch_normalization(conv1, center=True, scale=True, training=training)
-        h_conv1 = tf.nn.relu(conv1)
-
-    with tf.name_scope('pool1'):
-        h_pool1 = max_pool_2x2(h_conv1)
-
-    with tf.name_scope('conv2'):
-        W_conv2 = weight_variable([FILTER_SIZE, FILTER_SIZE, ARGS.conv1_filters, ARGS.conv2_filters])
-        b_conv2 = bias_variable([ARGS.conv2_filters])
-        conv2 = conv2d(h_pool1, W_conv2) + b_conv2
-        if ARGS.batch_norm:
-            conv2 = tf.layers.batch_normalization(conv2, center=True, scale=True, training=training)
-        h_conv2 = tf.nn.relu(conv2)
-
-    with tf.name_scope('pool2'):
-        h_pool2 = max_pool_2x2(h_conv2)
-
-    with tf.name_scope('fc1'):
-        image_size = int(math.ceil(ARGS.image_size / 4.))
-        W_fc1 = weight_variable([image_size * image_size * ARGS.conv2_filters, ARGS.fc1_neurons])
-        b_fc1 = bias_variable([ARGS.fc1_neurons])
-
-        h_pool2_flat = tf.reshape(h_pool2, [-1, image_size * image_size * ARGS.conv2_filters])
-        fc1 = tf.matmul(h_pool2_flat, W_fc1) + b_fc1
-        if ARGS.batch_norm:
-            fc1 = tf.layers.batch_normalization(fc1, center=True, scale=True, training=training)
-        h_fc1 = tf.nn.relu(fc1)
-
-    with tf.name_scope('dropout'):
-        keep_prob = tf.placeholder(tf.float32, name="keep_prob")
-        h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob)
-
-    with tf.name_scope('fc2'):
-        W_fc2 = weight_variable([ARGS.fc1_neurons, ARGS.classes])
-        b_fc2 = bias_variable([ARGS.classes])
-
-        y_conv = tf.add(tf.matmul(h_fc1_dropout, W_fc2), b_fc2, name="y_conv")
-
-    return y_conv, keep_prob
-
-
-def conv2d(x, W):
-    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
-
-
-def max_pool_2x2(x):
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
-
-
-def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=ARGS.weight_noise)
-    return tf.Variable(initial, name="W")
-
-
-def bias_variable(shape):
-    initial = tf.constant(ARGS.bias_init, shape=shape)
-    return tf.Variable(initial, name="b")
+    def save_test_result_with_parameters(self, score):
+        with open('results.txt', mode='a') as f:
+            f.write('score = %s, python square_classifier.py --name %s --epochs %s --classes %s '
+                    '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
+                    '--dropout %s\n' % (score, self.name, self.epochs, self.outputs,
+                                        self.conv1_filters, self.conv2_filters, self.fc1_neurons,
+                                        self.learning_rate, self.dropout))
 
 
 def main(_):
     x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size], name="x")
     y = tf.placeholder(tf.int32, [None], name="y")
     y_one_hot = tf.one_hot(y, ARGS.classes)
-    print(y_one_hot.shape)
     training = tf.placeholder(tf.bool, name="training")
-    y_conv, keep_prob = conv_net(x, training)
+
+    model = SquareClassifier(ARGS)
+
+    y_conv, keep_prob = model.conv_net(x, training)
 
     with tf.name_scope('loss'):
         cross_entropy = tf.reduce_mean(
@@ -118,11 +57,7 @@ def main(_):
 
     with tf.Session() as sess:
 
-        saver = tf.train.Saver()
-        sess.run(tf.global_variables_initializer())
-        global_epoch = 0 if ARGS.model is None else int(ARGS.model.split('-')[-1])
-        if global_epoch != 0:
-            saver.restore(sess, ARGS.model)
+        global_epoch, saver = model.restore_if_not_new(sess)
 
         data = SquareDataset(ARGS.classes)
 
@@ -136,13 +71,13 @@ def main(_):
                                                  feed_dict={x: X, y: Y.reshape([-1]), keep_prob: ARGS.dropout,
                                                             training: True})
                 loss.append(cross_entropy_loss)
-                if step % 5 == 0:
+                if step == 0:
                     train_accuracy = accuracy.eval(
                         feed_dict={x: X, y: Y.reshape([-1]), keep_prob: 1.0, training: True})
                     tqdm.tqdm.write('train accuracy %g' % train_accuracy)
 
-            save_model(epoch + 1, saver, sess)
-            save_learning_curve(loss)
+            model.save(epoch + 1, saver, sess)
+            model.save_learning_curve(loss)
 
         test_accuracy = np.zeros(100)
         data.test.next_batch()
@@ -153,39 +88,7 @@ def main(_):
             test_accuracy[i] = prediction
         mean_test_accuracy = np.mean(test_accuracy)
         print("test accuracy = %g" % mean_test_accuracy)
-        save_test_result_with_parameters(mean_test_accuracy)
-
-
-def save_learning_curve(loss):
-    plt.plot(loss)
-    plt.xlabel('step')
-    plt.ylabel('loss')
-    model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
-    config = ', '.join(['%s: %s' % (key, value) for key, value in CONFIG.items()])
-    title = '%s %d epoch. %s' % (model_name, ARGS.epochs, config)
-    plt.suptitle("\n".join(wrap(title, 60)))
-    plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (MODEL_DIR, model_name, ARGS.epochs))
-
-
-def save_model(step, saver, sess):
-    model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
-    model_name = model_name.split('-')[0]
-    model_dir = "%s/%s" % (MODEL_DIR, model_name)
-    if not os.path.exists(model_dir):
-        os.mkdir(model_dir)
-    model_path = "%s/%s" % (model_dir, model_name)
-    with open("%s_config.json" % model_path, 'w+') as outfile:
-        json.dump(CONFIG, outfile)
-    return saver.save(sess, model_path, global_step=step)
-
-
-def save_test_result_with_parameters(score):
-    with open('results.txt', mode='a') as f:
-        f.write('score = %s, python square_classifier.py --name %s --epochs %s --classes %s '
-                '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
-                '--dropout %s' % (score, ARGS.name, ARGS.epochs, ARGS.classes, ARGS.conv1_filters,
-                                  ARGS.conv2_filters, ARGS.fc1_neurons, ARGS.learning_rate,
-                                  ARGS.dropout))
+        model.save_test_result_with_parameters(mean_test_accuracy)
 
 
 if __name__ == '__main__':
@@ -195,27 +98,18 @@ if __name__ == '__main__':
                              "be trained from scratch")
     parser.add_argument("--name", type=str, default="new_model",
                         help="name of new model - ignored when --model argument provided")
-    parser.add_argument("--weight_noise", type=float, default=0.1,
-                        help="weight variable stddev noise")
-    parser.add_argument("---bias_init", default=0.1, type=float,
-                        help="bias variable initial value")
     parser.add_argument("--conv1_filters", default=32, type=int,
                         help="number of filters in first convolutional layer")
     parser.add_argument("--conv2_filters", default=64, type=int,
                         help="number of filters in second convolutional layer")
     parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
-    parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning rate")
-    parser.add_argument("--dropout", type=float, default=0.5, help="dropout")
-    parser.add_argument("--epochs", type=int, default=100, help="epoch number")
-    parser.add_argument("--image_size", type=int, default=100, help="image size")
-    parser.add_argument("--batches", type=int,
-                        help="number of batches to train in each epoch. whole training set if missing")
-    parser.add_argument("--classes", type=int, help="number of classes (image parts)")
-    parser.add_argument("--batch_norm", help="use batch normalization", action="store_true")
+    parser.add_argument("--learning_rate", type=float, default=0.0001)
+    parser.add_argument("--dropout", type=float, default=0.5)
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--image_size", type=int, default=100)
+    parser.add_argument("--batches", type=int)
+    parser.add_argument("--classes", type=int)
+    parser.add_argument("--batch_norm", action="store_true")
     ARGS = parser.parse_args()
-    CONFIG = {"weight_noise": ARGS.weight_noise, "bias_init": ARGS.bias_init,
-              "conv1_filters": ARGS.conv1_filters, "conv2_filters": ARGS.conv2_filters,
-              "fc1": ARGS.fc1_neurons, "learning_rate": ARGS.learning_rate, "dropout": ARGS.dropout,
-              "batch_norm": ARGS.batch_norm}
     tf.app.run(main=main, argv=sys.argv)
