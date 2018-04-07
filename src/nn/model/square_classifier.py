@@ -93,19 +93,17 @@ def bias_variable(shape):
     return tf.Variable(initial, name="b")
 
 
-def get_one_hot(targets, nb_classes):
-    return np.eye(nb_classes)[np.array(targets).reshape(-1)]
-
-
 def main(_):
     x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size], name="x")
-    y = tf.placeholder(tf.float32, [None, ARGS.classes], name="y")
+    y = tf.placeholder(tf.int32, [None], name="y")
+    y_one_hot = tf.one_hot(y, ARGS.classes)
+    print(y_one_hot.shape)
     training = tf.placeholder(tf.bool, name="training")
     y_conv, keep_prob = conv_net(x, training)
 
     with tf.name_scope('loss'):
         cross_entropy = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=y_conv), name="cross_entropy")
+            tf.nn.softmax_cross_entropy_with_logits(labels=y_one_hot, logits=y_conv), name="cross_entropy")
 
     with tf.name_scope('optimizer'):
         optimizer = tf.train.AdamOptimizer(ARGS.learning_rate)
@@ -115,7 +113,7 @@ def main(_):
         train_op = optimizer.minimize(cross_entropy)
 
     with tf.name_scope('prediction'):
-        correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y, 1))
+        correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_one_hot, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
 
     with tf.Session() as sess:
@@ -134,14 +132,13 @@ def main(_):
             num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
             for step in tqdm.tqdm(range(num_batches)):
                 X, Y = data.train.next_batch()
-                Y = get_one_hot(Y, ARGS.classes)
                 _, cross_entropy_loss = sess.run([train_op, cross_entropy],
-                                                 feed_dict={x: X, y: Y, keep_prob: ARGS.dropout,
+                                                 feed_dict={x: X, y: Y.reshape([-1]), keep_prob: ARGS.dropout,
                                                             training: True})
                 loss.append(cross_entropy_loss)
                 if step % 5 == 0:
                     train_accuracy = accuracy.eval(
-                        feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
+                        feed_dict={x: X, y: Y.reshape([-1]), keep_prob: 1.0, training: True})
                     tqdm.tqdm.write('train accuracy %g' % train_accuracy)
 
             save_model(epoch + 1, saver, sess)
@@ -151,8 +148,7 @@ def main(_):
         data.test.next_batch()
         X, Y = data.test.X, data.test.Y
         for i in tqdm.tqdm(range(100)):
-            prediction = accuracy.eval(feed_dict={x: np.expand_dims(X[i], 0),
-                                                  y: get_one_hot(Y[i], ARGS.classes),
+            prediction = accuracy.eval(feed_dict={x: np.expand_dims(X[i], 0), y: Y[i],
                                                   keep_prob: 1.0, training: False})
             test_accuracy[i] = prediction
         mean_test_accuracy = np.mean(test_accuracy)
