@@ -102,6 +102,7 @@ def visualize_predictions(examples, predictions, model):
         rgb_example = gray_to_rgb(example, size)
         x_prediction = int(prediction[0] * size)
         y_prediction = int(prediction[1] * size)
+        print('prediction = (%d, %d)' % (x_prediction, y_prediction))
         if 0 <= x_prediction <= size and 0 <= y_prediction <= size:
             rgb_example[x_prediction][y_prediction][0] = 1
             rgb_example[x_prediction][y_prediction][1] = 0

@@ -39,6 +39,7 @@ class Model(object):
         title = '%s %d epoch. %s' % (model_name, self.epochs, config)
         plt.suptitle("\n".join(wrap(title, 60)))
         plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (Model.MODEL_DIR, model_name, self.epochs))
+        plt.clf()
 
     def get_model_name(self):
         return self.name if self.model is None else str(os.path.basename(self.model))
