@@ -9,11 +9,13 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 
-MODEL_DIR = os.path.expandvars("$SQUARE_MODEL_PATH")
 FILTER_SIZE = 5
 
 
 class Model(object):
+
+    MODEL_DIR = os.path.expandvars("$SQUARE_MODEL_PATH")
+
     def __init__(self, args, channels, outputs):
         self.model = args.model
         self.name = args.name
@@ -32,16 +34,19 @@ class Model(object):
         plt.plot(loss)
         plt.xlabel('step')
         plt.ylabel('loss')
-        model_name = self.name if self.model is None else str(os.path.basename(self.model))
+        model_name = self.get_model_name()
         config = ', '.join(['%s: %s' % (key, value) for key, value in self._get_config().items()])
         title = '%s %d epoch. %s' % (model_name, self.epochs, config)
         plt.suptitle("\n".join(wrap(title, 60)))
-        plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (MODEL_DIR, model_name, self.epochs))
+        plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (Model.MODEL_DIR, model_name, self.epochs))
+
+    def get_model_name(self):
+        return self.name if self.model is None else str(os.path.basename(self.model))
 
     def save(self, step, saver, sess):
-        model_name = self.name if self.model is None else str(os.path.basename(self.model))
+        model_name = self.get_model_name()
         model_name = model_name.split('-')[0]
-        model_dir = "%s/%s" % (MODEL_DIR, model_name)
+        model_dir = "%s/%s" % (Model.MODEL_DIR, model_name)
         if not os.path.exists(model_dir):
             os.mkdir(model_dir)
         model_path = "%s/%s" % (model_dir, model_name)

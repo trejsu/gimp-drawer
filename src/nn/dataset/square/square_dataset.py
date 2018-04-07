@@ -61,6 +61,10 @@ class Set(object):
         self.X = self.X[indexes]
         self.Y = self.Y[indexes]
 
+    def random_X(self, n):
+        indexes = np.random.choice(self.set_n, n)
+        return self.X[indexes]
+
 
 
 

@@ -2,6 +2,7 @@ import sys
 import tqdm
 import argparse
 import os
+import random
 
 import numpy as np
 
@@ -70,8 +71,8 @@ def main(_):
 
             for step in tqdm.tqdm(range(num_batches)):
                 X, Y = data.train.next_batch()
-                train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout})
-                loss_eval = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0})
+                train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
+                loss_eval = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
                 train_mse.append(loss_eval)
                 if step == 0:
                     tqdm.tqdm.write('train mse %g' % loss_eval)
@@ -82,12 +83,41 @@ def main(_):
         test_mse = np.zeros(data.test.batch_n)
         for i in tqdm.tqdm(range(data.test.batch_n)):
             X, Y = data.test.next_batch()
-            mse = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0})
+            mse = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: False})
             test_mse[i] = mse
         mean_test_mse = np.mean(test_mse)
         print("average test mse = %g" % mean_test_mse)
 
         model.save_test_result_with_parameters(mean_test_mse)
+
+        examples = data.test.random_X(ARGS.visual_test_examples)
+        predictions = y_conv.eval(feed_dict={x: examples, keep_prob: 1.0, training: False})
+        visualize_predictions(examples, predictions, model)
+
+
+def visualize_predictions(examples, predictions, model):
+    size = ARGS.image_size
+
+    for index, (example, prediction) in enumerate(zip(examples, predictions)):
+        rgb_example = gray_to_rgb(example, size)
+        x_prediction = int(prediction[0] * size)
+        y_prediction = int(prediction[1] * size)
+        if 0 <= x_prediction <= size and 0 <= y_prediction <= size:
+            rgb_example[x_prediction][y_prediction][0] = 1
+            rgb_example[x_prediction][y_prediction][1] = 0
+            rgb_example[x_prediction][y_prediction][2] = 0
+        plt.imshow(rgb_example)
+        plt.suptitle('prediction = (%d, %d)' % (x_prediction, y_prediction))
+        plt.savefig('%s/%s/visualized_prediction_%d.png' % (Model.MODEL_DIR, model.get_model_name(),
+                                                            index))
+
+
+def gray_to_rgb(example, size):
+    rgb_example = np.zeros([size, size, 3])
+    rgb_example[:, :, 0] = example
+    rgb_example[:, :, 1] = example
+    rgb_example[:, :, 2] = example
+    return rgb_example
 
 
 if __name__ == '__main__':
@@ -111,5 +141,6 @@ if __name__ == '__main__':
     parser.add_argument("--batch_norm", action="store_true")
     parser.add_argument("--fc2_sigmoid", action="store_true")
     parser.add_argument("--loss_sigmoid", action="store_true")
+    parser.add_argument("--visual_test_examples", type=int, default=3)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)

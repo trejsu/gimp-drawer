@@ -13,13 +13,13 @@ from nn.model.model import Model
 
 ARGS = None
 
-CHANNELS = 1
-EPSILON = 1e-3
-
 
 class SquareClassifier(Model):
+
+    CHANNELS = 1
+
     def __init__(self, args):
-        super().__init__(args, CHANNELS, args.classes)
+        super().__init__(args, SquareClassifier.CHANNELS, args.classes)
 
     def save_test_result_with_parameters(self, score):
         with open('results.txt', mode='a') as f:
@@ -42,7 +42,8 @@ def main(_):
 
     with tf.name_scope('loss'):
         cross_entropy = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(labels=y_one_hot, logits=y_conv), name="cross_entropy")
+            tf.nn.softmax_cross_entropy_with_logits(labels=y_one_hot, logits=y_conv),
+            name="cross_entropy")
 
     with tf.name_scope('optimizer'):
         optimizer = tf.train.AdamOptimizer(ARGS.learning_rate)
@@ -68,7 +69,8 @@ def main(_):
             for step in tqdm.tqdm(range(num_batches)):
                 X, Y = data.train.next_batch()
                 _, cross_entropy_loss = sess.run([train_op, cross_entropy],
-                                                 feed_dict={x: X, y: Y.reshape([-1]), keep_prob: ARGS.dropout,
+                                                 feed_dict={x: X, y: Y.reshape([-1]),
+                                                            keep_prob: ARGS.dropout,
                                                             training: True})
                 loss.append(cross_entropy_loss)
                 if step == 0:
