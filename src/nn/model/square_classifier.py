@@ -155,7 +155,9 @@ def main(_):
                                                   y: get_one_hot(Y[i], ARGS.classes),
                                                   keep_prob: 1.0, training: False})
             test_accuracy[i] = prediction
-        print("test accuracy = %g" % np.mean(test_accuracy))
+        mean_test_accuracy = np.mean(test_accuracy)
+        print("test accuracy = %g" % mean_test_accuracy)
+        save_test_result_with_parameters(mean_test_accuracy)
 
 
 def save_learning_curve(loss):
@@ -179,6 +181,15 @@ def save_model(step, saver, sess):
     with open("%s_config.json" % model_path, 'w+') as outfile:
         json.dump(CONFIG, outfile)
     return saver.save(sess, model_path, global_step=step)
+
+
+def save_test_result_with_parameters(score):
+    with open('results.txt', mode='a') as f:
+        f.write('score = %s, python square_classifier.py --name %s --epochs %s --classes %s '
+                '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
+                '--dropout %s' % (score, ARGS.name, ARGS.epochs, ARGS.classes, ARGS.conv1_filters,
+                                  ARGS.conv2_filters, ARGS.fc1_neurons, ARGS.learning_rate,
+                                  ARGS.dropout))
 
 
 if __name__ == '__main__':
