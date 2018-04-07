@@ -6,7 +6,9 @@ import json
 import math
 
 import tensorflow as tf
-import matplotlib.pylab as plt
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 import numpy as np
 
 from textwrap import wrap
@@ -25,44 +27,47 @@ CONFIG = None
 
 
 def conv_net(image, training):
-    image = tf.reshape(image, [-1, ARGS.size, ARGS.size, 1])
+    image = tf.reshape(image, [-1, ARGS.image_size, ARGS.image_size, 1])
 
     with tf.name_scope('conv1'):
-        W_conv1 = weight_variable([FILTER_SIZE, FILTER_SIZE, CHANNELS, ARGS.conv1])
-        b_conv1 = bias_variable([ARGS.conv1])
-        bn_conv1 = tf.layers.batch_normalization(conv2d(image, W_conv1) + b_conv1, center=True,
-                                                 scale=True, training=training)
-        h_conv1 = tf.nn.relu(bn_conv1)
+        W_conv1 = weight_variable([FILTER_SIZE, FILTER_SIZE, CHANNELS, ARGS.conv1_filters])
+        b_conv1 = bias_variable([ARGS.conv1_filters])
+        conv1 = conv2d(image, W_conv1) + b_conv1
+        if ARGS.batch_norm:
+            conv1 = tf.layers.batch_normalization(conv1, center=True, scale=True, training=training)
+        h_conv1 = tf.nn.relu(conv1)
 
     with tf.name_scope('pool1'):
         h_pool1 = max_pool_2x2(h_conv1)
 
     with tf.name_scope('conv2'):
-        W_conv2 = weight_variable([FILTER_SIZE, FILTER_SIZE, ARGS.conv1, ARGS.conv2])
-        b_conv2 = bias_variable([ARGS.conv2])
-        bn_conv2 = tf.layers.batch_normalization(conv2d(h_pool1, W_conv2) + b_conv2, center=True,
-                                                 scale=True, training=training)
-        h_conv2 = tf.nn.relu(bn_conv2)
+        W_conv2 = weight_variable([FILTER_SIZE, FILTER_SIZE, ARGS.conv1_filters, ARGS.conv2_filters])
+        b_conv2 = bias_variable([ARGS.conv2_filters])
+        conv2 = conv2d(h_pool1, W_conv2) + b_conv2
+        if ARGS.batch_norm:
+            conv2 = tf.layers.batch_normalization(conv2, center=True, scale=True, training=training)
+        h_conv2 = tf.nn.relu(conv2)
 
     with tf.name_scope('pool2'):
         h_pool2 = max_pool_2x2(h_conv2)
 
     with tf.name_scope('fc1'):
-        image_size = int(math.ceil(ARGS.size / 4.))
-        W_fc1 = weight_variable([image_size * image_size * ARGS.conv2, ARGS.fc1])
-        b_fc1 = bias_variable([ARGS.fc1])
+        image_size = int(math.ceil(ARGS.image_size / 4.))
+        W_fc1 = weight_variable([image_size * image_size * ARGS.conv2_filters, ARGS.fc1_neurons])
+        b_fc1 = bias_variable([ARGS.fc1_neurons])
 
-        h_pool2_flat = tf.reshape(h_pool2, [-1, image_size * image_size * ARGS.conv2])
-        bn_fc1 = tf.layers.batch_normalization(tf.matmul(h_pool2_flat, W_fc1) + b_fc1, center=True,
-                                               scale=True, training=training)
-        h_fc1 = tf.nn.relu(bn_fc1)
+        h_pool2_flat = tf.reshape(h_pool2, [-1, image_size * image_size * ARGS.conv2_filters])
+        fc1 = tf.matmul(h_pool2_flat, W_fc1) + b_fc1
+        if ARGS.batch_norm:
+            fc1 = tf.layers.batch_normalization(fc1, center=True, scale=True, training=training)
+        h_fc1 = tf.nn.relu(fc1)
 
     with tf.name_scope('dropout'):
         keep_prob = tf.placeholder(tf.float32, name="keep_prob")
         h_fc1_dropout = tf.nn.dropout(h_fc1, keep_prob)
 
     with tf.name_scope('fc2'):
-        W_fc2 = weight_variable([ARGS.fc1, ARGS.classes])
+        W_fc2 = weight_variable([ARGS.fc1_neurons, ARGS.classes])
         b_fc2 = bias_variable([ARGS.classes])
 
         y_conv = tf.add(tf.matmul(h_fc1_dropout, W_fc2), b_fc2, name="y_conv")
@@ -79,12 +84,12 @@ def max_pool_2x2(x):
 
 
 def weight_variable(shape):
-    initial = tf.truncated_normal(shape, stddev=ARGS.noise)
+    initial = tf.truncated_normal(shape, stddev=ARGS.weight_noise)
     return tf.Variable(initial, name="W")
 
 
 def bias_variable(shape):
-    initial = tf.constant(ARGS.init, shape=shape)
+    initial = tf.constant(ARGS.bias_init, shape=shape)
     return tf.Variable(initial, name="b")
 
 
@@ -93,7 +98,7 @@ def get_one_hot(targets, nb_classes):
 
 
 def main(_):
-    x = tf.placeholder(tf.float32, [None, ARGS.size, ARGS.size], name="x")
+    x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size], name="x")
     y = tf.placeholder(tf.float32, [None, ARGS.classes], name="y")
     training = tf.placeholder(tf.bool, name="training")
     y_conv, keep_prob = conv_net(x, training)
@@ -103,7 +108,7 @@ def main(_):
             tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=y_conv), name="cross_entropy")
 
     with tf.name_scope('optimizer'):
-        optimizer = tf.train.AdamOptimizer(1e-4)
+        optimizer = tf.train.AdamOptimizer(ARGS.learning_rate)
 
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     with tf.control_dependencies(update_ops):
@@ -124,13 +129,15 @@ def main(_):
         data = SquareDataset(ARGS.classes)
 
         loss = []
-        for epoch in tqdm.tqdm(range(global_epoch, ARGS.epoch)):
+        for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
-            num_batches = data.train.batch_n if ARGS.batch is None else ARGS.batch
+            num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
             for step in tqdm.tqdm(range(num_batches)):
                 X, Y = data.train.next_batch()
                 Y = get_one_hot(Y, ARGS.classes)
-                _, cross_entropy_loss = sess.run([train_op, cross_entropy], feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
+                _, cross_entropy_loss = sess.run([train_op, cross_entropy],
+                                                 feed_dict={x: X, y: Y, keep_prob: ARGS.dropout,
+                                                            training: True})
                 loss.append(cross_entropy_loss)
                 if step % 5 == 0:
                     train_accuracy = accuracy.eval(
@@ -144,7 +151,9 @@ def main(_):
         data.test.next_batch()
         X, Y = data.test.X, data.test.Y
         for i in tqdm.tqdm(range(100)):
-            prediction = accuracy.eval(feed_dict={x: np.expand_dims(X[i], 0), y: get_one_hot(Y[i], ARGS.classes), keep_prob: 1.0, training: False})
+            prediction = accuracy.eval(feed_dict={x: np.expand_dims(X[i], 0),
+                                                  y: get_one_hot(Y[i], ARGS.classes),
+                                                  keep_prob: 1.0, training: False})
             test_accuracy[i] = prediction
         print("test accuracy = %g" % np.mean(test_accuracy))
 
@@ -155,9 +164,9 @@ def save_learning_curve(loss):
     plt.ylabel('loss')
     model_name = ARGS.name if ARGS.model is None else str(os.path.basename(ARGS.model))
     config = ', '.join(['%s: %s' % (key, value) for key, value in CONFIG.items()])
-    title = '%s %d epoch. %s' % (model_name, ARGS.epoch, config)
+    title = '%s %d epoch. %s' % (model_name, ARGS.epochs, config)
     plt.suptitle("\n".join(wrap(title, 60)))
-    plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (MODEL_DIR, model_name, ARGS.epoch))
+    plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (MODEL_DIR, model_name, ARGS.epochs))
 
 
 def save_model(step, saver, sess):
@@ -174,27 +183,32 @@ def save_model(step, saver, sess):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-m", "--model", type=str,
+    parser.add_argument("--model", type=str,
                         help="path to the partially trained model - when missing, the model will "
                              "be trained from scratch")
     parser.add_argument("--name", type=str, default="new_model",
                         help="name of new model - ignored when --model argument provided")
-    parser.add_argument("--noise", type=float, default=0.1, help="weight variable stddev noise")
-    parser.add_argument("-i", "---init", default=0.1, type=float,
+    parser.add_argument("--weight_noise", type=float, default=0.1,
+                        help="weight variable stddev noise")
+    parser.add_argument("---bias_init", default=0.1, type=float,
                         help="bias variable initial value")
-    parser.add_argument("--conv1", default=32, type=int,
+    parser.add_argument("--conv1_filters", default=32, type=int,
                         help="number of filters in first convolutional layer")
-    parser.add_argument("--conv2", default=64, type=int,
+    parser.add_argument("--conv2_filters", default=64, type=int,
                         help="number of filters in second convolutional layer")
-    parser.add_argument("-f", "--fc1", default=512, type=int,
+    parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
-    parser.add_argument("-r", "--rate", type=float, default=0.0001, help="learning rate")
-    parser.add_argument("-d", "--dropout", type=float, default=0.5, help="dropout")
-    parser.add_argument("-e", "--epoch", type=int, default=100, help="epoch number")
-    parser.add_argument("-s", "--size", type=int, default=100, help="image size")
-    parser.add_argument("-b", "--batch", type=int, help="number of batches to train in each epoch. whole training set if missing")
+    parser.add_argument("--learning_rate", type=float, default=0.0001, help="learning rate")
+    parser.add_argument("--dropout", type=float, default=0.5, help="dropout")
+    parser.add_argument("--epochs", type=int, default=100, help="epoch number")
+    parser.add_argument("--image_size", type=int, default=100, help="image size")
+    parser.add_argument("--batches", type=int,
+                        help="number of batches to train in each epoch. whole training set if missing")
     parser.add_argument("--classes", type=int, help="number of classes (image parts)")
+    parser.add_argument("--batch_norm", help="use batch normalization", action="store_true")
     ARGS = parser.parse_args()
-    CONFIG = {"noise": ARGS.noise, "init": ARGS.init, "conv1": ARGS.conv1, "conv2": ARGS.conv2,
-              "fc1": ARGS.fc1, "rate": ARGS.rate, "dropout": ARGS.dropout}
+    CONFIG = {"weight_noise": ARGS.weight_noise, "bias_init": ARGS.bias_init,
+              "conv1_filters": ARGS.conv1_filters, "conv2_filters": ARGS.conv2_filters,
+              "fc1": ARGS.fc1_neurons, "learning_rate": ARGS.learning_rate, "dropout": ARGS.dropout,
+              "batch_norm": ARGS.batch_norm}
     tf.app.run(main=main, argv=sys.argv)
