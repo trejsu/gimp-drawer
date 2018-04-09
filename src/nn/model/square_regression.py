@@ -2,7 +2,6 @@ import sys
 import tqdm
 import argparse
 import os
-import random
 
 import numpy as np
 
@@ -25,7 +24,7 @@ class SquareRegression(Model):
         self.fc2_sigmoid = args.fc2_sigmoid
 
     def save_test_result_with_parameters(self, score):
-        with open('results.txt', mode='a') as f:
+        with open('regression_results.txt', mode='a') as f:
             f.write('score = %s, python square_regression.py --name %s --epochs %s '
                     '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
                     '--dropout %s\n' % (score, self.name, self.epochs, self.conv1_filters,
