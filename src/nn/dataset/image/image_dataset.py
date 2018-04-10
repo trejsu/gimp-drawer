@@ -113,11 +113,17 @@ class Set(object):
         return X, Y, labels
 
     def __shuffle(self):
-        indexes = np.arange(self.X.shape[0])
-        np.random.shuffle(indexes)
-        self.X = self.X[indexes]
-        self.Y = self.Y[indexes]
-        self.labels = self.labels[indexes]
+        seed = np.random.randint(0, 1000)
+
+        def shuffle_with_seed(data):
+            np.random.seed(seed)
+            np.random.shuffle(data)
+
+        shuffle_with_seed(self.X)
+        shuffle_with_seed(self.Y)
+        shuffle_with_seed(self.labels)
+
+
 
 
 
