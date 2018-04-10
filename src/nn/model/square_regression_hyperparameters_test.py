@@ -11,13 +11,16 @@ def main():
     learning_rate = [0.01, 0.001, 0.0001]
     dropout = [0.4, 0.45, 0.5]
     sigmoid = [(False, False), (True, False), (False, True)]
+    batch_size = [25, 50, 100, 150, 200]
 
     commands = ['python square_regression.py --name regression_test --epochs %s '
                 '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
-                '--dropout %s %s %s' % (e, conv1, conv2, fc1, lr, d,
-                                        '--fc2_sigmoid' if s[0] else '', '--loss_sigmoid' if s[1] else '')
+                '--dropout %s %s %s --batch_size %s' % (e, conv1, conv2, fc1, lr, d,
+                                                        '--fc2_sigmoid' if s[0] else '',
+                                                        '--loss_sigmoid' if s[1] else '', bs)
                 for e in epochs for conv1 in conv1_filters for conv2 in conv2_filters for fc1 in
-                fc1_neurons for lr in learning_rate for d in dropout for s in sigmoid]
+                fc1_neurons for lr in learning_rate for d in dropout for s in sigmoid
+                for bs in batch_size]
 
     commands = random.sample(commands, 100)
     for command in tqdm(commands):

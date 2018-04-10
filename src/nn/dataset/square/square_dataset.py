@@ -7,33 +7,33 @@ from nn.dataset.dataset import Dataset
 
 
 PATH = os.path.expandvars("$SQUARE_DATASET_PATH")
-BATCH_SIZE = 50
 TRAIN = 3500
 TEST = 1500
 
 
 class SquareDataset(Dataset):
-    def __init__(self, class_n):
-        self.train = Set("train", class_n, TRAIN)
-        self.test = Set("test", class_n, TEST)
+    def __init__(self, class_n, batch_size):
+        self.train = Set("train", class_n, TRAIN, batch_size)
+        self.test = Set("test", class_n, TEST, batch_size)
 
 
 class Set(object):
-    def __init__(self, name, class_n, set_n):
+    def __init__(self, name, class_n, set_n, batch_size):
         self.name = name
         self.next_index = 0
-        self.batch_n = int(math.ceil(set_n / float(BATCH_SIZE)))
+        self.batch_n = int(math.ceil(set_n / float(batch_size)))
         self.set_n = set_n
         self.X = None
         self.Y = None
         self.has_next = True
         self.class_n = class_n
+        self.batch_size = batch_size
 
     def next_batch(self):
         not_initialized = self.X is None or self.Y is None
         if not_initialized:
             self.__load()
-        end = self.next_index + BATCH_SIZE >= self.set_n
+        end = self.next_index + self.batch_size >= self.set_n
         return self.__next_batch_from_the_end() if end else self.__next_batch()
 
     def __load(self):
@@ -50,9 +50,9 @@ class Set(object):
         return X, Y
 
     def __next_batch(self):
-        X = self.X[self.next_index:self.next_index + BATCH_SIZE]
-        Y = self.Y[self.next_index:self.next_index + BATCH_SIZE]
-        self.next_index += BATCH_SIZE
+        X = self.X[self.next_index:self.next_index + self.batch_size]
+        Y = self.Y[self.next_index:self.next_index + self.batch_size]
+        self.next_index += self.batch_size
         return X, Y
 
     def __shuffle(self):
@@ -61,7 +61,7 @@ class Set(object):
         self.X = self.X[indexes]
         self.Y = self.Y[indexes]
 
-    def random_X(self, n):
+    def random_x(self, n):
         indexes = np.random.choice(self.set_n, n)
         return self.X[indexes]
 

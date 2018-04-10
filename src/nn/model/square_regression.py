@@ -61,7 +61,7 @@ def main(_):
     with tf.Session() as sess:
 
         global_epoch, saver = model.restore_if_not_new(sess)
-        data = SquareDataset(1)
+        data = SquareDataset(1, ARGS.batch_size)
         train_mse = []
 
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
@@ -89,7 +89,7 @@ def main(_):
 
         model.save_test_result_with_parameters(mean_test_mse)
 
-        examples = data.test.random_X(ARGS.visual_test_examples)
+        examples = data.test.random_x(ARGS.visual_test_examples)
         predictions = y_conv.eval(feed_dict={x: examples, keep_prob: 1.0, training: False})
         visualize_predictions(examples, predictions, model)
 
@@ -142,5 +142,6 @@ if __name__ == '__main__':
     parser.add_argument("--fc2_sigmoid", action="store_true")
     parser.add_argument("--loss_sigmoid", action="store_true")
     parser.add_argument("--visual_test_examples", type=int, default=3)
+    parser.add_argument("--batch_size", type=int, default=50)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)

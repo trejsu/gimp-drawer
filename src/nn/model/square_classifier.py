@@ -60,7 +60,7 @@ def main(_):
 
         global_epoch, saver = model.restore_if_not_new(sess)
 
-        data = SquareDataset(ARGS.classes)
+        data = SquareDataset(ARGS.classes, ARGS.batch_size)
 
         loss = []
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
@@ -113,5 +113,6 @@ if __name__ == '__main__':
     parser.add_argument("--batches", type=int)
     parser.add_argument("--classes", type=int)
     parser.add_argument("--batch_norm", action="store_true")
+    parser.add_argument("--batch_size", type=int, default=50)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
