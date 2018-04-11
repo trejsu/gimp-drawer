@@ -20,7 +20,7 @@ class SquareRegression(Model):
     OUTPUTS = 2
 
     def __init__(self, args):
-        super().__init__(args, SquareRegression.CHANNELS, SquareRegression.OUTPUTS)
+        super(SquareRegression, self).__init__(args, SquareRegression.CHANNELS, SquareRegression.OUTPUTS)
         self.fc2_sigmoid = args.fc2_sigmoid
 
     def save_test_result_with_parameters(self, score):
@@ -129,11 +129,11 @@ if __name__ == '__main__':
                         help="name of new model - ignored when --model argument provided")
     parser.add_argument("--conv1_filters", default=32, type=int,
                         help="number of filters in first convolutional layer")
-    parser.add_argument("--conv2_filters", default=64, type=int,
+    parser.add_argument("--conv2_filters", default=16, type=int,
                         help="number of filters in second convolutional layer")
     parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
-    parser.add_argument("--learning_rate", type=float, default=0.0001)
+    parser.add_argument("--learning_rate", type=float, default=0.001)
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--image_size", type=int, default=100)
@@ -142,6 +142,6 @@ if __name__ == '__main__':
     parser.add_argument("--fc2_sigmoid", action="store_true")
     parser.add_argument("--loss_sigmoid", action="store_true")
     parser.add_argument("--visual_test_examples", type=int, default=3)
-    parser.add_argument("--batch_size", type=int, default=50)
+    parser.add_argument("--batch_size", type=int, default=100)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
