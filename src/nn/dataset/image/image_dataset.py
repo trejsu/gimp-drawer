@@ -21,7 +21,7 @@ class ImageDataset(Dataset):
 class Set(object):
     def __init__(self, name, set_n, part_size, batch_size):
         self.name = name
-        self.next_index = 0
+        self.next_batch_index = 0
         self.part_n = int(math.ceil(set_n / float(part_size)))
         self.current_part = 1
         self.last_part_size = set_n % part_size
@@ -33,21 +33,23 @@ class Set(object):
         self.has_next = True
         self.batch_size = batch_size
         self.part_size = part_size
+        self.indexes = np.array(range(self.batch_n))
 
     def next_batch(self):
         not_initialized = self.X is None or self.Y is None or self.labels is None
         if not_initialized:
             self.__load_current_part()
+
         last_part = self.current_part == self.part_n
-        end_of_part = self.next_index + self.batch_size >= self.part_size
-        end_of_last_part = self.next_index + self.batch_size >= self.last_part_size
+        end_of_part = self.next_batch_index == (self.part_size - 1)
+        end_of_last_part = self.next_batch_index == (self.last_part_size - 1)
 
         if last_part:
-            X, Y, labels = self.__next_batch_from_last_part() if end_of_last_part \
-                else self.__next_batch_from_same_part()
+            X, Y, labels = self.__next_batch_from_the_end_of_the_last_part() if end_of_last_part \
+                else self.__next_batch()
         else:
-            X, Y, labels = self.__next_batch_from_different_parts() if end_of_part \
-                else self.__next_batch_from_same_part()
+            X, Y, labels = self.__next_batch_from_the_end() if end_of_part \
+                else self.__next_batch()
         return X, Y, labels
 
     def random(self):
@@ -82,46 +84,34 @@ class Set(object):
                np.load(PATH + "%s_Y_%d.npy" % (self.name, part), mmap_mode="r"), \
                np.load(PATH + "%s_labels_%d.npy" % (self.name, part), mmap_mode="r")
 
-    def __next_batch_from_last_part(self):
-        left_in_current_part = (self.last_part_size - self.next_index)
+    def __next_batch_from_the_end_of_the_last_part(self):
+        left_in_current_part = self.last_part_size % self.batch_size
         X = self.X[-left_in_current_part:]
         Y = self.Y[-left_in_current_part:]
         labels = self.labels[-left_in_current_part:]
         self.has_next = False
         return X, Y, labels
 
-    def __next_batch_from_different_parts(self):
-        left_in_current_part = (self.part_size - self.next_index)
-        load_in_next_part = self.batch_size - left_in_current_part
+    def __next_batch_from_the_end(self):
+        left_in_current_part = self.part_size % self.batch_size
         X = self.X[-left_in_current_part:]
         Y = self.Y[-left_in_current_part:]
         labels = self.labels[-left_in_current_part:]
         self.current_part += 1
         self.__load_current_part()
-        if load_in_next_part != 0:
-            X = np.concatenate((X, self.X[0:load_in_next_part]))
-            Y = np.concatenate((Y, self.Y[0:load_in_next_part]))
-            labels = np.concatenate((labels, self.labels[0:load_in_next_part]))
-        self.next_index = load_in_next_part
+        self.next_batch_index = 0
         return X, Y, labels
 
-    def __next_batch_from_same_part(self):
-        X = self.X[self.next_index:self.next_index + self.batch_size]
-        Y = self.Y[self.next_index:self.next_index + self.batch_size]
-        labels = self.labels[self.next_index:self.next_index + self.batch_size]
-        self.next_index += self.batch_size
+    def __next_batch(self):
+        batch_start = self.indexes[self.next_batch_index] * self.batch_size
+        X = self.X[batch_start:batch_start + self.batch_size]
+        Y = self.Y[batch_start:batch_start + self.batch_size]
+        labels = self.labels[batch_start:batch_start + self.batch_size]
+        self.next_batch_index += 1
         return X, Y, labels
 
     def __shuffle(self):
-        seed = np.random.randint(0, 1000)
-
-        def shuffle_with_seed(data):
-            np.random.seed(seed)
-            np.random.shuffle(data)
-
-        shuffle_with_seed(self.X)
-        shuffle_with_seed(self.Y)
-        shuffle_with_seed(self.labels)
+        np.random.shuffle(self.indexes)
 
 
 
