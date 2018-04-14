@@ -66,7 +66,7 @@ def main(_):
         global_epoch, saver = model.restore_if_not_new(sess)
         data = SquareDataset(1, ARGS.batch_size)
         train_mse = []
-        lowest_mse = 0
+        lowest_mse = 100
         epochs_not_improving = 0
 
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
