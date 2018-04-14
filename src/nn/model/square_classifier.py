@@ -63,6 +63,9 @@ def main(_):
         data = SquareDataset(ARGS.classes, ARGS.batch_size)
 
         loss = []
+        best_accuracy = 0
+        epochs_not_improving = 0
+
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
             num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
@@ -78,19 +81,34 @@ def main(_):
                         feed_dict={x: X, y: Y.reshape([-1]), keep_prob: 1.0, training: True})
                     tqdm.tqdm.write('train accuracy %g' % train_accuracy)
 
-            model.save(epoch + 1, saver, sess)
-            model.save_learning_curve(loss)
+            test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
+            tqdm.tqdm.write('test accuracy %g' % test_accuracy)
 
-        test_accuracy = np.zeros(100)
-        data.test.next_batch()
-        X, Y = data.test.X, data.test.Y
-        for i in tqdm.tqdm(range(100)):
-            prediction = accuracy.eval(feed_dict={x: np.expand_dims(X[i], 0), y: Y[i],
-                                                  keep_prob: 1.0, training: False})
-            test_accuracy[i] = prediction
-        mean_test_accuracy = np.mean(test_accuracy)
-        print("test accuracy = %g" % mean_test_accuracy)
+            if test_accuracy > best_accuracy:
+                model.save(epoch + 1, saver, sess)
+                best_accuracy = test_accuracy
+            else:
+                epochs_not_improving += 1
+
+            if epochs_not_improving >= ARGS.early_stopping_epochs:
+                break
+
+        model.save_learning_curve(loss)
+        mean_test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
         model.save_test_result_with_parameters(mean_test_accuracy)
+
+
+def evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y):
+    test_accuracy = np.zeros(100)
+    data.test.next_batch()
+    X, Y = data.test.X, data.test.Y
+    for i in tqdm.tqdm(range(100)):
+        prediction = accuracy.eval(
+            feed_dict={x: np.expand_dims(X[i], 0), y: Y[i], keep_prob: 1.0, training: False})
+        test_accuracy[i] = prediction
+    mean_test_accuracy = np.mean(test_accuracy)
+    print("test accuracy = %g" % mean_test_accuracy)
+    return mean_test_accuracy
 
 
 if __name__ == '__main__':
@@ -114,5 +132,6 @@ if __name__ == '__main__':
     parser.add_argument("--classes", type=int)
     parser.add_argument("--batch_norm", action="store_true")
     parser.add_argument("--batch_size", type=int, default=50)
+    parser.add_argument("--early_stopping_epochs", type=int, default=10)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
