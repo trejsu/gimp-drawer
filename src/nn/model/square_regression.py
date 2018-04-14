@@ -92,6 +92,8 @@ def main(_):
             if epochs_not_improving >= ARGS.early_stopping_epochs:
                 break
 
+            data.train.restart()
+
         model.save_learning_curve(train_mse)
         mean_test_mse = evaluate_test_mse(data, keep_prob, loss, training, x, y)
         model.save_test_result_with_parameters(mean_test_mse)
@@ -109,6 +111,7 @@ def evaluate_test_mse(data, keep_prob, loss, training, x, y):
         test_mse[i] = mse
     mean_test_mse = np.mean(test_mse)
     print("average test mse = %g" % mean_test_mse)
+    data.test.restart()
     return mean_test_mse
 
 

@@ -93,6 +93,8 @@ def main(_):
             if epochs_not_improving >= ARGS.early_stopping_epochs:
                 break
 
+            data.train.restart()
+
         model.save_learning_curve(loss)
         mean_test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
         model.save_test_result_with_parameters(mean_test_accuracy)
@@ -108,6 +110,7 @@ def evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y):
         test_accuracy[i] = prediction
     mean_test_accuracy = np.mean(test_accuracy)
     print("test accuracy = %g" % mean_test_accuracy)
+    data.test.restart()
     return mean_test_accuracy
 
 

@@ -30,6 +30,11 @@ class Set(object):
         self.batch_size = batch_size
         self.indexes = np.array(range(self.batch_n))
 
+    def restart(self):
+        self.next_batch_index = 0
+        self.__shuffle()
+        self.has_next = True
+
     def next_batch(self):
         not_initialized = self.X is None or self.Y is None
         if not_initialized:
