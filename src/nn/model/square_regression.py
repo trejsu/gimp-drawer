@@ -86,6 +86,7 @@ def main(_):
             if test_loss < lowest_mse:
                 model.save(epoch + 1, saver, sess)
                 lowest_mse = test_loss
+                epochs_not_improving = 0
             else:
                 epochs_not_improving += 1
 

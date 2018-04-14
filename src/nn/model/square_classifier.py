@@ -87,6 +87,7 @@ def main(_):
             if test_accuracy > best_accuracy:
                 model.save(epoch + 1, saver, sess)
                 best_accuracy = test_accuracy
+                epochs_not_improving = 0
             else:
                 epochs_not_improving += 1
 
