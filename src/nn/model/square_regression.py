@@ -66,6 +66,8 @@ def main(_):
         global_epoch, saver = model.restore_if_not_new(sess)
         data = SquareDataset(1, ARGS.batch_size)
         train_mse = []
+        lowest_mse = 0
+        epochs_not_improving = 0
 
         for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
@@ -74,27 +76,40 @@ def main(_):
             for step in tqdm.tqdm(range(num_batches)):
                 X, Y = data.train.next_batch()
                 train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
-                loss_eval = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
-                train_mse.append(loss_eval)
+                train_loss = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
+                train_mse.append(train_loss)
                 if step == 0:
-                    tqdm.tqdm.write('train mse %g' % loss_eval)
+                    tqdm.tqdm.write('train mse %g' % train_loss)
 
-            model.save(epoch + 1, saver, sess)
-            model.save_learning_curve(train_mse)
+            test_loss = evaluate_test_mse(data, keep_prob, loss, training, x, y)
+            tqdm.tqdm.write('test mse %g' % test_loss)
+            if test_loss < lowest_mse:
+                model.save(epoch + 1, saver, sess)
+                lowest_mse = test_loss
+            else:
+                epochs_not_improving += 1
 
-        test_mse = np.zeros(data.test.batch_n)
-        for i in tqdm.tqdm(range(data.test.batch_n)):
-            X, Y = data.test.next_batch()
-            mse = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: False})
-            test_mse[i] = mse
-        mean_test_mse = np.mean(test_mse)
-        print("average test mse = %g" % mean_test_mse)
+            if epochs_not_improving >= ARGS.early_stopping_epochs:
+                break
 
+        model.save_learning_curve(train_mse)
+        mean_test_mse = evaluate_test_mse(data, keep_prob, loss, training, x, y)
         model.save_test_result_with_parameters(mean_test_mse)
 
         examples = data.test.random_x(ARGS.visual_test_examples)
         predictions = y_conv.eval(feed_dict={x: examples, keep_prob: 1.0, training: False})
         visualize_predictions(examples, predictions, model)
+
+
+def evaluate_test_mse(data, keep_prob, loss, training, x, y):
+    test_mse = np.zeros(data.test.batch_n)
+    for i in tqdm.tqdm(range(data.test.batch_n)):
+        X, Y = data.test.next_batch()
+        mse = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: False})
+        test_mse[i] = mse
+    mean_test_mse = np.mean(test_mse)
+    print("average test mse = %g" % mean_test_mse)
+    return mean_test_mse
 
 
 def visualize_predictions(examples, predictions, model):
@@ -104,7 +119,6 @@ def visualize_predictions(examples, predictions, model):
         rgb_example = gray_to_rgb(example, size)
         x_prediction = int(prediction[0] * size)
         y_prediction = int(prediction[1] * size)
-        print('prediction = (%d, %d)' % (x_prediction, y_prediction))
         if 0 <= x_prediction <= size and 0 <= y_prediction <= size:
             rgb_example[x_prediction][y_prediction][0] = 1
             rgb_example[x_prediction][y_prediction][1] = 0
@@ -132,11 +146,11 @@ if __name__ == '__main__':
                         help="name of new model - ignored when --model argument provided")
     parser.add_argument("--conv1_filters", default=32, type=int,
                         help="number of filters in first convolutional layer")
-    parser.add_argument("--conv2_filters", default=16, type=int,
+    parser.add_argument("--conv2_filters", default=64, type=int,
                         help="number of filters in second convolutional layer")
     parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
-    parser.add_argument("--learning_rate", type=float, default=0.001)
+    parser.add_argument("--learning_rate", type=float, default=0.01)
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--image_size", type=int, default=100)
@@ -145,6 +159,7 @@ if __name__ == '__main__':
     parser.add_argument("--fc2_sigmoid", action="store_true")
     parser.add_argument("--loss_sigmoid", action="store_true")
     parser.add_argument("--visual_test_examples", type=int, default=3)
-    parser.add_argument("--batch_size", type=int, default=100)
+    parser.add_argument("--batch_size", type=int, default=25)
+    parser.add_argument("--early_stopping_epochs", type=int, default=10)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
