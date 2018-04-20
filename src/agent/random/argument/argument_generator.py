@@ -1,5 +1,5 @@
-from agent.random.argument.argument import Argument
-from common.timed import timed
+from src.agent.random.argument.argument import Argument
+from src.common.timed import timed
 
 
 class ArgumentGenerator(object):

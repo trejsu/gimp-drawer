@@ -1,6 +1,6 @@
 import pyglet
 
-from common.timed import timed
+from src.common.timed import timed
 
 
 class SimpleImageViewer(object):

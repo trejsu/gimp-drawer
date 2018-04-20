@@ -7,14 +7,14 @@ from numpy import concatenate
 from scipy import sum, misc
 from gimpfu import pdb
 
-import common.format as formatter
-import gimp.initializer as initializer
-from common.timed import timed
-from config import improvements as imprvs
-from config import reducer_rate
-from common import rendering
-from gimp.image import Image
-from gimp.space import ToolSpace
+import src.common.format as formatter
+import src.gimp.initializer as initializer
+from src.common.timed import timed
+from src.config import improvements as imprvs
+from src.config import reducer_rate
+from src.common import rendering
+from src.gimp.image import Image
+from src.gimp.space import ToolSpace
 
 
 class Environment(object):

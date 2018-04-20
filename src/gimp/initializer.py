@@ -2,7 +2,7 @@
 
 from gimpfu import *
 
-from common.timed import timed
+from src.common.timed import timed
 
 
 @timed

@@ -1,7 +1,8 @@
 import time
 import numpy as np
 import operator
-from config import timers
+
+from src.config import timers
 
 
 TIMES = dict()

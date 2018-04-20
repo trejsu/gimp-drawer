@@ -62,41 +62,47 @@ def main(_):
 
         data = SquareDataset(ARGS.classes, ARGS.batch_size)
 
-        loss = []
-        best_accuracy = 0
-        epochs_not_improving = 0
+        if not ARGS.test:
 
-        for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
+            loss = []
+            best_accuracy = 0
+            epochs_not_improving = 0
+            best_model_epoch = 0
 
-            num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
-            for step in tqdm.tqdm(range(num_batches)):
-                X, Y = data.train.next_batch()
-                _, cross_entropy_loss = sess.run([train_op, cross_entropy],
-                                                 feed_dict={x: X, y: Y.reshape([-1]),
-                                                            keep_prob: ARGS.dropout,
-                                                            training: True})
-                loss.append(cross_entropy_loss)
-                if step == 0:
-                    train_accuracy = accuracy.eval(
-                        feed_dict={x: X, y: Y.reshape([-1]), keep_prob: 1.0, training: True})
-                    tqdm.tqdm.write('train accuracy %g' % train_accuracy)
+            for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
-            test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
-            tqdm.tqdm.write('test accuracy %g' % test_accuracy)
+                num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
+                for step in tqdm.tqdm(range(num_batches)):
+                    X, Y = data.train.next_batch()
+                    _, cross_entropy_loss = sess.run([train_op, cross_entropy],
+                                                     feed_dict={x: X, y: Y.reshape([-1]),
+                                                                keep_prob: ARGS.dropout,
+                                                                training: True})
+                    loss.append(cross_entropy_loss)
+                    if step == 0:
+                        train_accuracy = accuracy.eval(
+                            feed_dict={x: X, y: Y.reshape([-1]), keep_prob: 1.0, training: True})
+                        tqdm.tqdm.write('train accuracy %g' % train_accuracy)
 
-            if test_accuracy > best_accuracy:
-                model.save(epoch + 1, saver, sess)
-                best_accuracy = test_accuracy
-                epochs_not_improving = 0
-            else:
-                epochs_not_improving += 1
+                test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
+                tqdm.tqdm.write('test accuracy %g' % test_accuracy)
 
-            if epochs_not_improving >= ARGS.early_stopping_epochs:
-                break
+                if test_accuracy > best_accuracy:
+                    current_epoch = epoch + 1
+                    model.save(current_epoch, saver, sess)
+                    best_accuracy = test_accuracy
+                    epochs_not_improving = 0
+                    best_model_epoch = current_epoch
+                else:
+                    epochs_not_improving += 1
 
-            data.train.restart()
+                if epochs_not_improving >= ARGS.early_stopping_epochs:
+                    break
 
-        model.save_learning_curve(loss)
+                data.train.restart()
+
+            model.save_learning_curve(loss, best_model_epoch)
+
         mean_test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
         model.save_test_result_with_parameters(mean_test_accuracy)
 
@@ -137,5 +143,6 @@ if __name__ == '__main__':
     parser.add_argument("--batch_norm", action="store_true")
     parser.add_argument("--batch_size", type=int, default=50)
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
+    parser.add_argument("--test", action="store_true", help="perform only testing on given model")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)

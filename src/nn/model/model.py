@@ -30,19 +30,22 @@ class Model(object):
         self.channels = channels
         self.outputs = outputs
 
-    def save_learning_curve(self, loss):
+    def save_learning_curve(self, loss, epoch):
         plt.plot(loss)
         plt.xlabel('step')
         plt.ylabel('loss')
         model_name = self.get_model_name()
         config = ', '.join(['%s: %s' % (key, value) for key, value in self._get_config().items()])
-        title = '%s %d epoch. %s' % (model_name, self.epochs, config)
+        title = '%s %d epoch. %s' % (model_name, epoch, config)
         plt.suptitle("\n".join(wrap(title, 60)))
-        plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (Model.MODEL_DIR, model_name, self.epochs))
+        plt.savefig('%s/learning_curve/%s_%d_epoch.png' % (Model.MODEL_DIR, model_name, epoch))
         plt.clf()
 
     def get_model_name(self):
         return self.name if self.model is None else str(os.path.basename(self.model))
+
+    def get_model_name_without_epoch(self):
+        return self.get_model_name().split('-')[0]
 
     def save(self, step, saver, sess):
         model_name = self.get_model_name()

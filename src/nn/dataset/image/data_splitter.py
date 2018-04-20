@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import tqdm
 
-from common.natural_keys import natural_keys
+from src.common.natural_keys import natural_keys
 
 
 ARGS = None

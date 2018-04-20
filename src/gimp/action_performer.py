@@ -2,9 +2,9 @@
 
 from gimpfu import *
 
-from common.timed import timed
-from gimp.selection import Selection
-from gimp.figures import Point
+from src.common.timed import timed
+from src.gimp.selection import Selection
+from src.gimp.figures import Point
 
 
 class Image(object):

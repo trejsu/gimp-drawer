@@ -1,6 +1,6 @@
 from gimpfu import *
-from common.timed import timed
-from gimp.figures import Point
+from src.common.timed import timed
+from src.gimp.figures import Point
 
 
 class Selection(object):

@@ -1,7 +1,7 @@
-from agent.random.argument.argument import Argument
-from agent.random.argument.argument_generator import ArgumentGenerator
-from common.timed import timed
-from config import reducer_rate
+from src.agent.random.argument.argument import Argument
+from src.agent.random.argument.argument_generator import ArgumentGenerator
+from src.common.timed import timed
+from src.config import reducer_rate
 
 
 class ScalingInitGenerator(ArgumentGenerator, object):

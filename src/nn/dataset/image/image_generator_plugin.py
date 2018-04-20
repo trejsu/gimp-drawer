@@ -5,9 +5,9 @@ import time
 import numpy as np
 from gimpfu import *
 
-from gimp.image import Image
-from gimp.initializer import initialize_with_scaled_src
-from common.natural_keys import natural_keys
+from src.gimp.image import Image
+from src.gimp.initializer import initialize_with_scaled_src
+from src.common.natural_keys import natural_keys
 
 
 def extract_number(name):

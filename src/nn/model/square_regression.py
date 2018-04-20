@@ -5,9 +5,8 @@ import os
 
 import numpy as np
 
-sys.path.insert(0, os.path.realpath('../../'))
-from nn.dataset.square.square_dataset import SquareDataset
-from nn.model.model import *
+from src.nn.dataset.square.square_dataset import SquareDataset
+from src.nn.model.model import *
 
 
 ARGS = None
@@ -65,37 +64,44 @@ def main(_):
 
         global_epoch, saver = model.restore_if_not_new(sess)
         data = SquareDataset(1, ARGS.batch_size)
-        train_mse = []
-        lowest_mse = 100
-        epochs_not_improving = 0
 
-        for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
+        if not ARGS.test:
 
-            num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
+            train_mse = []
+            lowest_mse = 100
+            epochs_not_improving = 0
+            best_model_epoch = 0
 
-            for step in tqdm.tqdm(range(num_batches)):
-                X, Y = data.train.next_batch()
-                train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
-                train_loss = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
-                train_mse.append(train_loss)
-                if step == 0:
-                    tqdm.tqdm.write('train mse %g' % train_loss)
+            for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
-            test_loss = evaluate_test_mse(data, keep_prob, loss, training, x, y)
-            tqdm.tqdm.write('test mse %g' % test_loss)
-            if test_loss < lowest_mse:
-                model.save(epoch + 1, saver, sess)
-                lowest_mse = test_loss
-                epochs_not_improving = 0
-            else:
-                epochs_not_improving += 1
+                num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
 
-            if epochs_not_improving >= ARGS.early_stopping_epochs:
-                break
+                for step in tqdm.tqdm(range(num_batches)):
+                    X, Y = data.train.next_batch()
+                    train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
+                    train_loss = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
+                    train_mse.append(train_loss)
+                    if step == 0:
+                        tqdm.tqdm.write('train mse %g' % train_loss)
 
-            data.train.restart()
+                test_loss = evaluate_test_mse(data, keep_prob, loss, training, x, y)
+                tqdm.tqdm.write('test mse %g' % test_loss)
+                if test_loss < lowest_mse:
+                    current_epoch = epoch + 1
+                    model.save(current_epoch, saver, sess)
+                    best_model_epoch = current_epoch
+                    lowest_mse = test_loss
+                    epochs_not_improving = 0
+                else:
+                    epochs_not_improving += 1
 
-        model.save_learning_curve(train_mse)
+                if epochs_not_improving >= ARGS.early_stopping_epochs:
+                    break
+
+                data.train.restart()
+
+            model.save_learning_curve(train_mse, best_model_epoch)
+
         mean_test_mse = evaluate_test_mse(data, keep_prob, loss, training, x, y)
         model.save_test_result_with_parameters(mean_test_mse)
 
@@ -129,7 +135,7 @@ def visualize_predictions(examples, predictions, model):
             rgb_example[x_prediction][y_prediction][2] = 0
         plt.imshow(rgb_example)
         plt.suptitle('prediction = (%d, %d)' % (x_prediction, y_prediction))
-        plt.savefig('%s/%s/visualized_prediction_%d.png' % (Model.MODEL_DIR, model.get_model_name(),
+        plt.savefig('%s/%s/visualized_prediction_%d.png' % (Model.MODEL_DIR, model.get_model_name_without_epoch(),
                                                             index))
 
 
@@ -165,5 +171,6 @@ if __name__ == '__main__':
     parser.add_argument("--visual_test_examples", type=int, default=3)
     parser.add_argument("--batch_size", type=int, default=25)
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
+    parser.add_argument("--test", action="store_true", help="perform only testing on given model")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)

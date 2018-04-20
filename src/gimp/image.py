@@ -1,8 +1,8 @@
 import numpy as np
 from gimpfu import pdb, gimp, WHITE_FILL
 
-from common.timed import timed
-from gimp.action_performer import perform_action
+from src.common.timed import timed
+from src.gimp.action_performer import perform_action
 
 
 class Image(object):

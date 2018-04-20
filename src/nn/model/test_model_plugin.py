@@ -2,9 +2,9 @@ import os
 import tqdm
 
 
-from nn.model.conv_network import ConvNetwork
+from src.nn.model.conv_network import ConvNetwork
 from gimpfu import *
-from nn.dataset.image.image_dataset import ImageDataset
+from src.nn.dataset.image.image_dataset import ImageDataset
 
 
 def plugin_main(model_path, actions_number, render, save, train, examples, size):

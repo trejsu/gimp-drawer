@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 
-from nn.dataset.dataset import Dataset
+from src.nn.dataset.dataset import Dataset
 
 
 PATH = os.path.expandvars("$SQUARE_DATASET_PATH")

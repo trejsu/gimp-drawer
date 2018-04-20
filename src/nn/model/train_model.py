@@ -8,7 +8,7 @@ import math
 import tensorflow as tf
 import matplotlib.pylab as plt
 
-from nn.dataset.image.image_dataset import ImageDataset
+from src.nn.dataset.image.image_dataset import ImageDataset
 
 
 ARGS = None

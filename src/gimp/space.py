@@ -1,7 +1,7 @@
-from gimp.selection import Selection
-from gimp.figures import Point, Line, Triangle
+from src.gimp.selection import Selection
+from src.gimp.figures import Point, Line, Triangle
 from gimpfu import *
-from common.timed import timed
+from src.common.timed import timed
 
 
 class ToolSpace(object):

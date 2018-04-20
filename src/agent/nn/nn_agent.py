@@ -4,10 +4,10 @@ import os
 
 from gimpfu import *
 
-from common.timed import timed, print_result
-from config import timers
-from gimp.environment import Environment
-from nn.model.conv_network import ConvNetwork
+from src.common.timed import timed, print_result
+from src.config import timers
+from src.gimp.environment import Environment
+from src.nn.model.conv_network import ConvNetwork
 
 
 class Agent(object):
