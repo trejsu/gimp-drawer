@@ -7,7 +7,7 @@ import tensorflow as tf
 import numpy as np
 
 sys.path.insert(0, os.path.realpath('../../'))
-from nn.dataset.square.square_dataset import SquareDataset
+from nn.dataset.square.square_dataset import SquareCenterDataset
 from nn.model.model import Model
 
 
@@ -60,7 +60,7 @@ def main(_):
 
         global_epoch, saver = model.restore_if_not_new(sess)
 
-        data = SquareDataset(ARGS.classes, ARGS.batch_size)
+        data = SquareCenterDataset(ARGS.classes, ARGS.batch_size)
 
         if not ARGS.test:
 

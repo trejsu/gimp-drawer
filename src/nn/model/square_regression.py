@@ -1,11 +1,10 @@
 import sys
 import tqdm
 import argparse
-import os
 
 import numpy as np
 
-from src.nn.dataset.square.square_dataset import SquareDataset
+from src.nn.dataset.square.square_dataset import get_dataset
 from src.nn.model.model import *
 
 
@@ -16,10 +15,9 @@ MODEL_DIR = os.path.expandvars("$GIMP_PROJECT/out/model/square/")
 class SquareRegression(Model):
 
     CHANNELS = 1
-    OUTPUTS = 2
 
     def __init__(self, args):
-        super(SquareRegression, self).__init__(args, SquareRegression.CHANNELS, SquareRegression.OUTPUTS)
+        super(SquareRegression, self).__init__(args, SquareRegression.CHANNELS, ARGS.output_dim)
         self.fc2_sigmoid = args.fc2_sigmoid
         self.loss_sigmoid = args.loss_sigmoid
 
@@ -44,7 +42,7 @@ class SquareRegression(Model):
 
 def main(_):
     x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size], name="x")
-    y = tf.placeholder(tf.float32, [None, 2], name="y")
+    y = tf.placeholder(tf.float32, [None, ARGS.output_dim], name="y")
     training = tf.placeholder(tf.bool, name="training")
 
     model = SquareRegression(ARGS)
@@ -63,7 +61,7 @@ def main(_):
     with tf.Session() as sess:
 
         global_epoch, saver = model.restore_if_not_new(sess)
-        data = SquareDataset(1, ARGS.batch_size)
+        data = get_dataset(ARGS.dataset)(ARGS.batch_size)
 
         if not ARGS.test:
 
@@ -105,9 +103,10 @@ def main(_):
         mean_test_mse = evaluate_test_mse(data, keep_prob, loss, training, x, y)
         model.save_test_result_with_parameters(mean_test_mse)
 
-        examples = data.test.random_x(ARGS.visual_test_examples)
-        predictions = y_conv.eval(feed_dict={x: examples, keep_prob: 1.0, training: False})
-        visualize_predictions(examples, predictions, model)
+        if ARGS.output_dim == 2:
+            examples = data.test.random_x(ARGS.visual_test_examples)
+            predictions = y_conv.eval(feed_dict={x: examples, keep_prob: 1.0, training: False})
+            visualize_predictions(examples, predictions, model)
 
 
 def evaluate_test_mse(data, keep_prob, loss, training, x, y):
@@ -172,5 +171,7 @@ if __name__ == '__main__':
     parser.add_argument("--batch_size", type=int, default=25)
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")
+    parser.add_argument("--output_dim", type=int, help="number of output values")
+    parser.add_argument("--dataset", type=str, choices=["center", "parameters"])
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
