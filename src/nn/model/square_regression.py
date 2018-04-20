@@ -56,7 +56,7 @@ def main(_):
                                   name="loss")
 
     with tf.name_scope('optimizer'):
-        train_step = tf.train.AdamOptimizer(ARGS.learning_rate).minimize(loss)
+        train_step = tf.train.AdamOptimizer(learning_rate=ARGS.learning_rate).minimize(loss)
 
     with tf.Session() as sess:
 
