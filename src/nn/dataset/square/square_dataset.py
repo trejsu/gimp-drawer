@@ -114,8 +114,8 @@ class DiffSquareWithParametersSet(Set):
 
     def load(self):
         del self.X, self.Y
-        self.X = np.load(SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_X.npy" % self.name, mmap_mode="r")
-        self.Y = np.load(SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.X = np.load(DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_Y.npy" % self.name, mmap_mode="r")
         self.shuffle()
 
 
