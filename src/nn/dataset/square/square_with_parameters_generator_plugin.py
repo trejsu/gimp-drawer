@@ -32,6 +32,7 @@ def generate_set(image_n, image_size, square_size, name):
     X, Y = initialize()
 
     image = Image(initializer.new_image(image_size, image_size))
+    white_image_np = np.ones((image_n, image_size, image_size))
 
     for i in tqdm.tqdm(range(image_n), "Generating %s set" % name):
         square_size = np.random.randint(3, image_size)
@@ -39,7 +40,7 @@ def generate_set(image_n, image_size, square_size, name):
         y_coor = np.random.randint(0, image_size - square_size)
         image.perform_action(RECTANGLE, (RED, GREEN, BLUE, ALPHA, scale(x_coor), scale(y_coor), scale(square_size), scale(square_size), ROTATION))
         array = np.sum(image.array, axis=2) / 3
-        X[i] = array / 255.
+        X[i] = (white_image_np - array) / 255.
         # draw white rectangle to "reset" image
         image.perform_action_without_array_update(RECTANGLE, (1., 1., 1., ALPHA, scale(x_coor), scale(y_coor), scale(square_size), scale(square_size), ROTATION))
         Y[i][0] = RED

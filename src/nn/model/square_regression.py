@@ -173,6 +173,6 @@ if __name__ == '__main__':
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")
     parser.add_argument("--output_dim", type=int, help="number of output values")
-    parser.add_argument("--dataset", type=str, choices=["center", "parameters"])
+    parser.add_argument("--dataset", type=str, choices=["center", "parameters", "diff_parameters"])
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)

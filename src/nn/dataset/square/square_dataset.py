@@ -8,6 +8,7 @@ from src.nn.dataset.dataset import Dataset
 
 SQUARE_CENTER_DATASET_PATH = os.path.expandvars("$SQUARE_CENTER_DATASET_PATH")
 SQUARE_WITH_PARAMETERS_DATASET_PATH = os.path.expandvars("$SQUARE_WITH_PARAMETERS_DATASET_PATH")
+DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH = os.path.expandvars("$DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH")
 TRAIN = 3500
 TEST = 1500
 
@@ -22,6 +23,12 @@ class SquareWithParametersDataset(Dataset):
     def __init__(self, batch_size):
         self.train = SquareWithParametersSet("train", TRAIN, batch_size)
         self.test = SquareWithParametersSet("test", TEST, batch_size)
+
+
+class DiffSquareWithParametersDataset(Dataset):
+    def __init__(self, batch_size):
+        self.train = DiffSquareWithParametersSet("train", TRAIN, batch_size)
+        self.test = DiffSquareWithParametersSet("test", TEST, batch_size)
 
 
 class SquareCenterRegressionDataset(SquareCenterDataset):
@@ -101,9 +108,21 @@ class SquareWithParametersSet(Set):
         self.shuffle()
 
 
+class DiffSquareWithParametersSet(Set):
+    def __init__(self, name, set_n, batch_size):
+        super(DiffSquareWithParametersSet, self).__init__(name, set_n, batch_size)
+
+    def load(self):
+        del self.X, self.Y
+        self.X = np.load(SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.shuffle()
+
+
 def get_dataset(name):
     return {
         'center': SquareCenterRegressionDataset,
         'parameters': SquareWithParametersDataset,
+        'diff_parameters': DiffSquareWithParametersDataset
     }[name]
 
