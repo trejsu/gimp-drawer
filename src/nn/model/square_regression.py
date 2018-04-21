@@ -34,9 +34,10 @@ class SquareRegression(Model):
     def fc2_layer(self, h_fc1_dropout):
         W_fc2 = weight_variable([self.fc1_neurons, self.outputs])
         b_fc2 = bias_variable([self.outputs])
-        y_conv = tf.add(tf.matmul(h_fc1_dropout, W_fc2), b_fc2, name="y_conv")
         if self.fc2_sigmoid:
-            y_conv = tf.nn.sigmoid(y_conv, name="y_conv")
+            y_conv = tf.nn.sigmoid(tf.add(tf.matmul(h_fc1_dropout, W_fc2), b_fc2), name="y_conv")
+        else:
+            y_conv = tf.add(tf.matmul(h_fc1_dropout, W_fc2), b_fc2, name="y_conv")
         return y_conv
 
 
