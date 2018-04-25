@@ -13,7 +13,7 @@ def main():
     sigmoid = [(False, False), (True, False), (False, True)]
     batch_size = [25, 50, 100, 150, 200]
 
-    commands = ['python square_regression.py --dataset parameters --output_dim 9 '
+    commands = ['python square_regression.py --dataset diff_parameters --output_dim 9 '
                 '--name regression_test --epochs %s --conv1_filters %s --conv2_filters %s '
                 '--fc1_neurons %s --learning_rate %s --dropout %s %s %s --batch_size %s'
                 % (e, conv1, conv2, fc1, lr, d, '--fc2_sigmoid' if s[0] else '',
@@ -25,7 +25,7 @@ def main():
     commands = random.sample(commands, 100)
     for command in tqdm(commands):
         tqdm.write(command)
-        os.system(command)
+        # os.system(command)
 
 
 if __name__ == '__main__':

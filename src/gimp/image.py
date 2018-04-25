@@ -25,10 +25,6 @@ class Image(object):
         return self.array
 
     @timed
-    def delete(self):
-        gimp.delete(self.img)
-
-    @timed
     def __update_array(self):
         self.array = self.__to_array()
 

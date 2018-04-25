@@ -55,7 +55,7 @@ class Environment(object):
 
     @timed
     def reset(self):
-        self.__setup_output()
+        # self.__setup_output()
         return (self.src_img.array - self.img.array) / 255
 
     @timed
@@ -171,3 +171,10 @@ class Environment(object):
             os.mkdir(image_result_dir)
         os.system("cp {} {}".format(self.out_path + "/generated_image.jpg", image_result_dir))
         os.system("cp {} {}".format(self.out_path + "/src.jpg", image_result_dir))
+
+    class Action(object):
+        ELLIPSE = 0
+        RECTANGLE = 1
+        LINE = 2
+        TRIANGLE = 3
+
