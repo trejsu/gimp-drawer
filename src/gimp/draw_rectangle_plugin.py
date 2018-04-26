@@ -27,7 +27,7 @@ register("draw_rectangle", "", "", "", "", "", "", "",
              (PF_FLOAT, "w", "rectangle width (0 - 1)", 0),
              (PF_FLOAT, "h", "rectangle height (0 - 1)", 0),
              (PF_FLOAT, "rotation",
-              "rectangle rotation (0 - 1) - 0 means -180 roation, 0.5 - 0, 1 - 180", 0.5)
+              "rectangle rotation (0 - 1) - 0 means -180 rotation, 0.5 - 0, 1 - 180", 0.5)
          ], [], plugin_main)
 
 main()

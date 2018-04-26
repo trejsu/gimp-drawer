@@ -92,12 +92,11 @@ class Image(object):
     def __rotate(self, normalized_angle, opacity):
         angle = self.__from_normalized_angle(normalized_angle)
         auto_center = True
-        center_x = 0
-        center_y = 0
-        rotated_shape = pdb.gimp_item_transform_rotate(self.drawable, int(angle), auto_center, center_x,
-                                                       center_y)
-        pdb.gimp_floating_sel_to_layer(rotated_shape)
+        rotated_shape = pdb.gimp_item_transform_rotate(self.drawable, int(angle), auto_center, 0, 0)
+        if pdb.gimp_layer_is_floating_sel(rotated_shape):
+            pdb.gimp_floating_sel_to_layer(rotated_shape)
         active_layer = pdb.gimp_image_get_active_layer(self.image)
+
         pdb.gimp_layer_set_opacity(active_layer, self.__from_normalized_opacity(opacity))
 
     @timed
