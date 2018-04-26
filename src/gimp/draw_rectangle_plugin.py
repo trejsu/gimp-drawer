@@ -11,7 +11,7 @@ PATH = os.path.expandvars("$GIMP_PROJECT/result/gimp_images/nn/square_parameters
 def plugin_main(name, size, r, g, b, a, x, y, w, h, rotation):
     image = Image(initializer.new_image(size, size))
     image.perform_action(RECTANGLE, (r, g, b, a, x, y, w, h, rotation))
-    image.save("%s/%s.jpg" % (PATH, name))
+    image.save("%s/%s" % (PATH, name))
 
 
 register("draw_rectangle", "", "", "", "", "", "", "",

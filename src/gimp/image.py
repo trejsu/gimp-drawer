@@ -1,5 +1,5 @@
 import numpy as np
-from gimpfu import pdb, gimp, WHITE_FILL
+from gimpfu import pdb, WHITE_FILL
 
 from src.common.timed import timed
 from src.gimp.action_performer import perform_action
@@ -10,26 +10,26 @@ class Image(object):
         self.img = img
         self.array = array
         if array is None:
-            self.__update_array()
+            self.update_array()
 
     @timed
     def perform_action(self, action, args):
         perform_action(self.img, action, args)
-        self.__update_array()
+        self.update_array()
 
     def perform_action_without_array_update(self, action, args):
         perform_action(self.img, action, args)
 
     def get_updated_array(self):
-        self.__update_array()
+        self.update_array()
         return self.array
 
     @timed
-    def __update_array(self):
-        self.array = self.__to_array()
+    def update_array(self):
+        self.array = self.to_array()
 
     @timed
-    def __get_drawable(self):
+    def get_drawable(self):
         return pdb.gimp_image_active_drawable(self.img)
 
     @timed
@@ -38,31 +38,21 @@ class Image(object):
 
     @timed
     def save(self, filename):
-        quality = 0.9
-        smoothing = 0
-        optimize = 0
-        progressive = 0
-        comment = ""
-        subsampling = 0
-        baseline = 0
-        restart = 0
-        dct = 0
-        pdb.file_jpeg_save(self.img, self.__get_drawable(), filename, filename, quality, smoothing,
-                           optimize, progressive, comment, subsampling, baseline, restart, dct)
+        pdb.gimp_file_save(self.img, self.get_drawable(), filename, filename)
 
     @timed
-    def __to_array(self):
-        bpp, reshape = self.__process_drawable()
-        return self.__get_numpy_array(reshape, "d", bpp)
+    def to_array(self):
+        bpp, reshape = self.process_drawable()
+        return self.get_numpy_array(reshape, "d", bpp)
 
     @timed
-    def __to_displayable_array(self):
-        bpp, reshape = self.__process_drawable()
-        return self.__get_numpy_array(reshape, np.uint8, bpp)
+    def to_displayable_array(self):
+        bpp, reshape = self.process_drawable()
+        return self.get_numpy_array(reshape, np.uint8, bpp)
 
     @timed
-    def __process_drawable(self):
-        drawable = self.__get_drawable()
+    def process_drawable(self):
+        drawable = self.get_drawable()
         width = drawable.width
         height = drawable.height
         bpp = drawable.bpp
@@ -73,12 +63,12 @@ class Image(object):
         return bpp, reshape
 
     @timed
-    def __get_numpy_array(self, reshape, data_type, bpp):
+    def get_numpy_array(self, reshape, data_type, bpp):
         return np.array(reshape, dtype=data_type)[:, :, 0:min(bpp, 3)]
 
     @timed
     def get_displayable_array(self):
-        return self.__to_displayable_array()
+        return self.to_displayable_array()
 
     @timed
     def clear(self):
