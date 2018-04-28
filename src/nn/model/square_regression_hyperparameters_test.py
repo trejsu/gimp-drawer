@@ -5,15 +5,15 @@ import random
 
 def main():
     epochs = [1]
-    conv1_filters = [16, 32, 64, 128, 256, 512]
-    conv2_filters = [16, 32, 64, 128, 256, 512]
-    fc1_neurons = [16, 32, 64, 128, 256, 512]
-    learning_rate = [0.1, 0.01, 0.001, 0.0001, 0.00001]
+    conv1_filters = [32, 128]
+    conv2_filters = [16, 32, 64]
+    fc1_neurons = [64, 256, 512]
+    learning_rate = [0.01, 0.001, 0.0001]
     dropout = [0.4, 0.45, 0.5]
     sigmoid = [(False, False), (True, False), (False, True)]
-    batch_size = [25, 50, 100, 150, 200]
+    batch_size = [25, 100, 150, 200]
 
-    commands = ['python square_regression.py --dataset diff_parameters --output_dim 9 '
+    commands = ['python square_regression.py --dataset diff_random_parameters --output_dim 9 '
                 '--name regression_test --epochs %s --conv1_filters %s --conv2_filters %s '
                 '--fc1_neurons %s --learning_rate %s --dropout %s %s %s --batch_size %s'
                 % (e, conv1, conv2, fc1, lr, d, '--fc2_sigmoid' if s[0] else '',

@@ -6,9 +6,10 @@ import numpy as np
 from src.nn.dataset.dataset import Dataset
 
 
-SQUARE_CENTER_DATASET_PATH = os.path.expandvars("$SQUARE_CENTER_DATASET_PATH")
-SQUARE_WITH_PARAMETERS_DATASET_PATH = os.path.expandvars("$SQUARE_WITH_PARAMETERS_DATASET_PATH")
-DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH = os.path.expandvars("$DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH")
+SQUARE_CENTER = os.path.expandvars("$SQUARE_CENTER")
+SQUARE_WITH_PARAMETERS = os.path.expandvars("$SQUARE_WITH_PARAMETERS")
+DIFF_SQUARE_WITH_PARAMETERS = os.path.expandvars("$DIFF_SQUARE_WITH_PARAMETERS")
+DIFF_RANDOM_SQUARE_WITH_PARAMETERS = os.path.expandvars("$DIFF_RANDOM_SQUARE_WITH_PARAMETERS")
 TRAIN = 3500
 TEST = 1500
 
@@ -34,6 +35,12 @@ class DiffSquareWithParametersDataset(Dataset):
 class SquareCenterRegressionDataset(SquareCenterDataset):
     def __init__(self, batch_size):
         super(SquareCenterRegressionDataset, self).__init__(1, batch_size)
+
+
+class DiffRandomSquareWithParametersDataset(Dataset):
+    def __init__(self, batch_size):
+        self.train = DiffRandomSquareWithParametersSet("train", TRAIN, batch_size)
+        self.test = DiffRandomSquareWithParametersSet("test", TEST, batch_size)
 
 
 class Set(object):
@@ -92,8 +99,8 @@ class SquareCenterSet(Set):
 
     def load(self):
         del self.X, self.Y
-        self.X = np.load(SQUARE_CENTER_DATASET_PATH + "/%s_X.npy" % self.name, mmap_mode="r")
-        self.Y = np.load(SQUARE_CENTER_DATASET_PATH + "/%s_Y_%d.npy" % (self.name, self.class_n), mmap_mode="r")
+        self.X = np.load(SQUARE_CENTER + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(SQUARE_CENTER + "/%s_Y_%d.npy" % (self.name, self.class_n), mmap_mode="r")
         self.shuffle()
 
 
@@ -103,8 +110,8 @@ class SquareWithParametersSet(Set):
 
     def load(self):
         del self.X, self.Y
-        self.X = np.load(SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_X.npy" % self.name, mmap_mode="r")
-        self.Y = np.load(SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.X = np.load(SQUARE_WITH_PARAMETERS + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(SQUARE_WITH_PARAMETERS + "/%s_Y.npy" % self.name, mmap_mode="r")
         self.shuffle()
 
 
@@ -114,8 +121,19 @@ class DiffSquareWithParametersSet(Set):
 
     def load(self):
         del self.X, self.Y
-        self.X = np.load(DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_X.npy" % self.name, mmap_mode="r")
-        self.Y = np.load(DIFF_SQUARE_WITH_PARAMETERS_DATASET_PATH + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.X = np.load(DIFF_SQUARE_WITH_PARAMETERS + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(DIFF_SQUARE_WITH_PARAMETERS + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.shuffle()
+
+
+class DiffRandomSquareWithParametersSet(Set):
+    def __init__(self, name, set_n, batch_size):
+        super(DiffRandomSquareWithParametersSet, self).__init__(name, set_n, batch_size)
+
+    def load(self):
+        del self.X, self.Y
+        self.X = np.load(DIFF_RANDOM_SQUARE_WITH_PARAMETERS + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(DIFF_RANDOM_SQUARE_WITH_PARAMETERS + "/%s_Y.npy" % self.name, mmap_mode="r")
         self.shuffle()
 
 
@@ -123,6 +141,7 @@ def get_dataset(name):
     return {
         'center': SquareCenterRegressionDataset,
         'parameters': SquareWithParametersDataset,
-        'diff_parameters': DiffSquareWithParametersDataset
+        'diff_parameters': DiffSquareWithParametersDataset,
+        'diff_random_parameters': DiffRandomSquareWithParametersDataset
     }[name]
 
