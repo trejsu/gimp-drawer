@@ -33,7 +33,7 @@ class Environment(object):
         self.done = False
         self.action_space = ToolSpace()
         self.viewer = None
-        self.version_info = self.__construct_version_info()
+        self.version_info = self.construct_version_info()
         self.out_path = None
         self.undo_before_step = False
         self.action = None
@@ -43,7 +43,7 @@ class Environment(object):
         self.actions = actions
 
     @timed
-    def __construct_version_info(self):
+    def construct_version_info(self):
         additional_info = ""
         return "{}_{}_{}_{}_space_{}_{}".format(
             imprvs["eps"],
@@ -56,10 +56,10 @@ class Environment(object):
     @timed
     def reset(self):
         # self.__setup_output()
-        return (self.src_img.array - self.img.array) / 255
+        return (self.src_img.array - self.img.array) / 255.
 
     @timed
-    def __setup_output(self):
+    def setup_output(self):
         filename = str(os.path.basename(self.src_path).split(".")[0])
         image_dir = os.path.expandvars("$GIMP_PROJECT/out/drawing/%s" % filename)
         date = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
@@ -74,11 +74,11 @@ class Environment(object):
     def render(self):
         if self.viewer is None:
             self.viewer = rendering.SimpleImageViewer()
-        image = self.__get_concatenated_src_with_image(self.img)
+        image = self.get_concatenated_src_with_image(self.img)
         self.viewer.img_show(image)
 
     @timed
-    def __get_concatenated_src_with_image(self, image_to_concatenate):
+    def get_concatenated_src_with_image(self, image_to_concatenate):
         images_to_display = (self.src_img.get_displayable_array(),
                              image_to_concatenate.get_displayable_array())
         image = concatenate(images_to_display, axis=1)
@@ -86,7 +86,7 @@ class Environment(object):
 
     @timed
     def save(self, seconds_from_start, seconds_for_action):
-        data = self.__construct_json_data(seconds_from_start, seconds_for_action)
+        data = self.construct_json_data(seconds_from_start, seconds_for_action)
         action_string = "action_{}".format(self.successful_actions)
         with open(self.out_path + "/{}.json".format(action_string), "w") as outfile:
             json.dump(data, outfile, sort_keys=True, indent=4, separators=(',', ': '))
@@ -96,10 +96,10 @@ class Environment(object):
 
     @timed
     def save_jpg(self, path):
-        misc.imsave(path, self.__get_concatenated_src_with_image(self.img))
+        misc.imsave(path, self.get_concatenated_src_with_image(self.img))
 
     @timed
-    def __construct_json_data(self, seconds_from_start, seconds_for_action):
+    def construct_json_data(self, seconds_from_start, seconds_for_action):
         return {
             "distanceBefore": self.prev_distance,
             "distanceAfter": self.distance,
@@ -132,8 +132,8 @@ class Environment(object):
         self.prev_reward = self.reward
         self.prev_distance = self.distance
         self.img.perform_action(action, args)
-        self.__update_reward_and_distance()
-        self.__check_if_done()
+        self.update_reward_and_distance()
+        self.check_if_done()
         self.undo_before_step = False
         self.action = action
         self.args = args
@@ -141,13 +141,13 @@ class Environment(object):
         return self.reward, self.done, diff
 
     @timed
-    def __update_reward_and_distance(self):
+    def update_reward_and_distance(self):
         new_distance = np.sum(np.abs(self.src_img.array - self.img.array))
         self.reward = int(self.distance) - int(new_distance)
         self.distance = int(new_distance)
 
     @timed
-    def __check_if_done(self):
+    def check_if_done(self):
         self.done = self.distance <= self.acceptable_dist or self.successful_actions >= self.actions
 
     @timed

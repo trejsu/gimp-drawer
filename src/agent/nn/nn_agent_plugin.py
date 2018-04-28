@@ -7,50 +7,35 @@ from gimpfu import *
 from src.gimp.environment import Environment
 from src.nn.model.conv_network import ConvNetwork
 from src.common.numpy_image_utils import flatten_channels
-from src.common.math import sigmoid
-
-
-class Agent(object):
-
-    def __init__(self, source, render, actions, model, save, size, channels, sigmoid, sleep):
-        self.render = render
-        self.env = Environment(source, 0, "None", actions, size)
-        self.done = False
-        self.start = None
-        self.nn = ConvNetwork(model)
-        self.save = save
-        self.model_path = model
-        self.channels = channels
-        self.sigmoid = sigmoid
-        self.sleep = sleep
-
-    def run(self):
-        diff = self.env.reset()
-        action = Environment.Action.RECTANGLE
-        while not self.done:
-            if self.channels == 1:
-                diff = flatten_channels(diff)
-            print('agent')
-            print(diff[0][0])
-            args = self.nn.generate_args(diff)
-            if self.sigmoid:
-                args = sigmoid(np.array(args, dtype=np.float128))
-            _, self.done, diff = self.env.step(action, args)
-            if self.render:
-                self.env.render()
-                time.sleep(self.sleep)
-        self.__finish()
-
-    def __finish(self):
-        if self.save:
-            model_name = str(os.path.basename(self.model_path))
-            image_dir = os.path.expandvars("$GIMP_PROJECT/result/gimp_images/nn/")
-            self.env.save_jpg(image_dir + model_name + "_" + str(time.time()) + ".jpg")
+from src.common import math
 
 
 def plugin_main(source, render, actions, model, save, size, channels, sigmoid, sleep):
-    agent = Agent(source, render, actions, model, save, size, channels, sigmoid, sleep)
-    agent.run()
+    env = Environment(source, 0, "None", actions, size)
+    done = False
+    nn = ConvNetwork(model)
+
+    diff = env.reset()
+    action = Environment.Action.RECTANGLE
+
+    while not done:
+        if channels == 1:
+            diff = flatten_channels(diff)
+        args = nn.generate_args(diff)
+        if sigmoid:
+            args = math.sigmoid(np.array(args, dtype=np.float128))
+        _, done, diff = env.step(action, args)
+        if render:
+            env.render()
+            time.sleep(sleep)
+    finish(save, model, env)
+
+
+def finish(save, model, env):
+    if save:
+        model_name = str(os.path.basename(model))
+        image_dir = os.path.expandvars("$GIMP_PROJECT/result/gimp_images/nn/")
+        env.save_jpg(image_dir + model_name + "_" + str(time.time()) + ".jpg")
 
 
 register("nn_agent", "", "", "", "", "", "", "",

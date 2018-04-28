@@ -42,34 +42,22 @@ class Image(object):
 
     @timed
     def to_array(self):
-        bpp, reshape = self.process_drawable()
-        return self.get_numpy_array(reshape, "d", bpp)
-
-    @timed
-    def to_displayable_array(self):
-        bpp, reshape = self.process_drawable()
-        return self.get_numpy_array(reshape, np.uint8, bpp)
-
-    @timed
-    def process_drawable(self):
         drawable = self.get_drawable()
         width = drawable.width
         height = drawable.height
         bpp = drawable.bpp
         pixel_region = drawable.get_pixel_rgn(0, 0, width, height, False)
         array = np.fromstring(pixel_region[:, :], "B")
-        assert array.size == width * height * bpp
-        reshape = array.reshape(height, width, bpp)
-        return bpp, reshape
-
-    @timed
-    def get_numpy_array(self, reshape, data_type, bpp):
-        return np.array(reshape, dtype=data_type)[:, :, 0:min(bpp, 3)]
+        return np.array(array.reshape(height, width, bpp), dtype="d")[:, :, 0:min(bpp, 3)]
 
     @timed
     def get_displayable_array(self):
-        return self.to_displayable_array()
+        return self.array.astype(np.uint8)
 
     @timed
     def clear(self):
         pdb.gimp_edit_fill(pdb.gimp_image_active_drawable(self.img), WHITE_FILL)
+
+    @timed
+    def delete(self):
+        pdb.gimp_image_delete(self.img)
