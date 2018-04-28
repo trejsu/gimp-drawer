@@ -40,7 +40,7 @@ def generate_set(image_n, image_size, name):
         y_coor = np.random.randint(0, image_size - square_size)
         image.perform_action(RECTANGLE, (RED, GREEN, BLUE, ALPHA, scale(x_coor), scale(y_coor), scale(square_size), scale(square_size), ROTATION))
         array = np.sum(image.array, axis=2) / 3
-        X[i] = white_image_np - (array / 255.)
+        X[i] = (array / 255.) - white_image_np
         # draw white rectangle to "reset" image
         image.perform_action_without_array_update(RECTANGLE, (1., 1., 1., ALPHA, scale(x_coor), scale(y_coor), scale(square_size), scale(square_size), ROTATION))
         Y[i][0] = RED
