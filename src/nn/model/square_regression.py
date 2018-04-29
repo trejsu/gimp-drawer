@@ -14,10 +14,8 @@ MODEL_DIR = os.path.expandvars("$GIMP_PROJECT/out/model/square/")
 
 class SquareRegression(Model):
 
-    CHANNELS = 1
-
     def __init__(self, args):
-        super(SquareRegression, self).__init__(args, SquareRegression.CHANNELS, ARGS.output_dim)
+        super(SquareRegression, self).__init__(args, ARGS.channels, ARGS.output_dim)
         self.fc2_sigmoid = args.fc2_sigmoid
         self.loss_sigmoid = args.loss_sigmoid
 
@@ -42,7 +40,7 @@ class SquareRegression(Model):
 
 
 def main(_):
-    x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size], name="x")
+    x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size, ARGS.channels], name="x")
     y = tf.placeholder(tf.float32, [None, ARGS.output_dim], name="y")
     training = tf.placeholder(tf.bool, name="training")
 
@@ -175,5 +173,6 @@ if __name__ == '__main__':
     parser.add_argument("--output_dim", type=int, help="number of output values")
     parser.add_argument("--dataset", type=str, choices=["center", "parameters", "diff_parameters",
                                                         "diff_random_parameters"])
+    parser.add_argument("--channels", type=int, default=3)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
