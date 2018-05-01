@@ -1,32 +1,42 @@
 import os
 from tqdm import tqdm
+import numpy as np
+import argparse
 import random
 
 
+ARGS = None
+
+
 def main():
-    epochs = [1]
-    conv1_filters = [32, 128]
-    conv2_filters = [16, 32, 64]
-    fc1_neurons = [64, 256, 512]
-    learning_rate = [0.01, 0.001, 0.0001]
-    dropout = [0.4, 0.45, 0.5]
-    sigmoid = [(False, False), (True, False), (False, True)]
-    batch_size = [25, 100, 150, 200]
+    epochs = 1
+    sigmoid_choices = [(False, False), (True, False), (False, True)]
 
-    commands = ['python square_regression.py --dataset diff_random_parameters --output_dim 9 '
-                '--name regression_test --epochs %s --conv1_filters %s --conv2_filters %s '
-                '--fc1_neurons %s --learning_rate %s --dropout %s %s %s --batch_size %s'
-                % (e, conv1, conv2, fc1, lr, d, '--fc2_sigmoid' if s[0] else '',
-                   '--loss_sigmoid' if s[1] else '', bs)
-                for e in epochs for conv1 in conv1_filters for conv2 in conv2_filters for fc1 in
-                fc1_neurons for lr in learning_rate for d in dropout for s in sigmoid
-                for bs in batch_size]
+    commands = []
 
-    commands = random.sample(commands, 100)
+    for _ in range(ARGS.n):
+        conv1_filters = np.random.randint(16, 512)
+        conv2_filters = np.random.randint(16, 512)
+        fc1_neurons = np.random.randint(16, 512)
+        r = -5 * np.random.rand()
+        learning_rate = 10 ** r
+        dropout = random.uniform(0.4, 0.5)
+        sigmoid = random.choice(sigmoid_choices)
+        batch_size = np.random.randint(10, 200)
+        commands.append('python square_regression.py --dataset diff_random_parameters '
+                        '--output_dim 9 --name regression_test --epochs {} --conv1_filters {} '
+                        '--conv2_filters {} --fc1_neurons {} --learning_rate {} --dropout {} {} {} '
+                        '--batch_size {}'.format(epochs, conv1_filters, conv2_filters, fc1_neurons,
+                                                 learning_rate, dropout, '--fc2_sigmoid' if sigmoid[0] else '',
+                                                 '--loss_sigmoid' if sigmoid[1] else '', batch_size))
+
     for command in tqdm(commands):
         tqdm.write(command)
         # os.system(command)
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--n", type=int, default=100, help="Number of samples")
+    ARGS = parser.parse_args()
     main()
