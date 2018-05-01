@@ -2,18 +2,20 @@ import argparse
 import os
 
 ARGS = None
-COMMAND_STRING = "gimp -i -b '(python-fu-draw-rectangle RUN-NONINTERACTIVE \"{}\" {} {} {} {} " \
-            "{} {} {} {} {} {})' -b '(gimp-quit 1)'"
+COMMAND_STRING = "gimp -i -b '(python-fu-draw-selection-shape RUN-NONINTERACTIVE \"{}\" {} {} {} " \
+                 "{} {} {} {} {} {} {} {})' -b '(gimp-quit 1)'"
+SHAPES = {'ellipse': 0, 'rectangle': 1}
 
 
 def main():
-    run_plugin_command = COMMAND_STRING.format(ARGS.name, ARGS.size, ARGS.r, ARGS.g, ARGS.b,
-                                               ARGS.a, ARGS.x, ARGS.y, ARGS.w, ARGS.h, ARGS.rotation)
+    run_plugin_command = COMMAND_STRING.format(ARGS.name, SHAPES[ARGS.shape], ARGS.size, ARGS.r,
+                                               ARGS.g, ARGS.b, ARGS.a, ARGS.x, ARGS.y, ARGS.w,
+                                               ARGS.h, ARGS.rotation)
     os.system(run_plugin_command)
 
 
-def draw_rectangle(name, x, y, w, h, size=100, r=0., g=0., b=0., a=1., rotation=0.5):
-    run_plugin_command = COMMAND_STRING.format(name, size, r, g, b, a, x, y, w, h, rotation)
+def draw_selection_shape(name, shape, x, y, w, h, size=100, r=0., g=0., b=0., a=1., rotation=0.5):
+    run_plugin_command = COMMAND_STRING.format(name, shape, size, r, g, b, a, x, y, w, h, rotation)
     os.system(run_plugin_command)
 
 
@@ -31,5 +33,6 @@ if __name__ == '__main__':
     parser.add_argument("--h", type=float, help="rectangle height (0 - 1)")
     parser.add_argument("--rotation", type=float, default=0.5,
                         help="rectangle rotation (0 - 1) - 0 means -180 rotation, 0.5 - 0, 1 - 180")
+    parser.add_argument("--shape", type=str, choices=["rectangle", "ellipse"])
     ARGS = parser.parse_args()
     main()
