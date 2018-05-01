@@ -5,9 +5,9 @@ ARGS = None
 
 
 def main():
-    run_plugin_command = "gimp -i -b '(python-fu-square-with-parameters-generator RUN-NONINTERACTIVE {} {} {})'"\
-                         " -b '(gimp-quit 1)'"\
-                        .format(ARGS.image, ARGS.number, ARGS.test)
+    run_plugin_command = "gimp -i -b '(python-fu-random-selection-shape-with-parameters-generator " \
+                         "RUN-NONINTERACTIVE {} {} {} \"{}\")' -b '(gimp-quit 1)'"\
+        .format(ARGS.image, ARGS.number, ARGS.test, ARGS.shape)
     os.system(run_plugin_command)
 
 
@@ -18,5 +18,6 @@ if __name__ == '__main__':
                         help="Number of images for the whole dataset")
     parser.add_argument("--test", type=float, default=0.3,
                         help="Percentage of images used for testing")
+    parser.add_argument("--shape", type=str, choices=["rectangle", "ellipse"])
     ARGS = parser.parse_args()
     main()
