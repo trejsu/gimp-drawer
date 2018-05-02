@@ -1,22 +1,15 @@
 import argparse
 import os
 
+from src.common.plugin import Plugin
+
 ARGS = None
-COMMAND_STRING = "gimp -i -b '(python-fu-draw-selection-shape RUN-NONINTERACTIVE \"{}\" {} {} {} " \
-                 "{} {} {} {} {} {} {} {})' -b '(gimp-quit 1)'"
-SHAPES = {'ellipse': 0, 'rectangle': 1}
 
 
 def main():
-    run_plugin_command = COMMAND_STRING.format(ARGS.name, SHAPES[ARGS.shape], ARGS.size, ARGS.r,
-                                               ARGS.g, ARGS.b, ARGS.a, ARGS.x, ARGS.y, ARGS.w,
-                                               ARGS.h, ARGS.rotation)
-    os.system(run_plugin_command)
-
-
-def draw_selection_shape(name, shape, x, y, w, h, size=100, r=0., g=0., b=0., a=1., rotation=0.5):
-    run_plugin_command = COMMAND_STRING.format(name, shape, size, r, g, b, a, x, y, w, h, rotation)
-    os.system(run_plugin_command)
+    plugin = Plugin(os.path.expandvars('$GIMP_PROJECT') +
+                    '/src/gimp/draw/draw_selection_shape_plugin.py', ARGS, 'draw_selection_shape')
+    plugin.run()
 
 
 if __name__ == '__main__':

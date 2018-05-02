@@ -3,31 +3,13 @@ import os
 from gimpfu import *
 from src.gimp import initializer
 from src.gimp.image import Image
+from src.gimp.environment import Environment
 
 PATH = os.path.expandvars("$GIMP_PROJECT/result/gimp_images/nn/shapes")
 
 
-def plugin_main(name, shape, size, r, g, b, a, x, y, w, h, rotation):
+def plugin_main(name, size, r, g, b, a, x, y, w, h, rotation, shape):
     image = Image(initializer.new_image(size, size))
-    image.perform_action(shape, (r, g, b, a, x, y, w, h, rotation))
+    action = Environment.Action.ELLIPSE if shape == 'ellipse' else Environment.Action.RECTANGLE
+    image.perform_action(action, (r, g, b, a, x, y, w, h, rotation))
     image.save("%s/%s" % (PATH, name))
-
-
-register("draw_selection_shape", "", "", "", "", "", "", "",
-         [
-             (PF_STRING, "name", "result name", ""),
-             (PF_INT, "shape", "shape", 0),
-             (PF_INT, "size", "image size", 100),
-             (PF_FLOAT, "r", "red part of rgba (0 - 1)", 0.),
-             (PF_FLOAT, "g", "green part of rgba (0 - 1)", 0.),
-             (PF_FLOAT, "b", "blue part of rgba (0 - 1)", 0.),
-             (PF_FLOAT, "a", "alpha part of rgba (0 - 1)", 1.),
-             (PF_FLOAT, "x", "x coordinate of left upper corner (0 - 1)", 0),
-             (PF_FLOAT, "y", "y coordinate of left upper corner (0 - 1)", 0),
-             (PF_FLOAT, "w", "rectangle width (0 - 1)", 0),
-             (PF_FLOAT, "h", "rectangle height (0 - 1)", 0),
-             (PF_FLOAT, "rotation",
-              "rectangle rotation (0 - 1) - 0 means -180 rotation, 0.5 - 0, 1 - 180", 0.5)
-         ], [], plugin_main)
-
-main()
