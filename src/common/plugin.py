@@ -2,7 +2,6 @@ import os
 
 
 class Plugin(object):
-
     DEFAULT = {'PF_STRING': "\"\"", 'PF_INT': 0, 'PF_FLOAT': 0, 'PF_BOOL': False}
 
     def __init__(self, plugin_file, args, plugin_name):
@@ -18,8 +17,8 @@ class Plugin(object):
         with open(self.plugin_file) as f:
             plugin_body = f.read()
 
-        register_part = """register("{}", "", "", "", "", "", "", "", {}, [], plugin_main)\nmain()"""\
-            .format(self.plugin_name, self.parse_register_arguments()).replace("'", "")
+        register_part = """register("{}", "", "", "", "", "", "", "", {}, [], plugin_main)\nmain()""".format(
+            self.plugin_name, self.parse_register_arguments()).replace("'", "")
 
         plugin = plugin_body + '\n' + register_part
 
@@ -30,8 +29,8 @@ class Plugin(object):
 
     def run_plugin(self):
         name = self.plugin_name.replace('_', '-')
-        command = "gimp -i -b '(python-fu-{} RUN-NONINTERACTIVE {})' -b '(gimp-quit 1)'"\
-            .format(name, self.parse_command_arguments())
+        command = "gimp -i -b '(python-fu-{} RUN-NONINTERACTIVE {})' -b '(gimp-quit 1)'".format(
+            name, self.parse_command_arguments())
         os.system(command)
 
     def parse_register_arguments(self):
@@ -65,4 +64,3 @@ class Plugin(object):
             else:
                 arguments += '{} '.format(value)
         return arguments
-
