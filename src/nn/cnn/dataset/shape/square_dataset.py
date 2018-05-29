@@ -3,13 +3,17 @@ import math
 
 import numpy as np
 
-from src.nn.dataset.dataset import Dataset
+from src.nn.cnn.dataset.dataset import Dataset
 
+# todo: refactor
 
 SQUARE_CENTER = os.path.expandvars("$SQUARE_CENTER")
 SQUARE_WITH_PARAMETERS = os.path.expandvars("$SQUARE_WITH_PARAMETERS")
 DIFF_SQUARE_WITH_PARAMETERS = os.path.expandvars("$DIFF_SQUARE_WITH_PARAMETERS")
-DIFF_RANDOM_SQUARE_WITH_PARAMETERS = os.path.expandvars("$DIFF_RANDOM_SQUARE_WITH_PARAMETERS")
+RANDOM_RECTANGLE = os.path.expandvars("$RANDOM_RECTANGLE")
+RANDOM_ELLIPSE = os.path.expandvars("$RANDOM_ELLIPSE")
+RANDOM_TRIANGLE = os.path.expandvars("$RANDOM_TRIANGLE")
+RANDOM_LINE = os.path.expandvars("$RANDOM_LINE")
 TRAIN = 3500
 TEST = 1500
 
@@ -37,10 +41,28 @@ class SquareCenterRegressionDataset(SquareCenterDataset):
         super(SquareCenterRegressionDataset, self).__init__(1, batch_size)
 
 
-class DiffRandomSquareWithParametersDataset(Dataset):
+class RandomRectangleDataset(Dataset):
     def __init__(self, batch_size):
-        self.train = DiffRandomSquareWithParametersSet("train", TRAIN, batch_size)
-        self.test = DiffRandomSquareWithParametersSet("test", TEST, batch_size)
+        self.train = RandomRectangleSet("train", TRAIN, batch_size)
+        self.test = RandomRectangleSet("test", TEST, batch_size)
+
+
+class RandomEllipseDataset(Dataset):
+    def __init__(self, batch_size):
+        self.train = RandomEllipseSet("train", TRAIN, batch_size)
+        self.test = RandomEllipseSet("test", TEST, batch_size)
+
+
+class RandomTriangleDataset(Dataset):
+    def __init__(self, batch_size):
+        self.train = RandomTriangleSet("train", TRAIN, batch_size)
+        self.test = RandomTriangleSet("test", TEST, batch_size)
+
+
+class RandomLineDataset(Dataset):
+    def __init__(self, batch_size):
+        self.train = RandomLineSet("train", TRAIN, batch_size)
+        self.test = RandomLineSet("test", TEST, batch_size)
 
 
 class Set(object):
@@ -126,14 +148,47 @@ class DiffSquareWithParametersSet(Set):
         self.shuffle()
 
 
-class DiffRandomSquareWithParametersSet(Set):
+class RandomRectangleSet(Set):
     def __init__(self, name, set_n, batch_size):
-        super(DiffRandomSquareWithParametersSet, self).__init__(name, set_n, batch_size)
+        super(RandomRectangleSet, self).__init__(name, set_n, batch_size)
 
     def load(self):
         del self.X, self.Y
-        self.X = np.load(DIFF_RANDOM_SQUARE_WITH_PARAMETERS + "/%s_X.npy" % self.name, mmap_mode="r")
-        self.Y = np.load(DIFF_RANDOM_SQUARE_WITH_PARAMETERS + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.X = np.load(RANDOM_RECTANGLE + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(RANDOM_RECTANGLE + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.shuffle()
+
+
+class RandomEllipseSet(Set):
+    def __init__(self, name, set_n, batch_size):
+        super(RandomEllipseSet, self).__init__(name, set_n, batch_size)
+
+    def load(self):
+        del self.X, self.Y
+        self.X = np.load(RANDOM_ELLIPSE + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(RANDOM_ELLIPSE + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.shuffle()
+
+
+class RandomTriangleSet(Set):
+    def __init__(self, name, set_n, batch_size):
+        super(RandomTriangleSet, self).__init__(name, set_n, batch_size)
+
+    def load(self):
+        del self.X, self.Y
+        self.X = np.load(RANDOM_TRIANGLE + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(RANDOM_TRIANGLE + "/%s_Y.npy" % self.name, mmap_mode="r")
+        self.shuffle()
+
+
+class RandomLineSet(Set):
+    def __init__(self, name, set_n, batch_size):
+        super(RandomLineSet, self).__init__(name, set_n, batch_size)
+
+    def load(self):
+        del self.X, self.Y
+        self.X = np.load(RANDOM_LINE + "/%s_X.npy" % self.name, mmap_mode="r")
+        self.Y = np.load(RANDOM_LINE + "/%s_Y.npy" % self.name, mmap_mode="r")
         self.shuffle()
 
 
@@ -142,6 +197,9 @@ def get_dataset(name):
         'center': SquareCenterRegressionDataset,
         'parameters': SquareWithParametersDataset,
         'diff_parameters': DiffSquareWithParametersDataset,
-        'diff_random_parameters': DiffRandomSquareWithParametersDataset
+        'random_rectangle': RandomEllipseDataset,
+        'random_ellipse': RandomEllipseDataset,
+        'random_triangle': RandomTriangleDataset,
+        'random_line': RandomLineDataset
     }[name]
 

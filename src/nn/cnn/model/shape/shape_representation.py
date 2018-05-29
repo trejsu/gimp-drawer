@@ -4,12 +4,11 @@ import argparse
 
 import numpy as np
 
-from src.nn.dataset.square.square_dataset import get_dataset
-from src.nn.model.model import *
+from src.nn.cnn.dataset.shape.square_dataset import get_dataset
+from src.nn.cnn.model.model import *
 
 
 ARGS = None
-MODEL_DIR = os.path.expandvars("$GIMP_PROJECT/out/model/square/")
 
 
 class SquareRegression(Model):
@@ -20,7 +19,7 @@ class SquareRegression(Model):
         self.loss_sigmoid = args.loss_sigmoid
 
     def save_test_result_with_parameters(self, score):
-        with open('regression_results.txt', mode='a') as f:
+        with open('shape_representation_results.txt', mode='a') as f:
             f.write('score = %s, python square_regression.py --name %s --epochs %s '
                     '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
                     '--dropout %s --batch_size %s %s %s\n'
@@ -102,11 +101,6 @@ def main(_):
         mean_test_mse = evaluate_test_mse(data, keep_prob, loss, training, x, y)
         model.save_test_result_with_parameters(mean_test_mse)
 
-        if ARGS.output_dim == 2:
-            examples = data.test.random_x(ARGS.visual_test_examples)
-            predictions = y_conv.eval(feed_dict={x: examples, keep_prob: 1.0, training: False})
-            visualize_predictions(examples, predictions, model)
-
 
 def evaluate_test_mse(data, keep_prob, loss, training, x, y):
     test_mse = np.zeros(data.test.batch_n)
@@ -118,31 +112,6 @@ def evaluate_test_mse(data, keep_prob, loss, training, x, y):
     print("average test mse = %g" % mean_test_mse)
     data.test.restart()
     return mean_test_mse
-
-
-def visualize_predictions(examples, predictions, model):
-    size = ARGS.image_size
-
-    for index, (example, prediction) in enumerate(zip(examples, predictions)):
-        rgb_example = gray_to_rgb(example, size)
-        x_prediction = int(prediction[0] * size)
-        y_prediction = int(prediction[1] * size)
-        if 0 <= x_prediction <= size and 0 <= y_prediction <= size:
-            rgb_example[x_prediction][y_prediction][0] = 1
-            rgb_example[x_prediction][y_prediction][1] = 0
-            rgb_example[x_prediction][y_prediction][2] = 0
-        plt.imshow(rgb_example)
-        plt.suptitle('prediction = (%d, %d)' % (x_prediction, y_prediction))
-        plt.savefig('%s/%s/visualized_prediction_%d.png' % (Model.MODEL_DIR, model.get_model_name_without_epoch(),
-                                                            index))
-
-
-def gray_to_rgb(example, size):
-    rgb_example = np.zeros([size, size, 3])
-    rgb_example[:, :, 0] = example
-    rgb_example[:, :, 1] = example
-    rgb_example[:, :, 2] = example
-    return rgb_example
 
 
 if __name__ == '__main__':
@@ -172,7 +141,9 @@ if __name__ == '__main__':
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")
     parser.add_argument("--output_dim", type=int, help="number of output values")
     parser.add_argument("--dataset", type=str, choices=["center", "parameters", "diff_parameters",
-                                                        "diff_random_parameters"])
+                                                        "random_rectangle", "random_ellipse",
+                                                        "random_triangle", "random_line"])
     parser.add_argument("--channels", type=int, default=3)
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
+
