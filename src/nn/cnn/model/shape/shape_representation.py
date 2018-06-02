@@ -125,6 +125,8 @@ if __name__ == '__main__':
                         help="number of filters in first convolutional layer")
     parser.add_argument("--conv2_filters", default=64, type=int,
                         help="number of filters in second convolutional layer")
+    parser.add_argument("--conv3_filters", default=128, type=int,
+                        help="number of filters in third convolutional layer")
     parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
     parser.add_argument("--learning_rate", type=float, default=0.01)
@@ -135,7 +137,6 @@ if __name__ == '__main__':
     parser.add_argument("--batch_norm", action="store_true")
     parser.add_argument("--fc2_sigmoid", action="store_true")
     parser.add_argument("--loss_sigmoid", action="store_true")
-    parser.add_argument("--visual_test_examples", type=int, default=3)
     parser.add_argument("--batch_size", type=int, default=25)
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")

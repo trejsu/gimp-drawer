@@ -22,6 +22,7 @@ class Model(object):
         self.epochs = args.epochs
         self.conv1_filters = args.conv1_filters
         self.conv2_filters = args.conv2_filters
+        self.conv3_filters = args.conv3_filters
         self.fc1_neurons = args.fc1_neurons
         self.learning_rate = args.learning_rate
         self.dropout = args.dropout
@@ -94,14 +95,27 @@ class Model(object):
         with tf.name_scope('pool2'):
             h_pool2 = max_pool_2x2(h_conv2)
 
+        with tf.name_scope('conv3'):
+            W_conv3 = weight_variable(
+                [FILTER_SIZE, FILTER_SIZE, self.conv2_filters, self.conv3_filters])
+            b_conv3 = bias_variable([self.conv3_filters])
+            conv3 = conv2d(h_pool2, W_conv3) + b_conv3
+            if self.batch_norm:
+                conv3 = tf.layers.batch_normalization(conv3, center=True, scale=True,
+                                                      training=training)
+            h_conv3 = tf.nn.relu(conv3)
+
+        with tf.name_scope('pool3'):
+            h_pool3 = max_pool_2x2(h_conv3)
+
         with tf.name_scope('fc1'):
-            image_size = int(math.ceil(self.image_size / 4.))
+            image_size = int(math.ceil(self.image_size / 8.))
             W_fc1 = weight_variable(
-                [image_size * image_size * self.conv2_filters, self.fc1_neurons])
+                [image_size * image_size * self.conv3_filters, self.fc1_neurons])
             b_fc1 = bias_variable([self.fc1_neurons])
 
-            h_pool2_flat = tf.reshape(h_pool2, [-1, image_size * image_size * self.conv2_filters])
-            fc1 = tf.matmul(h_pool2_flat, W_fc1) + b_fc1
+            h_pool3_flat = tf.reshape(h_pool3, [-1, image_size * image_size * self.conv3_filters])
+            fc1 = tf.matmul(h_pool3_flat, W_fc1) + b_fc1
             if self.batch_norm:
                 fc1 = tf.layers.batch_normalization(fc1, center=True, scale=True, training=training)
             h_fc1 = tf.nn.relu(fc1)

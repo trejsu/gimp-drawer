@@ -15,20 +15,22 @@ def main():
     commands = []
 
     for _ in range(ARGS.n):
-        conv1_filters = np.random.randint(23, 266)
-        conv2_filters = np.random.randint(36, 480)
+        conv1_filters = np.random.randint(23, 200)
+        conv2_filters = np.random.randint(36, 200)
+        conv3_filters = np.random.randint(36, 200)
         fc1_neurons = np.random.randint(49, 510)
         r = random.uniform(-4, -1)
         learning_rate = 10 ** r
         dropout = random.uniform(0.4, 0.49)
         sigmoid = random.choice(sigmoid_choices)
-        batch_size = np.random.randint(29, 180)
-        commands.append('python square_regression.py --dataset diff_random_parameters '
-                        '--output_dim 9 --name regression_test --epochs {} --conv1_filters {} '
-                        '--conv2_filters {} --fc1_neurons {} --learning_rate {} --dropout {} {} {} '
-                        '--batch_size {}'.format(epochs, conv1_filters, conv2_filters, fc1_neurons,
-                                                 learning_rate, dropout, '--fc2_sigmoid' if sigmoid[0] else '',
-                                                 '--loss_sigmoid' if sigmoid[1] else '', batch_size))
+        batch_size = np.random.randint(29, 100)
+        commands.append('python shape_representation.py --dataset random_rectangle '
+                        '--output_dim 9 --name test --epochs {} --conv1_filters {} '
+                        '--conv2_filters {} --conv3_filters {} --fc1_neurons {} --learning_rate {} '
+                        '--dropout {} {} {} --batch_size {}'
+                        .format(epochs, conv1_filters, conv2_filters, conv3_filters, fc1_neurons,
+                                learning_rate, dropout, '--fc2_sigmoid' if sigmoid[0] else '',
+                                '--loss_sigmoid' if sigmoid[1] else '', batch_size))
 
     for command in tqdm(commands):
         tqdm.write(command)
