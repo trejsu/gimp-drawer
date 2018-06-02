@@ -27,18 +27,19 @@ def main():
         commands.append('python shape_representation.py --dataset random_rectangle '
                         '--output_dim 9 --name test --epochs {} --conv1_filters {} '
                         '--conv2_filters {} --conv3_filters {} --fc1_neurons {} --learning_rate {} '
-                        '--dropout {} {} {} --batch_size {}'
+                        '--dropout {} {} {} --batch_size {} --threads {}'
                         .format(epochs, conv1_filters, conv2_filters, conv3_filters, fc1_neurons,
                                 learning_rate, dropout, '--fc2_sigmoid' if sigmoid[0] else '',
-                                '--loss_sigmoid' if sigmoid[1] else '', batch_size))
+                                '--loss_sigmoid' if sigmoid[1] else '', batch_size, ARGS.threads))
 
     for command in tqdm(commands):
-        tqdm.write(command)
-        # os.system(command)
+        # tqdm.write(command)
+        os.system(command)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--n", type=int, default=100, help="Number of samples")
+    parser.add_argument("--threads", type=int, default=15)
     ARGS = parser.parse_args()
     main()
