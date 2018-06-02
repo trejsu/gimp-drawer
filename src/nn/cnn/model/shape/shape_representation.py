@@ -21,11 +21,11 @@ class SquareRegression(Model):
     def save_test_result_with_parameters(self, score):
         with open('shape_representation_results.txt', mode='a') as f:
             f.write('score = %s, python square_regression.py --name %s --epochs %s '
-                    '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
-                    '--dropout %s --batch_size %s %s %s\n'
+                    '--conv1_filters %s --conv2_filters %s --conv3_filters %s --fc1_neurons %s '
+                    '--learning_rate %s --dropout %s --batch_size %s %s %s\n'
                     % (score, self.name, self.epochs, self.conv1_filters, self.conv2_filters,
-                       self.fc1_neurons, self.learning_rate, self.dropout, ARGS.batch_size,
-                       '--fc2_sigmoid' if self.fc2_sigmoid else '',
+                       self.conv3_filters, self.fc1_neurons, self.learning_rate, self.dropout,
+                       ARGS.batch_size, '--fc2_sigmoid' if self.fc2_sigmoid else '',
                        '--loss_sigmoid' if self.loss_sigmoid else ''))
 
     def fc2_layer(self, h_fc1_dropout):
