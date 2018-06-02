@@ -6,15 +6,16 @@ import numpy as np
 
 from src.nn.cnn.dataset.shape.square_dataset import get_dataset
 from src.nn.cnn.model.model import *
+from src.common.process import memory_usage
 
 
 ARGS = None
 
 
-class SquareRegression(Model):
+class ShapeRepresentation(Model):
 
     def __init__(self, args):
-        super(SquareRegression, self).__init__(args, ARGS.channels, ARGS.output_dim)
+        super(ShapeRepresentation, self).__init__(args, ARGS.channels, ARGS.output_dim)
         self.fc2_sigmoid = args.fc2_sigmoid
         self.loss_sigmoid = args.loss_sigmoid
 
@@ -43,7 +44,7 @@ def main(_):
     y = tf.placeholder(tf.float32, [None, ARGS.output_dim], name="y")
     training = tf.placeholder(tf.bool, name="training")
 
-    model = SquareRegression(ARGS)
+    model = ShapeRepresentation(ARGS)
     y_conv, keep_prob = model.conv_net(x, training)
 
     with tf.name_scope('loss'):
@@ -67,12 +68,14 @@ def main(_):
             lowest_mse = 100
             epochs_not_improving = 0
             best_model_epoch = 0
+            memory = []
 
             for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
                 num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
 
                 for step in tqdm.tqdm(range(num_batches)):
+                    memory.append(memory_usage()['size'])
                     X, Y = data.train.next_batch()
                     train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
                     train_loss = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
@@ -95,6 +98,7 @@ def main(_):
                     break
 
                 data.train.restart()
+                save_memory_usage_plot(memory)
 
             model.save_learning_curve(train_mse, best_model_epoch)
 
@@ -112,6 +116,14 @@ def evaluate_test_mse(data, keep_prob, loss, training, x, y):
     print("average test mse = %g" % mean_test_mse)
     data.test.restart()
     return mean_test_mse
+
+
+def save_memory_usage_plot(memory):
+    plt.plot(memory)
+    plt.xlabel('step')
+    plt.ylabel('virtual memory [MB]')
+    plt.savefig('%s/memory.png' % Model.MODEL_DIR)
+    plt.clf()
 
 
 if __name__ == '__main__':
