@@ -57,7 +57,8 @@ def main(_):
     with tf.name_scope('optimizer'):
         train_step = tf.train.AdamOptimizer(learning_rate=ARGS.learning_rate).minimize(loss)
 
-    with tf.Session() as sess:
+    with tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=ARGS.threads,
+                                          intra_op_parallelism_threads=ARGS.threads)) as sess:
 
         global_epoch, saver = model.restore_if_not_new(sess)
         data = get_dataset(ARGS.dataset)(ARGS.batch_size)
@@ -68,14 +69,12 @@ def main(_):
             lowest_mse = 100
             epochs_not_improving = 0
             best_model_epoch = 0
-            memory = []
 
             for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
                 num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
 
                 for step in tqdm.tqdm(range(num_batches)):
-                    memory.append(memory_usage()['size'])
                     X, Y = data.train.next_batch()
                     train_step.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
                     train_loss = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
@@ -98,7 +97,6 @@ def main(_):
                     break
 
                 data.train.restart()
-                save_memory_usage_plot(memory)
 
             model.save_learning_curve(train_mse, best_model_epoch)
 
@@ -116,14 +114,6 @@ def evaluate_test_mse(data, keep_prob, loss, training, x, y):
     print("average test mse = %g" % mean_test_mse)
     data.test.restart()
     return mean_test_mse
-
-
-def save_memory_usage_plot(memory):
-    plt.plot(memory)
-    plt.xlabel('step')
-    plt.ylabel('virtual memory [MB]')
-    plt.savefig('%s/memory.png' % Model.MODEL_DIR)
-    plt.clf()
 
 
 if __name__ == '__main__':
@@ -157,6 +147,8 @@ if __name__ == '__main__':
                                                         "random_rectangle", "random_ellipse",
                                                         "random_triangle", "random_line"])
     parser.add_argument("--channels", type=int, default=3)
+    parser.add_argument("--threads", type=int, default=0,
+                        help="thread pool for tf session - default number of all logical CPU cores")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
 
