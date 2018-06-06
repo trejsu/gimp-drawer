@@ -4,9 +4,8 @@ import argparse
 
 import numpy as np
 
-from src.nn.cnn.dataset.shape.square_dataset import get_dataset
+from src.nn.cnn.dataset.dataset import OnePartDataset
 from src.nn.cnn.model.model import *
-from src.common.process import memory_usage
 
 
 ARGS = None
@@ -61,7 +60,7 @@ def main(_):
                                           intra_op_parallelism_threads=ARGS.threads)) as sess:
 
         global_epoch, saver = model.restore_if_not_new(sess)
-        data = get_dataset(ARGS.dataset)(ARGS.batch_size)
+        data = OnePartDataset(ARGS.dataset_path, ARGS.batch_size)
 
         if not ARGS.test:
 
@@ -72,7 +71,7 @@ def main(_):
 
             for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
 
-                num_batches = data.train.batch_n if ARGS.batches is None else ARGS.batches
+                num_batches = data.train.num_batches if ARGS.batches is None else ARGS.batches
 
                 for step in tqdm.tqdm(range(num_batches)):
                     X, Y = data.train.next_batch()
@@ -143,9 +142,7 @@ if __name__ == '__main__':
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")
     parser.add_argument("--output_dim", type=int, help="number of output values")
-    parser.add_argument("--dataset", type=str, choices=["center", "parameters", "diff_parameters",
-                                                        "random_rectangle", "random_ellipse",
-                                                        "random_triangle", "random_line"])
+    parser.add_argument("dataset_path", type=str)
     parser.add_argument("--channels", type=int, default=3)
     parser.add_argument("--threads", type=int, default=0,
                         help="thread pool for tf session - default number of all logical CPU cores")
