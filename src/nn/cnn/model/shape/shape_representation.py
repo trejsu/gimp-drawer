@@ -104,8 +104,8 @@ def main(_):
 
 
 def evaluate_test_mse(data, keep_prob, loss, training, x, y):
-    test_mse = np.zeros(data.test.batch_n)
-    for i in tqdm.tqdm(range(data.test.batch_n)):
+    test_mse = np.zeros(data.test.num_batches)
+    for i in tqdm.tqdm(range(data.test.num_batches)):
         X, Y = data.test.next_batch()
         mse = loss.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: False})
         test_mse[i] = mse
