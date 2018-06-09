@@ -8,7 +8,7 @@ ARGS = None
 
 def main():
     plugin = Plugin(os.path.join(os.path.expandvars('$GIMP_PROJECT'),
-                    '/src/nn/cnn/dataset/shape/random/random_selection_shape_generator_plugin.py'),
+                    'src/nn/cnn/dataset/shape/random/random_selection_shape_generator_plugin.py'),
                     ARGS,
                     'random_selection_shape_generator')
     plugin.run()

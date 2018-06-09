@@ -7,10 +7,12 @@ import os.path as path
 import tensorflow as tf
 
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout, BatchNormalization, Activation
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout, BatchNormalization, Activation, \
+    LeakyReLU
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from keras.optimizers import Adam
 from keras import backend as K
+from keras.regularizers import l2
 
 
 ARGS = None
@@ -23,18 +25,20 @@ def main(_):
     X_test = np.load(path.join(ARGS.dataset_path, "test_X.npy"), mmap_mode="r")
     Y_test = np.load(path.join(ARGS.dataset_path, "test_Y.npy"), mmap_mode="r")
 
+    activation = 'relu'
+
     model = Sequential()
     model.add(Conv2D(ARGS.conv1_filters, ARGS.conv1_kernel_size, strides=(1, 1),
-                     padding='same', activation='relu',
+                     padding='same', activation=activation, kernel_regularizer=l2(0.01),
                      input_shape=(ARGS.image_size, ARGS.image_size, ARGS.channels)))
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
     model.add(Conv2D(ARGS.conv2_filters, ARGS.conv2_kernel_size, strides=(1, 1),
-                     padding='same', activation='relu'))
+                     padding='same', activation=activation, kernel_regularizer=l2(0.01)))
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
     model.add(Flatten())
     model.add(Dense(ARGS.fc1_neurons))
     model.add(BatchNormalization())
-    model.add(Activation('relu'))
+    model.add(Activation(activation))
     model.add(Dropout(ARGS.dropout))
     model.add(Dense(ARGS.output_dim, activation='sigmoid'))
 
