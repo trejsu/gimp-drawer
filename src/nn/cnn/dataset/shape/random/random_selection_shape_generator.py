@@ -1,14 +1,17 @@
 import argparse
 import os
 
+from src.common.plugin import Plugin
+
 ARGS = None
 
 
 def main():
-    run_plugin_command = "gimp -i -b '(python-fu-random-selection-shape-with-parameters-generator " \
-                         "RUN-NONINTERACTIVE {} {} {} \"{}\")' -b '(gimp-quit 1)'"\
-        .format(ARGS.image, ARGS.number, ARGS.test, ARGS.shape)
-    os.system(run_plugin_command)
+    plugin = Plugin(os.path.join(os.path.expandvars('$GIMP_PROJECT'),
+                    '/src/nn/cnn/dataset/shape/random/random_selection_shape_generator_plugin.py'),
+                    ARGS,
+                    'random_selection_shape_generator')
+    plugin.run()
 
 
 if __name__ == '__main__':
@@ -19,5 +22,6 @@ if __name__ == '__main__':
     parser.add_argument("--test", type=float, default=0.2,
                         help="Percentage of images used for testing")
     parser.add_argument("--shape", type=str, choices=["rectangle", "ellipse"])
+    parser.add_argument("--without_rotation", action="store_true")
     ARGS = parser.parse_args()
     main()

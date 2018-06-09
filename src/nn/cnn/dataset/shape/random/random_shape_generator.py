@@ -21,5 +21,6 @@ if __name__ == '__main__':
                         help="Max images in one dataset file")
     parser.add_argument("--test", type=float, default=0.2,
                         help="Percentage of images used for testing")
+    parser.add_argument("--without_rotation", action="store_true")
     ARGS = parser.parse_args()
     main()

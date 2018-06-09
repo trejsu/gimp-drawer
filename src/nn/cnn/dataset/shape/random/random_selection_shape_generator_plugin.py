@@ -9,12 +9,14 @@ from src.gimp.image import Image
 from src.gimp.environment import Environment
 
 
-def plugin_main(image_size, image_n, test_part, shape):
-    generate_set(int(image_n * (1 - test_part)), image_size, "train", shape)
-    generate_set(int(image_n * test_part), image_size, "test", shape)
+def plugin_main(image_size, image_n, test_part, shape, without_rotation):
+    generate_set(int(image_n * (1 - test_part)), image_size, "train", shape,
+                 without_rotation)
+    generate_set(int(image_n * test_part), image_size, "test", shape,
+                 without_rotation)
 
 
-def generate_set(image_n, image_size, name, shape):
+def generate_set(image_n, image_size, name, shape, without_rotation):
     def initialize():
         X = np.zeros((image_n, image_size, image_size, 3))
         Y = np.zeros((image_n, 9))
@@ -37,6 +39,7 @@ def generate_set(image_n, image_size, name, shape):
         r, g, b, a, x, y, w, h, rotation = rand()
         w = min(w, 1 - x)
         h = min(h, 1 - y)
+        rotation = 0.5 if without_rotation else rotation
         image.perform_action(action, (r, g, b, a, x, y, w, h, rotation))
         array = image.array
         X[i] = (array / 255.) - white_image_np
@@ -46,14 +49,3 @@ def generate_set(image_n, image_size, name, shape):
     path = "./{}_{}.npy"
     np.save(path.format(name, "X"), X)
     np.save(path.format(name, "Y"), Y)
-
-
-register("random_selection_shape_with_parameters_generator", "", "", "", "", "", "", "",
-         [
-             (PF_INT, "image", "Image size", 100),
-             (PF_INT, "number", "Number of images for the whole dataset", 5000),
-             (PF_FLOAT, "test", "Percentage of images used for testing", 0.3),
-             (PF_STRING, "shape", "Shape", ""),
-         ], [], plugin_main)
-
-main()
