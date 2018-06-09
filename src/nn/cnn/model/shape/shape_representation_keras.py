@@ -8,7 +8,7 @@ import tensorflow as tf
 
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout, BatchNormalization, Activation
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from keras.optimizers import Adam
 from keras import backend as K
 
@@ -40,7 +40,8 @@ def main(_):
 
     callbacks = [EarlyStopping(monitor='val_loss', patience=ARGS.early_stopping_epochs, mode='min'),
                  ModelCheckpoint(get_saving_path(), monitor='val_loss', save_best_only=True,
-                                 save_weights_only=False, mode='min', period=1)]
+                                 save_weights_only=False, mode='min', period=1),
+                 TensorBoard(log_dir=get_tensorboard_path(), write_images=True)]
 
     optimizer = Adam(lr=ARGS.learning_rate)
     model.compile(optimizer=optimizer, loss='mse')
@@ -53,14 +54,22 @@ def main(_):
 
 
 def get_saving_path():
+    model_dir = create_model_dir()
+    return path.join(model_dir, 'model.{epoch:02d}-{val_loss:.2f}.hdf5')
+
+
+def create_model_dir():
     model_name = ARGS.name if ARGS.model is None else str(path.basename(ARGS.model))
     model_name = model_name.split('-')[0]
-    model_dir = "%s/%s" % (SAVE_PATH, model_name)
-    print(model_dir)
+    model_dir = path.join(SAVE_PATH, model_name)
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
-    model_path = "%s/%s" % (model_dir, model_name)
-    return model_path
+    return model_dir
+
+
+def get_tensorboard_path():
+    model_dir = create_model_dir()
+    return path.join(model_dir, 'logs')
 
 
 if __name__ == '__main__':
@@ -74,8 +83,6 @@ if __name__ == '__main__':
                         help="number of filters in first convolutional layer")
     parser.add_argument("--conv2_filters", default=64, type=int,
                         help="number of filters in second convolutional layer")
-    parser.add_argument("--conv3_filters", default=128, type=int,
-                        help="number of filters in third convolutional layer")
     parser.add_argument("--conv1_kernel_size", default=10, type=int,
                         help="size of kernels in first convolutional layer")
     parser.add_argument("--conv2_kernel_size", default=5, type=int,
@@ -87,9 +94,6 @@ if __name__ == '__main__':
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--image_size", type=int, default=100)
     parser.add_argument("--batches", type=int)
-    parser.add_argument("--batch_norm", action="store_true")
-    parser.add_argument("--fc2_sigmoid", action="store_true")
-    parser.add_argument("--loss_sigmoid", action="store_true")
     parser.add_argument("--batch_size", type=int, default=25)
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")
