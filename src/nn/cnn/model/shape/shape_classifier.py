@@ -38,7 +38,7 @@ def main(_):
     with tf.name_scope('loss'):
         cross_entropy = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits_v2(labels=y, logits=y_conv),
-            name="cross_entropy")
+            name="loss")
 
     with tf.name_scope('optimizer'):
         optimizer = tf.train.AdamOptimizer(ARGS.learning_rate)
