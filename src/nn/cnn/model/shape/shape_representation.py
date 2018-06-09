@@ -130,7 +130,7 @@ if __name__ == '__main__':
                         help="number of filters in third convolutional layer")
     parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
-    parser.add_argument("--learning_rate", type=float, default=0.01)
+    parser.add_argument("--learning_rate", type=float, default=0.0001)
     parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--image_size", type=int, default=100)

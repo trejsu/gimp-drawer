@@ -77,7 +77,9 @@ class MultipartSet(Dataset):
         return self._random_part('Y')
 
     def restart(self):
-        pass
+        self.next_batch_index = 0
+        self._shuffle()
+        self.has_next = True
 
     def _random_part(self, name):
         index, part = self._get_random_part_and_index()
@@ -99,7 +101,7 @@ class MultipartSet(Dataset):
         self.X = np.load(path.join(self.dataset_path, "{}_X_{}.npy".format(self.name,
                                                                            self.current_part)),
                          mmap_mode="r")
-        self.X = np.load(path.join(self.dataset_path, "{}_Y_{}.npy".format(self.name,
+        self.Y = np.load(path.join(self.dataset_path, "{}_Y_{}.npy".format(self.name,
                                                                            self.current_part)),
                          mmap_mode="r")
         self._shuffle()

@@ -2,6 +2,7 @@ import os
 import json
 import math
 from textwrap import wrap
+import os.path as path
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -14,7 +15,7 @@ FILTER_SIZE = 5
 
 class Model(object):
 
-    MODEL_DIR = os.path.expandvars("$SQUARE_MODEL_PATH")
+    MODEL_DIR = path.join(os.path.expandvars("$GIMP_PROJECT"), 'result/model')
 
     def __init__(self, args, channels, outputs):
         self.model = args.model
