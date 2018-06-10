@@ -1,3 +1,4 @@
 data/**
 result/**
 .idea/**
+notebook/.ipynb_checkpoints
