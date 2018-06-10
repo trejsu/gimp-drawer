@@ -7,8 +7,7 @@ import os.path as path
 import tensorflow as tf
 
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout, BatchNormalization, Activation, \
-    LeakyReLU
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout, BatchNormalization, Activation
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from keras.optimizers import Adam
 from keras import backend as K
@@ -30,15 +29,11 @@ def main(_):
 
     model = Sequential()
     model.add(Conv2D(ARGS.conv1_filters, ARGS.conv1_kernel_size, strides=(1, 1),
-                     padding='same', kernel_regularizer=kernel_regularizer,
+                     padding='same', kernel_regularizer=kernel_regularizer, activation=activation,
                      input_shape=(ARGS.image_size, ARGS.image_size, ARGS.channels)))
-    model.add(BatchNormalization())
-    model.add(Activation(activation))
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
     model.add(Conv2D(ARGS.conv2_filters, ARGS.conv2_kernel_size, strides=(1, 1),
-                     padding='same', kernel_regularizer=kernel_regularizer))
-    model.add(BatchNormalization())
-    model.add(Activation(activation))
+                     padding='same', kernel_regularizer=kernel_regularizer, activation=activation))
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
     model.add(Flatten())
     model.add(Dense(ARGS.fc1_neurons))
@@ -57,7 +52,7 @@ def main(_):
 
     K.set_session(K.tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=ARGS.threads,
                                                      intra_op_parallelism_threads=ARGS.threads)))
-    K.get_session().run(tf.initialize_all_variables())
+    K.get_session().run(tf.global_variables_initializer())
 
     model.fit(x=X_train, y=Y_train, batch_size=ARGS.batch_size, epochs=ARGS.epochs,
               callbacks=callbacks, validation_data=(X_test, Y_test), shuffle=True)
