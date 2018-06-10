@@ -1,105 +1,75 @@
 import sys
-import tqdm
 import argparse
 import os
 
-import tensorflow as tf
 import numpy as np
+import os.path as path
+import tensorflow as tf
 
-from src.nn.cnn.model.model import Model
-from src.nn.cnn.dataset.dataset import MultipartDataset
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout, BatchNormalization, Activation
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.optimizers import Adam
+from keras import backend as K
+from keras.regularizers import l2
 
 
 ARGS = None
-
-
-class ShapeClassifier(Model):
-    def __init__(self, args):
-        super(ShapeClassifier, self).__init__(args, args.channels, args.classes)
-
-    def save_test_result_with_parameters(self, score):
-        with open('results.txt', mode='a') as f:
-            f.write('score = %s, python shape_classifier.py --name %s --epochs %s --classes %s '
-                    '--conv1_filters %s --conv2_filters %s --fc1_neurons %s --learning_rate %s '
-                    '--dropout %s\n' % (score, self.name, self.epochs, self.outputs,
-                                        self.conv1_filters, self.conv2_filters, self.fc1_neurons,
-                                        self.learning_rate, self.dropout))
+SAVE_PATH = path.join(os.path.expandvars("$GIMP_PROJECT"), 'result/model')
 
 
 def main(_):
-    x = tf.placeholder(tf.float32, [None, ARGS.image_size, ARGS.image_size, ARGS.channels], name="x")
-    y = tf.placeholder(tf.int32, [None, ARGS.classes], name="y")
-    training = tf.placeholder(tf.bool, name="training")
+    X_train = np.load(path.join(ARGS.dataset_path, "train_X.npy"), mmap_mode="r")
+    Y_train = np.load(path.join(ARGS.dataset_path, "train_Y.npy"), mmap_mode="r")
+    X_test = np.load(path.join(ARGS.dataset_path, "test_X.npy"), mmap_mode="r")
+    Y_test = np.load(path.join(ARGS.dataset_path, "test_Y.npy"), mmap_mode="r")
 
-    model = ShapeClassifier(ARGS)
+    activation = 'relu'
+    kernel_regularizer = l2(0.01) if ARGS.l2 else None
 
-    y_conv, keep_prob = model.conv_net(x, training)
+    model = Sequential()
+    model.add(Conv2D(ARGS.conv1_filters, ARGS.conv1_kernel_size, strides=(1, 1),
+                     padding='same', kernel_regularizer=kernel_regularizer, activation=activation,
+                     input_shape=(ARGS.image_size, ARGS.image_size, ARGS.channels)))
+    model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
+    model.add(Conv2D(ARGS.conv2_filters, ARGS.conv2_kernel_size, strides=(1, 1),
+                     padding='same', kernel_regularizer=kernel_regularizer, activation=activation))
+    model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
+    model.add(Flatten())
+    model.add(Dense(ARGS.fc1_neurons))
+    model.add(BatchNormalization())
+    model.add(Activation(activation))
+    model.add(Dropout(ARGS.dropout))
+    model.add(Dense(ARGS.output_dim, activation='softmax'))
 
-    with tf.name_scope('loss'):
-        cross_entropy = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits_v2(labels=y, logits=y_conv),
-            name="loss")
+    callbacks = [EarlyStopping(monitor='val_acc', patience=ARGS.early_stopping_epochs,
+                               mode='max'),
+                 ModelCheckpoint(get_saving_path(), monitor='val_acc', save_best_only=True,
+                                 save_weights_only=False, mode='max', period=1)]
 
-    with tf.name_scope('optimizer'):
-        optimizer = tf.train.AdamOptimizer(ARGS.learning_rate)
+    optimizer = Adam(lr=ARGS.learning_rate)
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
-    train_op = optimizer.minimize(cross_entropy)
+    K.set_session(K.tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=ARGS.threads,
+                                                     intra_op_parallelism_threads=ARGS.threads)))
+    K.get_session().run(tf.global_variables_initializer())
 
-    with tf.name_scope('prediction'):
-        correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y, 1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
-
-    with tf.Session() as sess:
-
-        global_epoch, saver = model.restore_if_not_new(sess)
-
-        data = MultipartDataset(ARGS.dataset_path, ARGS.batch_size)
-
-        if not ARGS.test:
-            best_accuracy = 0
-            epochs_not_improving = 0
-
-            for epoch in tqdm.tqdm(range(global_epoch, ARGS.epochs)):
-
-                num_batches = data.train.num_batches if ARGS.batches is None else ARGS.batches
-                for step in tqdm.tqdm(range(num_batches)):
-                    X, Y = data.train.next_batch()
-                    train_op.run(feed_dict={x: X, y: Y, keep_prob: ARGS.dropout, training: True})
-                    if step == 0:
-                        train_accuracy = accuracy.eval(
-                            feed_dict={x: X, y: Y, keep_prob: 1.0, training: True})
-                        tqdm.tqdm.write('train accuracy %g' % train_accuracy)
-
-                test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
-                tqdm.tqdm.write('test accuracy %g' % test_accuracy)
-
-                if test_accuracy > best_accuracy:
-                    current_epoch = epoch + 1
-                    model.save(current_epoch, saver, sess)
-                    best_accuracy = test_accuracy
-                    epochs_not_improving = 0
-                else:
-                    epochs_not_improving += 1
-
-                if epochs_not_improving >= ARGS.early_stopping_epochs:
-                    break
-
-                data.train.restart()
-
-        mean_test_accuracy = evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y)
-        model.save_test_result_with_parameters(mean_test_accuracy)
+    model.fit(x=X_train, y=Y_train, batch_size=ARGS.batch_size, epochs=ARGS.epochs,
+              callbacks=callbacks, validation_data=(X_test, Y_test), shuffle=True)
 
 
-def evaluate_test_accuracy(accuracy, data, keep_prob, training, x, y):
-    test_accuracy = np.zeros(data.test.num_batches)
-    for i in tqdm.tqdm(range(data.test.num_batches)):
-        X, Y = data.test.next_batch()
-        prediction = accuracy.eval(feed_dict={x: X, y: Y, keep_prob: 1.0, training: False})
-        test_accuracy[i] = prediction
-    mean_test_accuracy = np.mean(test_accuracy)
-    print("test accuracy = %g" % mean_test_accuracy)
-    data.test.restart()
-    return mean_test_accuracy
+def get_saving_path():
+    model_dir = create_model_dir()
+    return path.join(model_dir, 'model.{epoch:02d}-{val_acc:.2f}.hdf5')
+
+
+def create_model_dir():
+    model_name = ARGS.name if ARGS.model is None else str(path.basename(ARGS.model))
+    model_name = model_name.split('-')[0]
+    model_dir = path.join(SAVE_PATH, model_name)
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)
+    return model_dir
 
 
 if __name__ == '__main__':
@@ -113,23 +83,26 @@ if __name__ == '__main__':
                         help="number of filters in first convolutional layer")
     parser.add_argument("--conv2_filters", default=64, type=int,
                         help="number of filters in second convolutional layer")
-    parser.add_argument("--conv3_filters", default=128, type=int,
-                        help="number of filters in third convolutional layer")
+    parser.add_argument("--conv1_kernel_size", default=5, type=int,
+                        help="size of kernels in first convolutional layer")
+    parser.add_argument("--conv2_kernel_size", default=3, type=int,
+                        help="size of kernels in second convolutional layer")
     parser.add_argument("--fc1_neurons", default=512, type=int,
                         help="number of neurons in first fully connected layer")
     parser.add_argument("--learning_rate", type=float, default=0.0001)
-    parser.add_argument("--dropout", type=float, default=0.45)
+    parser.add_argument("--dropout", type=float, default=0.5)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--image_size", type=int, default=100)
+    parser.add_argument("--image_size", type=int, default=28)
     parser.add_argument("--batches", type=int)
-    parser.add_argument("--classes", type=int, default=4)
-    parser.add_argument("--batch_norm", action="store_true")
-    parser.add_argument("--batch_size", type=int, default=50)
+    parser.add_argument("--batch_size", type=int, default=25)
     parser.add_argument("--early_stopping_epochs", type=int, default=10)
     parser.add_argument("--test", action="store_true", help="perform only testing on given model")
+    parser.add_argument("--output_dim", type=int, help="number of output values", default=4)
     parser.add_argument("dataset_path", type=str)
+    parser.add_argument("--channels", type=int, default=3)
     parser.add_argument("--threads", type=int, default=0,
                         help="thread pool for tf session - default number of all logical CPU cores")
-    parser.add_argument("--channels", type=int, default=3)
+    parser.add_argument("--l2", action="store_true")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
+
