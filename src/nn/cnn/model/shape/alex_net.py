@@ -24,7 +24,8 @@ def main(_):
     Y_test = np.load(path.join(ARGS.dataset_path, "test_Y.npy"), mmap_mode="r")
 
     model = Sequential()
-    model.add(Conv2D(filters=64, kernel_size=(11, 11), padding='same'))
+    model.add(Conv2D(filters=64, kernel_size=(11, 11), padding='same',
+                     input_shape=(ARGS.image_size, ARGS.image_size, ARGS.channels)))
     model.add(BatchNormalization((64, 226, 226)))
     model.add(Activation('relu'))
     model.add(MaxPool2D(poolsize=(3, 3)))
