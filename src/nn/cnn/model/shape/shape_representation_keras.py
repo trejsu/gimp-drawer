@@ -57,6 +57,7 @@ def main(_):
 
     K.set_session(K.tf.Session(config=tf.ConfigProto(inter_op_parallelism_threads=ARGS.threads,
                                                      intra_op_parallelism_threads=ARGS.threads)))
+    K.get_session().run(tf.initialize_all_variables())
 
     model.fit(x=X_train, y=Y_train, batch_size=ARGS.batch_size, epochs=ARGS.epochs,
               callbacks=callbacks, validation_data=(X_test, Y_test), shuffle=True)
