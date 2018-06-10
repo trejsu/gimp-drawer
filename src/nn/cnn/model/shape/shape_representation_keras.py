@@ -60,7 +60,7 @@ def main(_):
 
 def get_saving_path():
     model_dir = create_model_dir()
-    return path.join(model_dir, 'model.{epoch:02d}-{val_loss:.2f}.hdf5')
+    return path.join(model_dir, 'model.{epoch:02d}-{val_loss:.4f}.hdf5')
 
 
 def create_model_dir():
