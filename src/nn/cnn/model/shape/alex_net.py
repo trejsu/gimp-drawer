@@ -24,22 +24,22 @@ def main(_):
     Y_test = np.load(path.join(ARGS.dataset_path, "test_Y.npy"), mmap_mode="r")
 
     model = Sequential()
-    model.add(Conv2D(filters=64, kernel_size=(11, 11), border_mode='full', padding='same'))
+    model.add(Conv2D(filters=64, kernel_size=(11, 11), padding='same'))
     model.add(BatchNormalization((64, 226, 226)))
     model.add(Activation('relu'))
     model.add(MaxPool2D(poolsize=(3, 3)))
 
-    model.add(Conv2D(filters=128, kernel_size=(7, 7), border_mode='full', padding='same'))
+    model.add(Conv2D(filters=128, kernel_size=(7, 7), padding='same'))
     model.add(BatchNormalization((128, 115, 115)))
     model.add(Activation('relu'))
     model.add(MaxPool2D(poolsize=(3, 3)))
 
-    model.add(Conv2D(filters=192, kernel_size=(3, 3), border_mode='full', padding='same'))
+    model.add(Conv2D(filters=192, kernel_size=(3, 3), padding='same'))
     model.add(BatchNormalization((128, 112, 112)))
     model.add(Activation('relu'))
     model.add(MaxPool2D(poolsize=(3, 3)))
 
-    model.add(Conv2D(filters=256, kernel_size=(3, 3), border_mode='full', padding='same'))
+    model.add(Conv2D(filters=256, kernel_size=(3, 3), padding='same'))
     model.add(BatchNormalization((128, 108, 108)))
     model.add(Activation('relu'))
     model.add(MaxPool2D(poolsize=(3, 3)))
