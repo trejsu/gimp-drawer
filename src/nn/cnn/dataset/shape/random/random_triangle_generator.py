@@ -1,14 +1,17 @@
 import argparse
 import os
 
+from src.common.plugin import Plugin
+
 ARGS = None
 
 
 def main():
-    run_plugin_command = "gimp -i -b '(python-fu-random-triangle-generator " \
-                         "RUN-NONINTERACTIVE {} {} {})' -b '(gimp-quit 1)'"\
-        .format(ARGS.image, ARGS.number, ARGS.test)
-    os.system(run_plugin_command)
+    plugin = Plugin(os.path.join(os.path.expandvars('$GIMP_PROJECT'),
+                    'src/nn/cnn/dataset/shape/random/random_triangle_generator_plugin.py'),
+                    ARGS,
+                    'random_triangle_generator')
+    plugin.run()
 
 
 if __name__ == '__main__':
@@ -16,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument("--image", type=int, default=100, help="Image size")
     parser.add_argument("--number", type=int, default=5000,
                         help="Number of images for the whole dataset")
-    parser.add_argument("--test", type=float, default=0.3,
+    parser.add_argument("--test", type=float, default=0.2,
                         help="Percentage of images used for testing")
     ARGS = parser.parse_args()
     main()
