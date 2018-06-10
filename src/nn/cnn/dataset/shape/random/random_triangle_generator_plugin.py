@@ -44,13 +44,3 @@ def generate_set(image_n, image_size, name):
     path = "./{}_{}.npy"
     np.save(path.format(name, "X"), X)
     np.save(path.format(name, "Y"), Y)
-
-
-register("random_triangle_generator", "", "", "", "", "", "", "",
-         [
-             (PF_INT, "image", "Image size", 100),
-             (PF_INT, "number", "Number of images for the whole dataset", 5000),
-             (PF_FLOAT, "test", "Percentage of images used for testing", 0.3)
-         ], [], plugin_main)
-
-main()

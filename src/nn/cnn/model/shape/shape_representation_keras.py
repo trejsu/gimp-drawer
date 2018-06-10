@@ -26,14 +26,19 @@ def main(_):
     Y_test = np.load(path.join(ARGS.dataset_path, "test_Y.npy"), mmap_mode="r")
 
     activation = 'relu'
+    kernel_regularizer = l2(0.01) if ARGS.l2 else None
 
     model = Sequential()
     model.add(Conv2D(ARGS.conv1_filters, ARGS.conv1_kernel_size, strides=(1, 1),
-                     padding='same', activation=activation, kernel_regularizer=l2(0.01),
+                     padding='same', kernel_regularizer=kernel_regularizer,
                      input_shape=(ARGS.image_size, ARGS.image_size, ARGS.channels)))
+    model.add(BatchNormalization())
+    model.add(Activation(activation))
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
     model.add(Conv2D(ARGS.conv2_filters, ARGS.conv2_kernel_size, strides=(1, 1),
-                     padding='same', activation=activation, kernel_regularizer=l2(0.01)))
+                     padding='same', kernel_regularizer=kernel_regularizer))
+    model.add(BatchNormalization())
+    model.add(Activation(activation))
     model.add(MaxPool2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
     model.add(Flatten())
     model.add(Dense(ARGS.fc1_neurons))
@@ -106,6 +111,7 @@ if __name__ == '__main__':
     parser.add_argument("--channels", type=int, default=3)
     parser.add_argument("--threads", type=int, default=0,
                         help="thread pool for tf session - default number of all logical CPU cores")
+    parser.add_argument("--l2", action="store_true")
     ARGS = parser.parse_args()
     tf.app.run(main=main, argv=sys.argv)
 
