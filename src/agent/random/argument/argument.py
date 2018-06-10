@@ -1,4 +1,4 @@
-from common.timed import timed
+from src.common.timed import timed
 
 
 class Argument(object):

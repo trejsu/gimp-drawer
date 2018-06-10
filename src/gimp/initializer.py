@@ -15,7 +15,7 @@ def initialize(src_path, input_path, size=None):
         pdb.gimp_image_convert_rgb(src_img)
     src_width = src_drawable.width
     src_height = src_drawable.height
-    actual_img = new_image(src_width, src_height) if input_path == "None" \
+    actual_img = new_image(src_width, src_height) if input_path is None \
         else __load_image(input_path, src_width, src_height)
     return src_img, actual_img
 
