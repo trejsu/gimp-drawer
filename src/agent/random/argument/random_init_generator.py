@@ -1,6 +1,6 @@
-from agent.random.argument.argument import Argument
-from agent.random.argument.argument_generator import ArgumentGenerator
-from common.timed import timed
+from src.agent.random.argument.argument import Argument
+from src.agent.random.argument.argument_generator import ArgumentGenerator
+from src.common.timed import timed
 
 
 class RandomInitGenerator(ArgumentGenerator, object):

@@ -6,6 +6,7 @@ from src.gimp.environment import Environment
 from src.agent.random.argument.argument import ArgumentGroup
 from src.agent.random.argument.color_picker_generator import ColorPickerGenerator
 from src.agent.random.argument.scaling_init_generator import ScalingInitGenerator
+from src.agent.random.argument.random_init_generator import RandomInitGenerator
 from src.config import improvements as imprvs
 
 
@@ -14,7 +15,8 @@ def plugin_main(output_path, image, actions, render, size):
         subspace = env.action_space.subspace(action)
         position_ranges = subspace.position()
         time_passed = time.time() - start
-        init_position = position_generator.init(position_ranges, time_passed, subspace)
+        # init_position = position_generator.init(position_ranges, time_passed, subspace)
+        init_position = position_generator.init(position_ranges)
         color_ranges = subspace.color()
         init_color = color_generator.init(color_ranges, init_position, subspace)
         args = [ArgumentGroup(init_color, color_generator),
@@ -56,7 +58,8 @@ def plugin_main(output_path, image, actions, render, size):
     env.reset()
     seed = np.random.randint(0, 100)
     rng = np.random.RandomState(int(seed))
-    position_generator = ScalingInitGenerator(imprvs["eps"], rng)
+    # position_generator = ScalingInitGenerator(imprvs["eps"], rng)
+    position_generator = RandomInitGenerator(imprvs["eps"], rng)
     color_generator = ColorPickerGenerator(imprvs["eps"], env.src_img.img, rng)
     generated_actions = np.zeros((actions, 11))
     current_action = 0
