@@ -67,7 +67,7 @@ class RandomDecoder(object):
         end = time.time()
         decompression_speed = end - start
         print('decompressed in {} sec'.format(decompression_speed))
-        return decompression_speed
+        return decompression_speed, image_data
 
 
 PREDICTOR = 'model.49-0.87'
