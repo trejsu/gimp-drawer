@@ -37,11 +37,12 @@ class RandomEncoder(object):
             os.system('python {} {} {}'.format(AC_ENCODER, ENCODED_BYTES, ENCODED_AC))
             with open(ENCODED_AC, 'rb') as f:
                 encoded_bytes_after_ac = f.read()
-            print('compressed to {} bytes'.format(len(encoded_bytes_after_ac)))
+            print('compressed with AC to {} bytes'.format(len(encoded_bytes_after_ac)))
             action_vectors = encoded_bytes_after_ac
         end = time.time()
-        print('compressed in {} sec'.format(end - start))
-        return action_vectors
+        compression_speed = end - start
+        print('compressed in {} sec'.format(compression_speed))
+        return action_vectors, compression_speed
 
 
 class RandomDecoder(object):
@@ -54,7 +55,7 @@ class RandomDecoder(object):
             os.system('python {} {} {}'.format(AC_DECODER, ENCODED_AC, DECODED_BYTES))
             with open(DECODED_BYTES, 'rb') as f:
                 decoded_bytes = f.read()
-            print('decompressed to {} bytes'.format(len(decoded_bytes)))
+            print('decompressed from AC to {} bytes'.format(len(decoded_bytes)))
             decoded_action_args = np.frombuffer(decoded_bytes, dtype=np.float32).reshape([-1, 11])
             action_args = decoded_action_args
         np.save(ENCODED_PATH, action_args)
@@ -64,7 +65,9 @@ class RandomDecoder(object):
         image_data = plt.imread(DECODED_PATH)[:, :, :3]
         plt.imshow(image_data)
         end = time.time()
-        print('decompressed in {} sec'.format(end - start))
+        decompression_speed = end - start
+        print('decompressed in {} sec'.format(decompression_speed))
+        return decompression_speed
 
 
 PREDICTOR = 'model.49-0.87'
