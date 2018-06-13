@@ -26,7 +26,7 @@ class RandomEncoder(object):
         start = time.time()
         os.system(
             'python ../src/gimp/draw/generate_actions.py --output_path {} --image {} --actions {} {} --size {}'.format(
-                ENCODED_PATH, os.path.join(IMAGES_PATH, img_path), actions + 1,
+                ENCODED_PATH, os.path.join(IMAGES_PATH, img_path), actions,
                 '--render' if render else '', size))
         action_vectors = np.load(ENCODED_PATH)
         if to_bytes:
