@@ -25,7 +25,7 @@ class Plugin(object):
         with open(os.path.expandvars('$GIMP_PLUGIN') + '/' + self.plugin_name + '.py', 'w+') as f:
             f.write(plugin)
 
-        os.system('chmod -R 700 $GIMP_PLUGIN')
+        os.system('chmod -R 700 "$GIMP_PLUGIN"')
 
     def run_plugin(self):
         name = self.plugin_name.replace('_', '-')
