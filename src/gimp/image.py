@@ -1,4 +1,6 @@
 import numpy as np
+import os
+
 from gimpfu import pdb, WHITE_FILL
 
 from src.common.timed import timed
@@ -38,6 +40,9 @@ class Image(object):
 
     @timed
     def save(self, filename):
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         pdb.gimp_file_save(self.img, self.get_drawable(), filename, filename)
 
     @timed
