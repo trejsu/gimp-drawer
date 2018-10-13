@@ -1,5 +1,5 @@
 import os
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 REGISTER_ARG = '({}, "{}", "", {})'
 RUN_PLUGIN = "gimp -i -b '(python-fu-{} RUN-NONINTERACTIVE {})' -b '(gimp-quit 1)'"
@@ -9,11 +9,11 @@ REGISTER = """register("{}", "", "", "", "", "", "", "", {}, [], plugin_main)\nm
 
 class Plugin(object):
 
-    def __init__(self, plugin_file, plugin_name, args, dict_args=False):
+    def __init__(self, plugin_file, plugin_name, args, list_args=False):
         self.plugin_file = plugin_file
         self.args = args
         self.plugin_name = plugin_name
-        self.dict_args = dict_args
+        self.list_args = list_args
 
     def run(self):
         self.create_or_update_plugin_file()
@@ -28,8 +28,8 @@ class Plugin(object):
         with open(self.plugin_file) as f:
             plugin_body = f.read()
 
-        register_part = REGISTER\
-            .format(self.plugin_name, self.parse_register_arguments())\
+        register_part = REGISTER \
+            .format(self.plugin_name, self.parse_register_arguments()) \
             .replace("'", "")
 
         plugin = plugin_body + '\n' + register_part
@@ -45,7 +45,7 @@ class Plugin(object):
 
     def run_plugin_as_subprocess(self):
         cmd = self.get_cmd()
-        return Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        return Popen(cmd, shell=True)
 
     def get_cmd(self):
         name = self.plugin_name.replace('_', '-')
@@ -60,10 +60,10 @@ class Plugin(object):
         return arguments
 
     def value(self, arg):
-        return self.args[arg] if self.dict_args else getattr(self.args, arg)
+        return dict(self.args)[arg] if self.list_args else getattr(self.args, arg)
 
     def arg_keys(self):
-        return self.args.keys() if self.dict_args else vars(self.args)
+        return [param for param, value in self.args] if self.list_args else vars(self.args)
 
     @staticmethod
     def get_type(value):
