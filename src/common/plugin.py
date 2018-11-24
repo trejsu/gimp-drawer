@@ -9,7 +9,7 @@ REGISTER = """register("{}", "", "", "", "", "", "", "", {}, [], plugin_main)\nm
 
 class Plugin(object):
 
-    def __init__(self, plugin_file, plugin_name, args, list_args=False):
+    def __init__(self, *, plugin_file, plugin_name, args, list_args=False):
         self.plugin_file = plugin_file
         self.args = args
         self.plugin_name = plugin_name
@@ -67,16 +67,16 @@ class Plugin(object):
 
     @staticmethod
     def get_type(value):
-        if isinstance(value, str):
-            return 'PF_STRING'
-        elif isinstance(value, int):
-            return 'PF_INT'
-        elif isinstance(value, float):
-            return 'PF_FLOAT'
-        elif isinstance(value, bool):
-            return 'PF_BOOL'
-        else:
-            raise RuntimeError('unknown argument type')
+        python_to_gimp_type = {
+            str: 'PF_STRING',
+            int: 'PF_INT',
+            float: 'PF_FLOAT',
+            bool: 'PF_BOOL'
+        }
+        for python, gimp in python_to_gimp_type.items():
+            if isinstance(value, python):
+                return gimp
+        raise RuntimeError('unknown argument type for value: {}'.format(value))
 
     def parse_command_arguments(self):
         arguments = ''
