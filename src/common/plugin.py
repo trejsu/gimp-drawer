@@ -2,7 +2,7 @@ import os
 from subprocess import Popen
 
 REGISTER_ARG = '({}, "{}", "", {})'
-RUN_PLUGIN = "gimp -i -b '(python-fu-{} RUN-NONINTERACTIVE {})' -b '(gimp-quit 1)'"
+RUN_PLUGIN = "gimp -i -f {} -b '(python-fu-{} RUN-NONINTERACTIVE {})' -b '(gimp-quit 1)'"
 TYPE_TO_DEFAULT_VALUE = {'PF_STRING': "\"\"", 'PF_INT': 0, 'PF_FLOAT': 0, 'PF_BOOL': False}
 REGISTER = """register("{}", "", "", "", "", "", "", "", {}, [], plugin_main)\nmain()"""
 
@@ -14,8 +14,10 @@ class Plugin(object):
         self.args = args
         self.plugin_name = plugin_name
         self.list_args = list_args
+        self.verbose = False
 
-    def run(self):
+    def run(self, verbose=False):
+        self.verbose = verbose
         self.create_or_update_plugin_file()
         self.run_plugin()
 
@@ -49,7 +51,8 @@ class Plugin(object):
 
     def get_cmd(self):
         name = self.plugin_name.replace('_', '-')
-        cmd = RUN_PLUGIN.format(name, self.parse_command_arguments())
+        cmd = RUN_PLUGIN.format('--stack-trace-mode=always --verbose' if self.verbose else '',
+                                name, self.parse_command_arguments())
         return cmd
 
     def parse_register_arguments(self):

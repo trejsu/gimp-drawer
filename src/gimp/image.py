@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from gimpfu import pdb, WHITE_FILL
+from gimpfu import pdb, WHITE_FILL, HISTOGRAM_RED, HISTOGRAM_GREEN, HISTOGRAM_BLUE, FILL_FOREGROUND
 
 from src.common.timed import timed
 from src.gimp.action_performer import perform_action
@@ -56,7 +56,7 @@ class Image(object):
         return np.array(array.reshape(height, width, bpp), dtype="d")[:, :, 0:min(bpp, 3)]
 
     @timed
-    def get_displayable_array(self):
+    def renderable(self):
         return self.array.astype(np.uint8)
 
     @timed
@@ -66,3 +66,14 @@ class Image(object):
     @timed
     def delete(self):
         pdb.gimp_image_delete(self.img)
+
+    def get_average_color(self):
+        drawable = self.get_drawable()
+        red = pdb.gimp_histogram(drawable, HISTOGRAM_RED, 0, 255)[0]
+        green = pdb.gimp_histogram(drawable, HISTOGRAM_GREEN, 0, 255)[0]
+        blue = pdb.gimp_histogram(drawable, HISTOGRAM_BLUE, 0, 255)[0]
+        return red, green, blue
+
+    def fill_with(self, color):
+        pdb.gimp_context_set_foreground(tuple(c / 255. for c in color))
+        pdb.gimp_drawable_fill(self.get_drawable(), FILL_FOREGROUND)

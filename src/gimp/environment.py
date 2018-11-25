@@ -79,8 +79,8 @@ class Environment(object):
 
     @timed
     def get_concatenated_src_with_image(self, image_to_concatenate):
-        images_to_display = (self.src_img.get_displayable_array(),
-                             image_to_concatenate.get_displayable_array())
+        images_to_display = (self.src_img.renderable(),
+                             image_to_concatenate.renderable())
         image = concatenate(images_to_display, axis=1)
         return image
 
