@@ -26,8 +26,10 @@ if __name__ == '__main__':
     parser.add_argument('--background', type=str, help='background color (hex)', default='None')
     parser.add_argument('--alpha', type=int, help='alpha value', default=128)
     parser.add_argument('--output-size', type=int, help='output image size', default=1024)
-    parser.add_argument('--mode', type=int, help='drawing mode',
-                        choices=[0, 1, 2, 3, 4, 5, 6, 7, 8], default=1)
+    parser.add_argument('--mode', type=int,
+                        help='drawing mode: 0 - combo, 1 - ellipse, 2 - rectangle, 3 - triangle, '
+                             '4 - line',
+                        choices=[0, 1, 2, 3, 4], default=1)
     parser.add_argument('--verbose', help='verbose output', action='store_true')
     parser.add_argument('--nth', type=int, help='save every nth frame (put %d in path)', default=1)
     parser.add_argument('--shapes', type=int, help='number of shapes to draw',
